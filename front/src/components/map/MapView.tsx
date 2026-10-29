@@ -1,7 +1,7 @@
 import "maplibre-gl/dist/maplibre-gl.css"
 import { setWorkerUrl } from "maplibre-gl"
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url"
-import { Minus, Plus } from "lucide-react"
+import { Droplets, Minus, Plus } from "lucide-react"
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react"
 import MapGL, {
   Layer,
@@ -16,6 +16,9 @@ import type { GeoCollection, LineFeature, OblastFeature } from "@/api/geo"
 import type { DistrictWithGeometry } from "@/api/reference"
 import { map as text } from "@/content/map"
 import { categoryLabels, statusLabels } from "@/content/reports"
+import { indicators, months } from "@/content/water"
+import { formatNumber } from "@/lib/format"
+import type { Section as WaterSection } from "@/lib/water"
 import { aqiCategory } from "@/lib/aqi"
 import { scaleBar, snapToLines } from "@/lib/mapGeo"
 import { cn } from "@/lib/utils"
@@ -41,6 +44,10 @@ type Props = {
   rivers: GeoCollection<LineFeature> | undefined
   reports: readonly MapReport[]
   places: readonly MapPlace[]
+  /** Участки рек из последнего обзора Белгидромета (§10.8) */
+  waterSections: readonly WaterSection[]
+  /** «II квартал 2026» — подпись источника во всплывашке */
+  waterQuarter: string
   shown: MapLayersShown
   /** Отступы при «Вся область»: на десктопе слева и справа лежат панели */
   padding: { top: number; right: number; bottom: number; left: number }
@@ -83,6 +90,8 @@ export default function MapView({
   rivers,
   reports,
   places,
+  waterSections,
+  waterQuarter,
   shown,
   padding,
   apiRef,
@@ -93,6 +102,7 @@ export default function MapView({
   const [hoverDistrict, setHoverDistrict] = useState<string | null>(null)
   const [openReport, setOpenReport] = useState<MapReport | null>(null)
   const [openPlace, setOpenPlace] = useState<MapPlace | null>(null)
+  const [openWater, setOpenWater] = useState<WaterSection | null>(null)
 
   const style = useMemo<StyleSpecification>(
     () => ({
@@ -334,6 +344,31 @@ export default function MapView({
           </Marker>
         ))}
 
+        {/* Участки рек рядом с городами — рисуем раньше городов, чтобы подписи городов были сверху */}
+        {waterSections.map((w) => (
+          <Marker key={w.name} longitude={w.location.lon} latitude={w.location.lat} anchor="center">
+            <button
+              type="button"
+              aria-label={w.name}
+              onClick={(e) => {
+                e.stopPropagation()
+                setOpenWater(w)
+              }}
+              className="grid size-4 cursor-pointer place-items-center rounded-full border-2 bg-background text-map-river-label shadow-sm"
+              style={{
+                borderColor:
+                  w.worst > 1.5
+                    ? "var(--level-high)"
+                    : w.worst > 1
+                      ? "var(--level-elevated)"
+                      : "var(--map-river)",
+              }}
+            >
+              <Droplets aria-hidden="true" className="size-2.5" />
+            </button>
+          </Marker>
+        ))}
+
         {towns.map((t) => {
           const category = shown.air ? aqiCategory(t.aqi) : null
           const selected = t.id === selectedId
@@ -416,6 +451,43 @@ export default function MapView({
             <p className="mt-0.5 text-muted-foreground">
               {statusLabels[openReport.status]} · {openReport.created}
             </p>
+          </Popup>
+        )}
+
+        {openWater && (
+          <Popup
+            longitude={openWater.location.lon}
+            latitude={openWater.location.lat}
+            anchor="bottom"
+            offset={16}
+            closeButton={false}
+            closeOnClick
+            onClose={() => setOpenWater(null)}
+            className="eco-popup"
+            maxWidth="280px"
+          >
+            <p className="font-medium">{openWater.name}</p>
+            <p className="text-[12px] text-muted-foreground">{text.water.quarter(waterQuarter)}</p>
+            {openWater.exceedances.length ? (
+              <ul className="mt-1.5 space-y-0.5">
+                {openWater.exceedances.map((e) => (
+                  <li key={`${e.post}-${e.indicator}-${e.month}`} className="flex justify-between gap-3">
+                    <span>{indicators[e.indicator]?.short ?? e.indicator}</span>
+                    <span
+                      className="tabular-nums"
+                      style={{ color: e.ratio > 1.5 ? "var(--level-high)" : "var(--level-elevated)" }}
+                    >
+                      ×{formatNumber(e.ratio, e.ratio < 1.1 ? 2 : 1)} · {months[e.month - 1]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1.5">{text.water.clean}</p>
+            )}
+            <a href="#water" className="mt-2 inline-block text-link hover:text-link-hover">
+              {text.water.more} →
+            </a>
           </Popup>
         )}
 

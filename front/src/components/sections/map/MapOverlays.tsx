@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight } from "lucide-react"
+import { ArrowLeft, ArrowRight, Droplets } from "lucide-react"
 import { Link } from "react-router"
 import type { AirReading } from "@/api/air"
 import { ReportIcon } from "@/components/map/ReportIcon"
@@ -296,6 +296,12 @@ export function MapLegend({
             <ReportIcon category="dump" className="size-3" />
           </span>
           {text.legend.report}
+        </li>
+        <li className="flex items-center gap-2">
+          <span className="grid size-5 place-items-center rounded-full border-2 border-level-elevated text-map-river-label">
+            <Droplets aria-hidden="true" className="size-3" />
+          </span>
+          {text.legend.water}
         </li>
         <li className="flex items-center gap-2 text-muted-foreground">
           <span aria-hidden="true" className="w-5 text-center">

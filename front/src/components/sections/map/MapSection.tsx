@@ -6,6 +6,7 @@ import { parsePbDate } from "@/api/dates"
 import { usePlaces } from "@/api/places"
 import { useAirPoints, useDistrictGeometry } from "@/api/reference"
 import { useReports, useReportsRealtime } from "@/api/reports"
+import { useWaterReadings } from "@/api/water"
 import type { MapApi } from "@/components/map/MapView"
 import { ReportIcon } from "@/components/map/ReportIcon"
 import type { MapPlace, MapReport, MapTown } from "@/components/map/types"
@@ -18,14 +19,16 @@ import { publicStatuses } from "@/content/reports"
 import { minskToday, periodRange, summarizeByPoint } from "@/lib/airStats"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { useSelectedTown } from "@/lib/useSelectedTown"
+import { latestQuarter, quarterLabel, sections as waterSectionsOf } from "@/lib/water"
 import { cn } from "@/lib/utils"
+import { Droplets } from "lucide-react"
 import { AirOverview, MapLegend, TownCard } from "./MapOverlays"
 
 // MapLibre (~250 КБ gzip) — отдельный чанк, грузится, когда карта подходит к экрану
 const MapView = lazy(() => import("@/components/map/MapView"))
 
 type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "variant">
-type LayerKey = "air" | "reports" | "problem" | "oopt"
+type LayerKey = "air" | "reports" | "water" | "problem" | "oopt"
 
 const dateFormat = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" })
 const formatCreated = (value: string) => {
@@ -59,6 +62,7 @@ export function MapSection(section: Props) {
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>({
     air: true,
     reports: true,
+    water: true,
     problem: true,
     oopt: true,
   })
@@ -125,6 +129,14 @@ export function MapSection(section: Props) {
         })),
     [places.data],
   )
+  // Участки рек из последнего квартального обзора Белгидромета — те же данные, что в разделе «Вода»
+  const water = useWaterReadings()
+  const waterQuarter = water.data ? latestQuarter(water.data) : null
+  const waterSections = useMemo(
+    () => (water.data && waterQuarter ? waterSectionsOf(water.data, waterQuarter) : []),
+    [water.data, waterQuarter],
+  )
+
   const problemCount = allPlaces.filter((p) => p.kind !== "oopt").length
   const ooptCount = allPlaces.filter((p) => p.kind === "oopt").length
   const shownPlaces = allPlaces.filter((p) => (p.kind === "oopt" ? layers.oopt : layers.problem))
@@ -157,6 +169,16 @@ export function MapSection(section: Props) {
       count: mapReports.length,
       mark: <ReportIcon category="dump" className="size-3.5" />,
     },
+    ...(waterSections.length
+      ? [
+          {
+            key: "water" as const,
+            label: text.layers.water,
+            count: waterSections.length,
+            mark: <Droplets aria-hidden="true" className="size-3.5" />,
+          },
+        ]
+      : []),
     ...(problemCount
       ? [
           {
@@ -205,7 +227,7 @@ export function MapSection(section: Props) {
       </div>
 
       <div className="relative mt-4">
-        <div ref={mapBox} className="h-[440px] overflow-hidden rounded-xl border border-border lg:h-[680px]">
+        <div ref={mapBox} className="h-[440px] overflow-hidden rounded-xl border border-border lg:h-[740px]">
           {ready && mapVisible ? (
             <Suspense fallback={<Skeleton className="size-full rounded-none" />}>
               <MapView
@@ -219,6 +241,8 @@ export function MapSection(section: Props) {
                 rivers={rivers.data}
                 reports={mapReports}
                 places={shownPlaces}
+                waterSections={layers.water ? waterSections : []}
+                waterQuarter={waterQuarter ? quarterLabel(waterQuarter) : ""}
                 shown={{ air: layers.air, reports: layers.reports, ...toggles }}
                 padding={desktop ? PADDING_DESKTOP : PADDING_MOBILE}
               />
