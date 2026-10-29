@@ -1,0 +1,89 @@
+/*
+ * Токены дизайна (CLAUDE.md §10.1). Значения сняты с макета temp-design/Main.dc.html.
+ * Общие роли названы по схеме shadcn (--background, --foreground, --border…), чтобы компоненты ui/ брали их без правок.
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #121413;
+  --card: #ffffff;
+  --card-foreground: #121413;
+  --popover: #ffffff;
+  --popover-foreground: #121413;
+  --primary: #121413;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f3;
+  --secondary-foreground: #121413;
+  --muted: #f5f5f3;
+  --muted-foreground: #6b706d;
+  --accent: #f5f5f3;
+  --accent-foreground: #121413;
+  --destructive: #e2583a;
+  --border: #ececea;
+  --input: #e1e3e0;
+  --ring: #2f6bff;
+
+  --fg-secondary: #4b4f4d;
+  --link: #2f6bff;
+  --link-hover: #1f4fd1;
+  --success: #4cc38a;
+
+  --radius: 8px;
+  --header-h: 56px;
+}
+
+/* Тёмные блоки главной (карта, предприятия): класс .dark на секции переключает роли */
+.dark {
+  --background: #0e1110;
+  --foreground: #f2f3f1;
+  --card: #171b19;
+  --card-foreground: #f2f3f1;
+  --popover: #171b19;
+  --popover-foreground: #f2f3f1;
+  --primary: #f2f3f1;
+  --primary-foreground: #0e1110;
+  --secondary: #171b19;
+  --secondary-foreground: #f2f3f1;
+  --muted: #171b19;
+  --muted-foreground: #a3a8a5;
+  --accent: #171b19;
+  --accent-foreground: #f2f3f1;
+  --border: #1e2320;
+  --input: #2a302d;
+  --ring: #8fb0ff;
+  --link: #8fb0ff;
+  --link-hover: #b9ceff;
+}
+
+@theme inline {
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --font-heading: "Inter Tight Variable", "Inter Variable", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-success: var(--success);
+
+  --radius-sm: 6px;
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+}

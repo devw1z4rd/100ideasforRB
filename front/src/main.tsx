@@ -4,6 +4,8 @@ import "./index.css"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <h1 className="p-10 text-3xl font-semibold">Экологический профиль Гомельщины</h1>
+    <h1 className="p-10 font-heading text-5xl font-semibold tracking-[-0.04em]">
+      Экологический профиль Гомельщины
+    </h1>
   </StrictMode>,
 )

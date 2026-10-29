@@ -149,8 +149,8 @@
 | Гладкий скролл | Lenis (опционально) |
 
 ```bash
-npm create vite@latest web -- --template react-ts
-cd web
+npm create vite@latest front -- --template react-ts
+cd front
 npm i pocketbase @tanstack/react-query react-router react-hook-form zod @hookform/resolvers \
       motion @number-flow/react recharts @nivo/core @nivo/calendar \
       maplibre-gl react-map-gl sonner lucide-react
@@ -170,7 +170,7 @@ npx shadcn@latest init
                      │     ▼                                                              │
                      │  PocketBase ── /api/*        REST + realtime (SSE)                 │
                      │     │          /_/           админка                               │
-                     │     │          /*            SPA из pb_public (собранный web/)     │
+                     │     │          /*            SPA из pb_public (собранный front/)   │
                      │     │                                                              │
                      │     ├─ pb_data/  SQLite + загруженные фото + бэкапы                │
                      │     └─ pb_hooks/ cron: сбор воздуха; хуки: статусы, уведомления    │
@@ -182,10 +182,10 @@ npx shadcn@latest init
                      Open-Meteo Air Quality API (раз в час)
 ```
 
-- Фронт — SPA, собирается в `web/dist` и кладётся в `pb_public/`. PocketBase отдаёт и статику, и API с одного домена → нет CORS.
+- Фронт — SPA, собирается в `front/dist` и кладётся в `pb_public/`. PocketBase отдаёт и статику, и API с одного домена → нет CORS.
 - Вся бизнес-логика, которой нельзя доверять клиенту (смена статусов, роли, валидации), — в API rules и `pb_hooks`.
 
-### Набросок cron-сбора воздуха (`pb/pb_hooks/air.pb.js`)
+### Набросок cron-сбора воздуха (`back/pb_hooks/air.pb.js`)
 
 ```js
 // Каждый час в :05. Набросок — сверить API с документацией текущей версии PocketBase.
@@ -223,12 +223,12 @@ cronAdd("air_fetch", "5 * * * *", () => {
 ├── docker-compose.yml
 ├── Caddyfile
 ├── .github/workflows/deploy.yml
-├── pb/
+├── back/
 │   ├── Dockerfile          # скачивает фиксированную версию PocketBase
 │   ├── pb_hooks/           # *.pb.js — cron, хуки, кастомные роуты
 │   ├── pb_migrations/      # генерируются PocketBase, коммитятся
 │   └── seed/               # JSON: районы, точки, предприятия, вода, источники
-├── web/
+├── front/
 │   ├── src/
 │   │   ├── api/            # pb-клиент, сгенерированные типы, хуки TanStack Query
 │   │   ├── components/
@@ -392,7 +392,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 | Официальные наблюдения воздуха | Белгидромет / Национальная система мониторинга окружающей среды | вручную, из публикуемых сводок и ежегодников | «Белгидромет, <период>» `[проверить доступность и формат]` |
 | Вода (показатели по рекам) | Ежегодники / обзоры НСМОС, Белгидромет | вручную в `water_readings` | с периодом и нормативами `[найти фактические значения]` |
 | Выбросы предприятий | Белстат / Минприроды / отчёты предприятий | вручную в `enterprises` | год + источник `[найти; без источника — не показываем]` |
-| Границы области и районов | geoBoundaries (BLR, ADM1/ADM2) или OSM | один раз → `web/public/geo/` | «© OpenStreetMap / geoBoundaries» |
+| Границы области и районов | geoBoundaries (BLR, ADM1/ADM2) или OSM | один раз → `front/public/geo/` | «© OpenStreetMap / geoBoundaries» |
 | Реки | Natural Earth 1:10m или OSM | один раз → GeoJSON | «Natural Earth» |
 | Подложка при зуме | OpenFreeMap | тайлы | «© OpenStreetMap contributors» |
 
@@ -404,53 +404,39 @@ cronAdd("air_fetch", "5 * * * *", () => {
 
 Источник: тестовый макет «Главная — десктоп» (`docs/design/`, 3 страницы, ширина ~1280 px). Стиль — **редакционный / «швейцарский» data-journalism**: белый фон, крупная чёрная типографика, тонкие разделители, данные в таблицах и графиках без украшательств; два тёмных блока (карта и предприятия) дают ритм и контраст.
 
-### 10.1 Дизайн-токены (сняты с макета, уточнить пипеткой)
+### 10.1 Дизайн-токены
 
-```css
-:root {
-  /* поверхности */
-  --bg:            #FFFFFF;
-  --bg-subtle:     #F5F5F3;   /* hover строк, плашки */
-  --border:        #E8E8E6;   /* разделители таблиц */
-  --surface-dark:  #111514;   /* блок «Предприятия», панель карты */
-  --surface-dark-2:#1B211F;   /* карта, карточки на тёмном */
+Источник значений — `temp-design/Main.dc.html`, код — `front/src/styles/tokens.css`. Общие роли названы по схеме shadcn, поэтому компоненты `ui/` берут их без правок. Тёмные блоки (карта, предприятия) получают класс `.dark`, и он переопределяет те же роли.
 
-  /* текст */
-  --fg:            #111111;
-  --fg-muted:      #6B6F6D;
-  --fg-on-dark:    #F2F2F0;
-  --fg-on-dark-muted: #8A918E;
+| Роль | Светлая | `.dark` | Где |
+|---|---|---|---|
+| `--background` | `#FFFFFF` | `#0E1110` | фон страницы / тёмного блока |
+| `--foreground`, `--primary` | `#121413` | `#F2F3F1` | текст, активный пункт, основные кнопки |
+| `--muted`, `--secondary`, `--accent` | `#F5F5F3` | `#171B19` | hover строк, плашки, контролы на тёмном |
+| `--muted-foreground` | `#6B706D` | `#A3A8A5` | eyebrow, подписи, неактивная навигация |
+| `--border` | `#ECECEA` | `#1E2320` | разделители |
+| `--input` | `#E1E3E0` | `#2A302D` | рамки контролов |
+| `--ring`, `--link` | `#2F6BFF` | `#8FB0FF` | фокус, ссылки (hover `#1F4FD1` / `#B9CEFF`) |
+| `--fg-secondary` | `#4B4F4D` | — | lead-абзацы |
+| `--destructive` | `#E2583A` | — | высокая степень, топ-3 предприятий |
+| `--success` | `#4CC38A` | — | чистые локации, ООПТ, снижение показателя |
 
-  /* смысловые */
-  --danger:        #E1573A;   /* высокая степень, топ-3 предприятий, NO₂ */
-  --warning:       #F2A62E;   /* средняя степень, SO₂, «умеренный» AQI, Припять */
-  --success:       #4BC28B;   /* чистые локации, ООПТ, снижение показателя */
-  --success-ink:   #2F8A60;   /* зелёный на белом фоне (PM2.5, Сож) */
-  --river:         #4A8FE0;   /* реки на карте */
-  --focus:         #336BF1;   /* выделение выбранного объекта/кольцо */
+Радиусы: `--radius-sm` 6px, `--radius` 8px (контролы), `--radius-2xl` 16px (карточка карты). Высота шапки `--header-h` — 56px.
 
-  /* шкала AQI (US EPA) */
-  --aqi-good:      #4BC28B;   /*   0–50  */
-  --aqi-moderate:  #F2C12E;   /*  51–100 */
-  --aqi-usg:       #F2A62E;   /* 101–150 */
-  --aqi-unhealthy: #E1573A;   /* 151–200 */
+Цвета карты, графиков и шкалы AQI добавляются в `tokens.css` в своих подпроектах, значения снимаются из макета. Черновые значения из первой версии документа: средняя степень / SO₂ / Припять `#F2A62E`, PM2.5 / Сож `#2F8A60`, реки `#4A8FE0` (в макете `#4E93A8`), выбранный объект `#336BF1`. Шкала AQI (US EPA): 0–50 `#4BC28B`, 51–100 `#F2C12E`, 101–150 `#F2A62E`, 151–200 `#E1573A`.
 
-  --radius-sm: 6px;  --radius-md: 10px;  --radius-lg: 16px;
-}
-```
-
-**Типографика.** Гротеск с хорошей кириллицей: **Inter** (или Onest / Golos UI). Все цифры — `font-variant-numeric: tabular-nums`.
+**Типографика.** **Inter** — текст, **Inter Tight** — заголовки и логотип; оба self-hosted через `@fontsource-variable`. Все цифры — `font-variant-numeric: tabular-nums`.
 
 | Роль | Размер / вес | Пример |
 |---|---|---|
-| H1 | 56–64 px / 700, tracking −0.02em, line-height 1.05 | «Экологический профиль Гомельщины» |
+| H1 | clamp(40px, 5vw, 68px) / Inter Tight 600, tracking −0.04em, line-height 1.05 | «Экологический профиль Гомельщины» |
 | H2 | 36–44 px / 600 | «Качество атмосферного воздуха» |
 | Eyebrow | 12 px / 500, `--fg-muted` | «Воздух», «Предприятия · август 2026» |
 | Lead | 15–16 px / 400, `--fg-muted`, max 60ch | описание под заголовком |
 | Big number | 56–96 px / 600 | `54`, `15`, `54%` |
 | Таблицы | 13–14 px; заголовки колонок 12 px muted | |
 
-**Сетка.** Контейнер ~1200 px, поля 24 px (16 px на мобиле), 12 колонок. Тёмный блок «Предприятия» — во всю ширину.
+**Сетка.** Контейнер 1600 px, поля 40 px (16 px до 768 px) — как в макете. Тёмный блок «Предприятия» — во всю ширину.
 
 ### 10.2 Шапка
 
@@ -587,7 +573,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 - **Домен** `.by` (тот же регистратор). Хостинг в РБ обязателен для сайтов юрлиц/ИП; для студпроекта — не обязательно, но нужен, если платформу заберёт вуз/госорган, плюс оплата белкартой.
 - **docker-compose:** `caddy` (80/443, авто-TLS Let's Encrypt) + `pocketbase` (volume `pb_data`) + опционально `bot`.
 - **Бэкапы:** встроенные бэкапы PocketBase по расписанию (ежедневно, хранить 7) + копия вне сервера (S3-совместимое хранилище или rsync на другой хост).
-- **CI/CD (GitHub Actions):** на push в `main` → `npm ci && npm run build` → копия `web/dist` в `pb/pb_public` → rsync `pb_hooks`, `pb_migrations`, `pb_public` на сервер по SSH → `docker compose up -d`. Миграции применяются автоматически при старте PocketBase.
+- **CI/CD (GitHub Actions):** на push в `main` → `npm ci && npm run build` → копия `front/dist` в `back/pb_public` → rsync `pb_hooks`, `pb_migrations`, `pb_public` на сервер по SSH → `docker compose up -d`. Миграции применяются автоматически при старте PocketBase.
 - **Окружения:** `local` (бинарник PocketBase + `vite dev` с прокси `/api` → `:8090`), `prod`. Staging — отдельный поддомен, если успеем.
 - **Мониторинг:** uptime-пинг (бесплатный внешний сервис) + алерт в Telegram, если cron воздуха не отработал > 3 часов.
 
@@ -597,8 +583,8 @@ cronAdd("air_fetch", "5 * * * *", () => {
 
 ### Общие
 - TypeScript `strict`, без `any`. Типы коллекций генерировать `pocketbase-typegen` после каждой смены схемы.
-- Все запросы к API — только через хуки в `web/src/api/` (`useAirReadings`, `usePlaces`, …). Компоненты не вызывают `pb` напрямую.
-- Никаких данных в компонентах. Seed — в `pb/seed/*.json`, контент — через админку.
+- Все запросы к API — только через хуки в `front/src/api/` (`useAirReadings`, `usePlaces`, …). Компоненты не вызывают `pb` напрямую.
+- Никаких данных в компонентах. Seed — в `back/seed/*.json`, контент — через админку.
 - Цвета, отступы, радиусы — только токены из §10.1 (Tailwind theme), без «магических» hex в компонентах.
 - Пользовательский текст никогда не рендерится как HTML. Если нужен rich text (новости) — DOMPurify.
 - Схема меняется только через админку локально → сгенерированная миграция коммитится вместе с кодом.
