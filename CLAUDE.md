@@ -211,7 +211,7 @@ npx shadcn@latest init
 │   └── seed/               # районы (districts.geojson), точки воздуха, источники; tools/ — скрипты сборки seed
 ├── front/
 │   ├── src/
-│   │   ├── api/            # pb-клиент, сгенерированные типы, хуки TanStack Query
+│   │   ├── api/            # pb-клиент, pocketbase-types.ts (генерируется), queryOptions + хуки по доменам
 │   │   ├── components/
 │   │   │   ├── ui/         # shadcn
 │   │   │   ├── map/        # MapLibre-слои, оверлеи, легенда
@@ -570,8 +570,9 @@ npx shadcn@latest init
 ## 13. Правила разработки
 
 ### Общие
-- TypeScript `strict`, без `any`. Типы коллекций генерировать `pocketbase-typegen` после каждой смены схемы.
-- Все запросы к API — только через хуки в `front/src/api/` (`useAirReadings`, `usePlaces`, …). Компоненты не вызывают `pb` напрямую.
+- TypeScript `strict`, без `any`. Типы коллекций — `npm run typegen` (из локальной `back/pb_data`) после каждой смены схемы; `src/api/pocketbase-types.ts` руками не правится.
+- Все запросы к API — только через хуки в `front/src/api/` (`useLatestAir`, `usePlaces`, `useReports`, …). Компоненты не вызывают `pb` напрямую. В каждом модуле `…Query()` — `queryOptions` с fetcher'ом (их же берут тесты и лоадеры), `use…` — обёртка; ключи начинаются с имени домена (`["reports", …]`), чтобы инвалидировать целиком.
+- Интеграционные тесты фронта против живого PocketBase: `PB_TEST_URL=http://127.0.0.1:8090 PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… npx vitest run src/api` (без `PB_TEST_URL` пропускаются).
 - Никаких данных в компонентах. Seed — в `back/seed/*.json`, контент — через админку.
 - Цвета, отступы, радиусы — только токены из §10.1 (Tailwind theme), без «магических» hex в компонентах.
 - Пользовательский текст никогда не рендерится как HTML. Если нужен rich text (новости) — DOMPurify.
