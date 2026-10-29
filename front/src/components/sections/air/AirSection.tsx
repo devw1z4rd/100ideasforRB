@@ -132,7 +132,7 @@ export function AirSection(section: Props) {
         </div>
       )}
 
-      <p className="mt-6 max-w-[90ch] text-xs leading-[1.5] text-muted-foreground">
+      <p className="mt-6 text-xs leading-[1.5] text-muted-foreground">
         {air.note} Период: {periods.find((p) => p.key === period)?.short}.
       </p>
     </HomeSectionShell>

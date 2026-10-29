@@ -107,9 +107,10 @@ export function TownStrip({
       </p>
 
       <div className="-mx-4 mt-2 overflow-x-auto px-4 md:mx-0 md:px-0">
+        {/* --labels — ширина колонок «город» и «дни» вместе с зазорами: от неё считается позиция подсветки дня */}
         <div
-          className="relative grid grid-cols-[96px_40px_1fr] items-center gap-x-2 gap-y-1 md:grid-cols-[128px_48px_1fr]"
-          style={{ minWidth: 160 + days.length * 3, gridTemplateRows: `repeat(${order.length}, auto)` }}
+          className="relative flex flex-col gap-0.5 [--labels:152px] md:[--labels:192px]"
+          style={{ minWidth: 160 + days.length * 3 }}
           onPointerLeave={() => {
             setHoveredPoint(null)
             onHoverDay(null)
@@ -129,16 +130,16 @@ export function TownStrip({
               onTrack={track}
             />
           ))}
+          {/* Подсветка дня — поверх клеток и вне потока, сетку строк не трогает */}
           {dayIndex >= 0 && (
             <div
               aria-hidden="true"
-              className="pointer-events-none relative col-start-3 row-[1/-1] self-stretch"
-            >
-              <div
-                className="absolute inset-y-0 outline-1 outline-foreground"
-                style={{ left: `${(dayIndex / days.length) * 100}%`, width: `${100 / days.length}%` }}
-              />
-            </div>
+              className="pointer-events-none absolute inset-y-0 rounded-[2px] bg-foreground/20"
+              style={{
+                left: `calc(var(--labels) + (100% - var(--labels)) * ${dayIndex / days.length})`,
+                width: `calc((100% - var(--labels)) / ${days.length})`,
+              }}
+            />
           )}
         </div>
       </div>
@@ -158,7 +159,7 @@ type RowProps = {
   onTrack: (e: PointerEvent<HTMLDivElement>, point: string) => void
 }
 
-// memo: наведение двигает только рамку дня, тысячи клеток (с начала года — 21 × 300) не перерисовываются
+// memo: наведение двигает только подсветку дня, тысячи клеток (с начала года — 21 × 300) не перерисовываются
 const StripRow = memo(function StripRow({
   id,
   name,
@@ -171,7 +172,13 @@ const StripRow = memo(function StripRow({
   onTrack,
 }: RowProps) {
   return (
-    <>
+    // Выбранный город — мягкий фон строки и жирное название, без рамки вокруг клеток
+    <div
+      className={cn(
+        "-mx-2 grid grid-cols-[96px_40px_1fr] items-center gap-x-2 rounded-md px-2 py-0.5 md:grid-cols-[128px_48px_1fr]",
+        selected && "bg-muted",
+      )}
+    >
       <button
         type="button"
         aria-pressed={selected}
@@ -184,15 +191,19 @@ const StripRow = memo(function StripRow({
       >
         {name}
       </button>
-      <span className="text-right text-[13px] text-muted-foreground tabular-nums">
+      <span
+        className={cn(
+          "text-right text-[13px] tabular-nums",
+          selected ? "font-semibold text-foreground" : "text-muted-foreground",
+        )}
+      >
         {air.strip.days(daysOver)}
       </span>
       <div
         className={cn(
           // Больше 90 дней — без зазоров: при 300 клетках зазоры съели бы треть ширины
-          "grid h-4 rounded-[2px]",
+          "grid h-4 overflow-hidden rounded-[2px]",
           days.length <= 90 && "gap-px",
-          selected && "outline-2 outline-offset-1 outline-foreground",
         )}
         style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
         onPointerMove={(e) => onTrack(e, id)}
@@ -211,6 +222,6 @@ const StripRow = memo(function StripRow({
           )
         })}
       </div>
-    </>
+    </div>
   )
 })
