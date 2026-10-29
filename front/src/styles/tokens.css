@@ -27,6 +27,14 @@
   --link-hover: #1f4fd1;
   --success: #4cc38a;
 
+  /* Шкала AQI (lib/aqi.ts): 0–200 — цвета макета, 201+ — стандартные цвета EPA (в макете шкала до 200) */
+  --aqi-good: #4cc38a;
+  --aqi-moderate: #f0a92e;
+  --aqi-usg: #e2583a;
+  --aqi-unhealthy: #9e2f1a;
+  --aqi-very-unhealthy: #8f3f97;
+  --aqi-hazardous: #7e0023;
+
   --radius: 8px;
   --header-h: 56px;
 }
@@ -80,6 +88,12 @@
   --color-link: var(--link);
   --color-link-hover: var(--link-hover);
   --color-success: var(--success);
+  --color-aqi-good: var(--aqi-good);
+  --color-aqi-moderate: var(--aqi-moderate);
+  --color-aqi-usg: var(--aqi-usg);
+  --color-aqi-unhealthy: var(--aqi-unhealthy);
+  --color-aqi-very-unhealthy: var(--aqi-very-unhealthy);
+  --color-aqi-hazardous: var(--aqi-hazardous);
 
   --radius-sm: 6px;
   --radius-md: var(--radius);
