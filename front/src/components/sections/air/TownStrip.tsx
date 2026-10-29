@@ -106,7 +106,9 @@ export function TownStrip({
         )}
       </p>
 
-      <div className="-mx-4 mt-2 overflow-x-auto px-4 md:mx-0 md:px-0">
+      {/* Строки с отступом 8px по бокам (фон выбранной строки) — сам скролл-контейнер шире колонки на эти 8px,
+          иначе строки вылезают за него и на десктопе появляется горизонтальный скролл */}
+      <div className="-mx-4 mt-2 overflow-x-auto px-2 md:-mx-2 md:px-0">
         {/* --labels — ширина колонок «город» и «дни» вместе с зазорами: от неё считается позиция подсветки дня */}
         <div
           className="relative flex flex-col gap-0.5 [--labels:152px] md:[--labels:192px]"
@@ -136,8 +138,8 @@ export function TownStrip({
               aria-hidden="true"
               className="pointer-events-none absolute inset-y-0 rounded-[2px] bg-foreground/20"
               style={{
-                left: `calc(var(--labels) + (100% - var(--labels)) * ${dayIndex / days.length})`,
-                width: `calc((100% - var(--labels)) / ${days.length})`,
+                left: `calc(8px + var(--labels) + (100% - var(--labels) - 16px) * ${dayIndex / days.length})`,
+                width: `calc((100% - var(--labels) - 16px) / ${days.length})`,
               }}
             />
           )}
@@ -175,7 +177,7 @@ const StripRow = memo(function StripRow({
     // Выбранный город — мягкий фон строки и жирное название, без рамки вокруг клеток
     <div
       className={cn(
-        "-mx-2 grid grid-cols-[96px_40px_1fr] items-center gap-x-2 rounded-md px-2 py-0.5 md:grid-cols-[128px_48px_1fr]",
+        "grid grid-cols-[96px_40px_1fr] items-center gap-x-2 rounded-md px-2 py-0.5 md:grid-cols-[128px_48px_1fr]",
         selected && "bg-muted",
       )}
     >
