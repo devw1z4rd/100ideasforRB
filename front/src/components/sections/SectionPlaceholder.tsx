@@ -1,63 +1,19 @@
-import { useReducedMotion } from "motion/react"
-import * as m from "motion/react-m"
 import type { CSSProperties } from "react"
-import { Container } from "@/components/layout/Container"
+import { HomeSectionShell } from "@/components/sections/HomeSectionShell"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { HomeSection } from "@/content/home"
-import { cn } from "@/lib/utils"
 
 type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "variant" | "minHeight">
 
-// Анимируется внутренний m.div, а не сам якорь: transform на <section> смещает позицию при scrollIntoView.
-// Появление при скролле один раз (§10.11); при prefers-reduced-motion анимации нет вовсе
-// (MotionConfig гасит только transform, но не opacity — поэтому initial отключаем сами)
-const reveal = {
-  initial: { opacity: 0, y: 8 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "0px 0px -10% 0px" },
-  transition: { duration: 0.4, ease: "easeOut" },
-} as const
-
-/** Секция-якорь главной до своего подпроекта: заголовок + скелетон зарезервированной высоты. */
-export function SectionPlaceholder({ id, eyebrow, title, variant, minHeight }: Props) {
-  const titleId = `${id}-title`
-  const reduceMotion = useReducedMotion()
-  const content = (
-    <>
-      <p className="text-[13px] font-medium text-muted-foreground">{eyebrow}</p>
-      <h2
-        id={titleId}
-        tabIndex={-1}
-        className="mt-1 font-heading text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-semibold tracking-[-0.03em] outline-none"
-      >
-        {title}
-      </h2>
+/** Секция-якорь главной до своего подпроекта: скелетон зарезервированной высоты в общей оболочке. */
+export function SectionPlaceholder({ minHeight, ...section }: Props) {
+  return (
+    <HomeSectionShell {...section}>
       <Skeleton
-        className="mt-6 h-[calc(var(--placeholder-h)/2)] w-full rounded-xl motion-reduce:animate-none md:h-(--placeholder-h)"
+        className="h-[calc(var(--placeholder-h)/2)] w-full rounded-xl motion-reduce:animate-none md:h-(--placeholder-h)"
         style={{ "--placeholder-h": `${minHeight}px` } as CSSProperties}
       />
       <p className="mt-3 text-[13px] text-muted-foreground">Раздел в разработке</p>
-    </>
-  )
-
-  return (
-    <section
-      id={id}
-      aria-labelledby={titleId}
-      className={cn(
-        "scroll-mt-(--header-h) py-12 md:py-16",
-        variant === "bleed" && "dark bg-background text-foreground",
-      )}
-    >
-      <m.div {...reveal} initial={reduceMotion ? false : reveal.initial}>
-        <Container>
-          {variant === "card" ? (
-            <div className="dark rounded-2xl bg-background p-6 text-foreground md:p-8">{content}</div>
-          ) : (
-            content
-          )}
-        </Container>
-      </m.div>
-    </section>
+    </HomeSectionShell>
   )
 }

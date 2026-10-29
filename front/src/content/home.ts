@@ -1,5 +1,8 @@
 export type SectionId = "map" | "air" | "enterprises" | "water"
 
+/** id заголовка секции: на него ссылаются aria-labelledby и фокус после перехода из MobileNav. */
+export const sectionHeadingId = (id: SectionId) => `${id}-title`
+
 export type HomeSection = {
   id: SectionId
   navLabel: string

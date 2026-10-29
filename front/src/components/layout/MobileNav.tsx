@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import type { SectionId } from "@/content/home"
+import { sectionHeadingId, type SectionId } from "@/content/home"
 import { anchors, cta, login, pages } from "@/content/nav"
 import { cn } from "@/lib/utils"
 
@@ -56,7 +56,7 @@ export function MobileNav({ className, activeSection }: Props) {
           navigate({ pathname: "/", hash: target })
           // Фокус — на заголовок секции, чтобы клавиатура и скринридер не потеряли место (а не на <body>).
           // Навигация завершается асинхронно, поэтому ждём появления заголовка (до ~1 с)
-          const headingId = `${target}-title`
+          const headingId = sectionHeadingId(target)
           let attempts = 0
           const focusHeading = () => {
             const heading = document.getElementById(headingId)
