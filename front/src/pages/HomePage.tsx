@@ -1,13 +1,26 @@
-import { Container } from "@/components/layout/Container"
-import { site } from "@/content/nav"
+import { useEffect } from "react"
+import { useLocation } from "react-router"
+import { Hero } from "@/components/sections/Hero"
+import { SectionPlaceholder } from "@/components/sections/SectionPlaceholder"
+import { homeSections } from "@/content/home"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
 export function HomePage() {
   useDocumentTitle()
+  const { hash, key } = useLocation()
+
+  // Прокрутка к якорю после навигации: /#air с другой страницы, пункты MobileNav, повторный клик по якорю
+  useEffect(() => {
+    if (!hash) return
+    document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView()
+  }, [hash, key])
 
   return (
-    <Container className="py-24">
-      <h1 className="font-heading text-5xl font-semibold tracking-[-0.04em]">{site.title}</h1>
-    </Container>
+    <>
+      <Hero />
+      {homeSections.map((section) => (
+        <SectionPlaceholder key={section.id} {...section} />
+      ))}
+    </>
   )
 }
