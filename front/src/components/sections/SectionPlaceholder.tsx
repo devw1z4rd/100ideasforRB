@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 
 type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "variant" | "minHeight">
 
+// Анимируется внутренний m.div, а не сам якорь: transform на <section> смещает позицию при scrollIntoView.
 // Появление при скролле один раз (§10.11); при prefers-reduced-motion его гасит MotionConfig в RootLayout
 const reveal = {
   initial: { opacity: 0, y: 8 },
@@ -36,22 +37,23 @@ export function SectionPlaceholder({ id, eyebrow, title, variant, minHeight }: P
   )
 
   return (
-    <m.section
+    <section
       id={id}
       aria-labelledby={titleId}
       className={cn(
         "scroll-mt-(--header-h) py-12 md:py-16",
         variant === "bleed" && "dark bg-background text-foreground",
       )}
-      {...reveal}
     >
-      <Container>
-        {variant === "card" ? (
-          <div className="dark rounded-2xl bg-background p-6 text-foreground md:p-8">{content}</div>
-        ) : (
-          content
-        )}
-      </Container>
-    </m.section>
+      <m.div {...reveal}>
+        <Container>
+          {variant === "card" ? (
+            <div className="dark rounded-2xl bg-background p-6 text-foreground md:p-8">{content}</div>
+          ) : (
+            content
+          )}
+        </Container>
+      </m.div>
+    </section>
   )
 }
