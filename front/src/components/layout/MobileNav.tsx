@@ -2,7 +2,15 @@ import { Menu } from "lucide-react"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import type { SectionId } from "@/content/home"
 import { anchors, cta, login, pages } from "@/content/nav"
 
@@ -34,6 +42,7 @@ export function MobileNav({ className }: { className?: string }) {
       >
         <SheetHeader>
           <SheetTitle>Навигация</SheetTitle>
+          <SheetDescription className="sr-only">Разделы главной и страницы сайта</SheetDescription>
         </SheetHeader>
         <nav aria-label="Навигация по сайту" className="flex flex-col gap-6 px-4 pb-6">
           <SheetClose asChild>
