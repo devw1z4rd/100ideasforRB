@@ -4,6 +4,7 @@ import { AirSection } from "@/components/sections/air/AirSection"
 import { EnterprisesSection } from "@/components/sections/enterprises/EnterprisesSection"
 import { Hero } from "@/components/sections/Hero"
 import { MapSection } from "@/components/sections/map/MapSection"
+import { WaterSection } from "@/components/sections/water/WaterSection"
 import { SectionPlaceholder } from "@/components/sections/SectionPlaceholder"
 import { homeSections } from "@/content/home"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
@@ -34,6 +35,8 @@ export function HomePage() {
           <AirSection key={section.id} {...section} />
         ) : section.id === "enterprises" ? (
           <EnterprisesSection key={section.id} {...section} />
+        ) : section.id === "water" ? (
+          <WaterSection key={section.id} {...section} />
         ) : (
           <SectionPlaceholder key={section.id} {...section} />
         ),

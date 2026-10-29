@@ -3,6 +3,7 @@ import { Container } from "@/components/layout/Container"
 import { air } from "@/content/air"
 import { dataPage } from "@/content/data"
 import { enterprises } from "@/content/enterprises"
+import { water } from "@/content/water"
 import { hero } from "@/content/hero"
 import { AQI_SCALE, type AqiCategory } from "@/lib/aqi"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
@@ -44,6 +45,7 @@ export function DataPage() {
               source,
               usedOn: dataPage.sources.enterprisesUsedOn,
             })),
+            ...water.sources.map((source) => ({ source, usedOn: dataPage.sources.waterUsedOn })),
           ].map(({ source, usedOn }) => (
             <li
               key={`${source.label}-${source.url}`}
