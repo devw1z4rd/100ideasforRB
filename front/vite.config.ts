@@ -21,6 +21,10 @@ export default defineConfig({
               test: /node_modules[\\/](react|react-dom|react-router|scheduler)[\\/]/,
             },
             {
+              name: "data",
+              test: /node_modules[\\/](pocketbase|@tanstack)[\\/]/,
+            },
+            {
               name: "motion",
               test: /node_modules[\\/](motion|motion-dom|motion-utils|framer-motion)[\\/]/,
             },
