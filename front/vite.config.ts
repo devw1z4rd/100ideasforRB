@@ -11,6 +11,8 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "./src") } },
   server: { proxy: { "/api": pocketbase, "/_/": pocketbase } },
   build: {
+    // MapLibre (~1 МБ, ~300 КБ gzip) — отдельный ленивый чанк карты, грузится при подходе к ней; остальное заметно меньше
+    chunkSizeWarningLimit: 1200,
     rolldownOptions: {
       output: {
         // Вендорные библиотеки — отдельными чанками: кэшируются между деплоями, главный чанк < 500 kB

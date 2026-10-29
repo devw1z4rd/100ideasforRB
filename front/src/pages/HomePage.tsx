@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useLocation } from "react-router"
 import { AirSection } from "@/components/sections/air/AirSection"
 import { Hero } from "@/components/sections/Hero"
+import { MapSection } from "@/components/sections/map/MapSection"
 import { SectionPlaceholder } from "@/components/sections/SectionPlaceholder"
 import { homeSections } from "@/content/home"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
@@ -26,7 +27,9 @@ export function HomePage() {
     <>
       <Hero />
       {homeSections.map((section) =>
-        section.id === "air" ? (
+        section.id === "map" ? (
+          <MapSection key={section.id} {...section} />
+        ) : section.id === "air" ? (
           <AirSection key={section.id} {...section} />
         ) : (
           <SectionPlaceholder key={section.id} {...section} />

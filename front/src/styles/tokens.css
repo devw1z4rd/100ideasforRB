@@ -1,8 +1,11 @@
 /*
  * Токены дизайна (CLAUDE.md §10.1). Значения сняты с макета temp-design/Main.dc.html.
  * Общие роли названы по схеме shadcn (--background, --foreground, --border…), чтобы компоненты ui/ брали их без правок.
+ *
+ * .light возвращает светлые роли внутри .dark — белая карточка поверх тёмной карты (§10.4).
  */
-:root {
+:root,
+.light {
   --background: #ffffff;
   --foreground: #121413;
   --card: #ffffff;
@@ -39,6 +42,15 @@
   --level-ok: var(--aqi-good);
   --level-elevated: var(--aqi-moderate);
   --level-high: var(--aqi-usg);
+
+  /* Карта (§10.4) — всегда тёмная, значения сняты с макета. MapLibre читает их через getComputedStyle */
+  --map-bg: #141816;
+  --map-land: #232825;
+  --map-outline: #f2f3f1;
+  --map-district: #3a413d;
+  --map-river: #4e93a8;
+  --map-river-label: #7fb6c7;
+  --focus: #336bf1;
 
   --radius: 8px;
   --header-h: 56px;
@@ -102,6 +114,8 @@
   --color-level-ok: var(--level-ok);
   --color-level-elevated: var(--level-elevated);
   --color-level-high: var(--level-high);
+  --color-focus: var(--focus);
+  --color-map-river-label: var(--map-river-label);
 
   --radius-sm: 6px;
   --radius-md: var(--radius);
