@@ -1,5 +1,6 @@
-import { queryOptions, useQuery } from "@tanstack/react-query"
-import { parsePbDate } from "./dates"
+import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query"
+import type { DailyRow } from "@/lib/airStats"
+import { parsePbDate, pbDay } from "./dates"
 import { pb } from "./pb"
 import type { AirDailyResponse, AirReadingsResponse } from "./pocketbase-types"
 
@@ -49,21 +50,39 @@ export const airUpdatedAtQuery = () =>
     refetchInterval: 5 * 60_000,
   })
 
-/** Суточные агрегаты по местным (минским) дням from…to включительно, "YYYY-MM-DD". Все точки — агрегирует вызывающий. */
+const DAILY_FIELDS = "point,date,aqi_max,pm2_5_avg,pm10_avg,no2_avg,so2_avg"
+
+/**
+ * Суточные средние по местным (минским) дням from…to включительно, "YYYY-MM-DD", по всем точкам.
+ * Только поля для секции «Воздух»: с начала года это ~6 тыс. строк.
+ */
 export const airDailyQuery = (from: string, to: string) =>
   queryOptions({
     queryKey: ["air", "daily", from, to],
-    queryFn: () =>
-      pb.collection("air_daily").getFullList<AirDailyResponse>({
+    queryFn: async (): Promise<DailyRow[]> => {
+      const rows = await pb.collection("air_daily").getFullList<AirDailyResponse>({
         filter: pb.filter("date >= {:from} && date <= {:to}", {
           from: `${from} 00:00:00.000Z`,
           to: `${to} 00:00:00.000Z`,
         }),
         sort: "date",
+        fields: DAILY_FIELDS,
         batch: 1000,
-      }),
+      })
+      return rows.map((r) => ({
+        point: r.point,
+        day: pbDay(r.date),
+        aqi_max: r.aqi_max ?? 0,
+        pm2_5_avg: r.pm2_5_avg ?? 0,
+        pm10_avg: r.pm10_avg ?? 0,
+        no2_avg: r.no2_avg ?? 0,
+        so2_avg: r.so2_avg ?? 0,
+      }))
+    },
   })
 
 export const useLatestAir = () => useQuery(latestAirQuery())
 export const useAirUpdatedAt = () => useQuery(airUpdatedAtQuery())
-export const useAirDaily = (from: string, to: string) => useQuery(airDailyQuery(from, to))
+// При смене периода старые данные остаются на экране, пока грузятся новые — без мигания скелетона
+export const useAirDaily = (from: string, to: string) =>
+  useQuery({ ...airDailyQuery(from, to), placeholderData: keepPreviousData })

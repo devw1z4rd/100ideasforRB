@@ -69,7 +69,7 @@ describe.skipIf(!url)("api against PocketBase", () => {
 
     const daily = await fetchQuery(airDailyQuery(day(-7), day(-1)))
     expect(daily).toHaveLength(21 * 7)
-    expect(daily[0].date.slice(0, 10)).toBe(day(-7))
+    expect(daily[0].day).toBe(day(-7))
   })
 
   it("reports: create as a user, moderate, history and visibility", async () => {

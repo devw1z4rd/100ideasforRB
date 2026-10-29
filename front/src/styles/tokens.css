@@ -35,6 +35,11 @@
   --aqi-very-unhealthy: #8f3f97;
   --aqi-hazardous: #7e0023;
 
+  /* Уровень относительно нормы ВОЗ (секция «Воздух»): до нормы / до двух норм / выше — те же цвета, что у AQI */
+  --level-ok: var(--aqi-good);
+  --level-elevated: var(--aqi-moderate);
+  --level-high: var(--aqi-usg);
+
   --radius: 8px;
   --header-h: 56px;
 }
@@ -94,6 +99,9 @@
   --color-aqi-unhealthy: var(--aqi-unhealthy);
   --color-aqi-very-unhealthy: var(--aqi-very-unhealthy);
   --color-aqi-hazardous: var(--aqi-hazardous);
+  --color-level-ok: var(--level-ok);
+  --color-level-elevated: var(--level-elevated);
+  --color-level-high: var(--level-high);
 
   --radius-sm: 6px;
   --radius-md: var(--radius);

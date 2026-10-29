@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { useLocation } from "react-router"
+import { AirSection } from "@/components/sections/air/AirSection"
 import { Hero } from "@/components/sections/Hero"
 import { SectionPlaceholder } from "@/components/sections/SectionPlaceholder"
 import { homeSections } from "@/content/home"
@@ -24,9 +25,13 @@ export function HomePage() {
   return (
     <>
       <Hero />
-      {homeSections.map((section) => (
-        <SectionPlaceholder key={section.id} {...section} />
-      ))}
+      {homeSections.map((section) =>
+        section.id === "air" ? (
+          <AirSection key={section.id} {...section} />
+        ) : (
+          <SectionPlaceholder key={section.id} {...section} />
+        ),
+      )}
     </>
   )
 }
