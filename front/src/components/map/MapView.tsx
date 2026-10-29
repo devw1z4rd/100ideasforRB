@@ -134,6 +134,28 @@ export default function MapView({
     mapRef.current?.fitBounds(text.bounds, { padding, duration: 0 })
   }, [padding])
 
+  // Сменился город (стрелки в карточке, клик по району, выбор в разделе «Воздух»): если карта приближена или город
+  // вне видимой части — плавно ведём к нему, сохраняя масштаб. На обзоре всей области все города и так видны.
+  const centeredId = useRef(selectedId)
+  useEffect(() => {
+    const m = mapRef.current
+    if (!m || selectedId === centeredId.current) return
+    centeredId.current = selectedId
+    const town = towns.find((t) => t.id === selectedId)
+    if (!town) return
+    const overviewZoom = m.cameraForBounds(text.bounds, { padding })?.zoom ?? 0
+    const at = m.project([town.lon, town.lat])
+    const { width, height } = m.getContainer().getBoundingClientRect()
+    const inView =
+      at.x >= padding.left &&
+      at.x <= width - padding.right &&
+      at.y >= padding.top &&
+      at.y <= height - padding.bottom
+    if (m.getZoom() > overviewZoom + 0.5 || !inView) {
+      m.easeTo({ center: [town.lon, town.lat], padding, duration: reducedMotion() ? 0 : 700 })
+    }
+  }, [selectedId, towns, padding])
+
   useImperativeHandle(apiRef, () => ({
     zoomTo: ({ lon, lat }) =>
       mapRef.current?.flyTo({
