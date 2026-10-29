@@ -3,6 +3,7 @@ import type { RouteHandle } from "@/lib/routeTitle"
 import { HomePage } from "@/pages/HomePage"
 import { NotFoundPage } from "@/pages/NotFoundPage"
 import { RootLayout } from "@/pages/RootLayout"
+import { RouteErrorPage } from "@/pages/RouteErrorPage"
 import { StubPage } from "@/pages/StubPage"
 
 // Страницы CLAUDE.md §11, которые появятся в следующих подпроектах
@@ -25,14 +26,22 @@ const stubs: ReadonlyArray<readonly [path: string, title: string]> = [
 export const routes: RouteObject[] = [
   {
     element: <RootLayout />,
+    // Страховка на случай, если упал сам layout; обычные ошибки страниц ловит дочерний errorElement
+    errorElement: <RouteErrorPage />,
     children: [
-      { index: true, element: <HomePage /> },
-      ...stubs.map(([path, title]) => ({
-        path,
-        element: <StubPage />,
-        handle: { title } satisfies RouteHandle,
-      })),
-      { path: "*", element: <NotFoundPage /> },
+      {
+        // Безпутевой маршрут: ошибка страницы рендерится внутри layout — шапка и футер остаются
+        errorElement: <RouteErrorPage />,
+        children: [
+          { index: true, element: <HomePage /> },
+          ...stubs.map(([path, title]) => ({
+            path,
+            element: <StubPage />,
+            handle: { title } satisfies RouteHandle,
+          })),
+          { path: "*", element: <NotFoundPage /> },
+        ],
+      },
     ],
   },
 ]

@@ -1,5 +1,5 @@
 import { Menu } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,15 +13,32 @@ import {
 } from "@/components/ui/sheet"
 import type { SectionId } from "@/content/home"
 import { anchors, cta, login, pages } from "@/content/nav"
+import { cn } from "@/lib/utils"
 
 const item = "block rounded-md px-3 py-2 text-[15px] font-medium transition-colors hover:bg-muted"
 const groupLabel = "px-3 pb-1 text-xs font-medium text-muted-foreground"
 
+type Props = {
+  className?: string
+  /** Текущая секция главной (из useActiveSection в шапке); null — вне главной или над секциями */
+  activeSection: string | null
+}
+
 /** Навигация для экранов < 1024px: Sheet с якорями главной, страницами и входом. */
-export function MobileNav({ className }: { className?: string }) {
+export function MobileNav({ className, activeSection }: Props) {
   const [open, setOpen] = useState(false)
   const [target, setTarget] = useState<SectionId | null>(null)
   const navigate = useNavigate()
+
+  // Шторка нужна только до lg (64rem = 1024px): при расширении окна закрываем её — триггер уже скрыт
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 64rem)")
+    const closeOnDesktop = () => {
+      if (desktop.matches) setOpen(false)
+    }
+    desktop.addEventListener("change", closeOnDesktop)
+    return () => desktop.removeEventListener("change", closeOnDesktop)
+  }, [])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -66,7 +83,8 @@ export function MobileNav({ className }: { className?: string }) {
               <a
                 key={a.id}
                 href={`/#${a.id}`}
-                className={item}
+                aria-current={a.id === activeSection ? "location" : undefined}
+                className={cn(item, "aria-[current=location]:bg-muted")}
                 onClick={(event) => {
                   // Клик с модификатором — штатное поведение ссылки (новая вкладка/окно)
                   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)

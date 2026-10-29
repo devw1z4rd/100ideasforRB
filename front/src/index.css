@@ -5,7 +5,12 @@
 @import "@fontsource-variable/inter-tight";
 @import "./styles/tokens.css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * dark: срабатывает и на самом элементе с .dark, и внутри него.
+ * Radix-порталы (Select, Popover, DropdownMenu, Tooltip) рендерятся в <body>, вне тёмного блока:
+ * их Content из тёмных секций получает className="dark".
+ */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   * {

@@ -109,7 +109,7 @@ export function SiteHeader() {
           <Button asChild size="lg" variant="ghost" className="hidden xl:inline-flex">
             <Link to={login.to}>{login.label}</Link>
           </Button>
-          <MobileNav className="lg:hidden" />
+          <MobileNav className="lg:hidden" activeSection={onHome ? active : null} />
         </div>
       </Container>
     </header>
