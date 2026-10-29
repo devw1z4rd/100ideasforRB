@@ -6,6 +6,8 @@ import { QueryClient } from "@tanstack/react-query"
 import PocketBase from "pocketbase"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import { airDailyQuery, airUpdatedAtQuery, latestAirQuery } from "./air"
+import { regionsForYear } from "@/lib/emissions"
+import { emissionStatsQuery } from "./emissions"
 import { login, logout, register } from "./auth"
 import { pb } from "./pb"
 import type { TypedPocketBase } from "./pocketbase-types"
@@ -70,6 +72,17 @@ describe.skipIf(!url)("api against PocketBase", () => {
     const daily = await fetchQuery(airDailyQuery(day(-7), day(-1)))
     expect(daily).toHaveLength(21 * 7)
     expect(daily[0].day).toBe(day(-7))
+  })
+
+  it("emissions: Belstat seed reproduces the published oblast figures", async () => {
+    const rows = await fetchQuery(emissionStatsQuery())
+    const gomel = (year: number) =>
+      regionsForYear(rows, year).regions.find((r) => r.territory === "Гомельская область")!
+    // Опубликовано: 108,2 тыс. т (2023, стратегия области), 95,078 (2024, бюллетень Минприроды), 80 (2025, буклет Белстата)
+    expect(gomel(2023).emitted).toBeCloseTo(108.2, 1)
+    expect(gomel(2024).emitted).toBeCloseTo(95.08, 1)
+    expect(Math.round(gomel(2025).emitted)).toBe(80)
+    expect(gomel(2025).rank).toBe(2)
   })
 
   it("reports: create as a user, moderate, history and visibility", async () => {

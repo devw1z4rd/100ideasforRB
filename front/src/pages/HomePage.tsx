@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { useLocation } from "react-router"
 import { AirSection } from "@/components/sections/air/AirSection"
+import { EnterprisesSection } from "@/components/sections/enterprises/EnterprisesSection"
 import { Hero } from "@/components/sections/Hero"
 import { MapSection } from "@/components/sections/map/MapSection"
 import { SectionPlaceholder } from "@/components/sections/SectionPlaceholder"
@@ -31,6 +32,8 @@ export function HomePage() {
           <MapSection key={section.id} {...section} />
         ) : section.id === "air" ? (
           <AirSection key={section.id} {...section} />
+        ) : section.id === "enterprises" ? (
+          <EnterprisesSection key={section.id} {...section} />
         ) : (
           <SectionPlaceholder key={section.id} {...section} />
         ),

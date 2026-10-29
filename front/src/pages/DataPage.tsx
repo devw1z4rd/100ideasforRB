@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { Container } from "@/components/layout/Container"
 import { air } from "@/content/air"
 import { dataPage } from "@/content/data"
+import { enterprises } from "@/content/enterprises"
 import { hero } from "@/content/hero"
 import { AQI_SCALE, type AqiCategory } from "@/lib/aqi"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
@@ -39,6 +40,10 @@ export function DataPage() {
           {[
             ...hero.factsSources.map((source) => ({ source, usedOn: dataPage.sources.usedOn })),
             ...air.sources.map((source) => ({ source, usedOn: dataPage.sources.airUsedOn })),
+            ...enterprises.sourcesList.map((source) => ({
+              source,
+              usedOn: dataPage.sources.enterprisesUsedOn,
+            })),
           ].map(({ source, usedOn }) => (
             <li
               key={`${source.label}-${source.url}`}
