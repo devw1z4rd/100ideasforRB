@@ -1,6 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 // Гражданские обращения (CLAUDE.md §4 M3/M6, §8): кто какие поля меняет, допустимые переходы статусов,
-// район по координатам и история статусов в report_events.
+// район по полигонам districts и история статусов в report_events.
 // API rules пускают к записи (кто вообще может создать/изменить), хуки решают, что именно можно изменить.
 
 onRecordCreateRequest((e) => {
@@ -13,11 +13,10 @@ onRecordCreateRequest((e) => {
     r.set("author", e.auth.id)
     r.set("status", "new")
     for (const f of ["moderator_comment", "ai_category", "ai_confidence", "duplicate_of"]) r.set(f, null)
-    lib.assertInOblast(r)
   } else if (!r.getString("status")) {
     r.set("status", "new")
   }
-  r.set("district", lib.nearestDistrictId(e.app, r.get("location")))
+  lib.assignDistrict(e.app, r)
 
   e.app.runInTransaction((txApp) => {
     e.app = txApp
@@ -46,7 +45,7 @@ onRecordUpdateRequest((e) => {
     throw new BadRequestError("Обращение не может быть дублем самого себя.")
   }
   if (lib.bodyFields(e).includes("location")) {
-    r.set("district", lib.nearestDistrictId(e.app, r.get("location")))
+    lib.assignDistrict(e.app, r)
   }
 
   e.app.runInTransaction((txApp) => {

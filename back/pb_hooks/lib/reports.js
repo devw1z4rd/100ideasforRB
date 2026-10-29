@@ -15,10 +15,6 @@ const TRANSITIONS = {
 const AUTHOR_FIELDS = ["description"]
 const MODERATOR_FIELDS = ["status", "moderator_comment", "duplicate_of"]
 
-// Грубая рамка Гомельской области с запасом ~10 км. Точная проверка — по полигону области,
-// когда границы (§9) появятся в back/seed.
-const OBLAST_BBOX = { minLat: 51.2, maxLat: 53.4, minLon: 27.2, maxLon: 32.0 }
-
 function role(e) {
   if (e.hasSuperuserAuth()) return "superuser"
   return (e.auth && e.auth.collection().name === "users" && e.auth.getString("role")) || ""
@@ -34,33 +30,15 @@ function assertOnlyFields(e, allowed) {
   if (extra.length) throw new ForbiddenError("Нельзя изменить поля: " + extra.join(", "))
 }
 
-function assertInOblast(record) {
-  const p = record.get("location")
-  const b = OBLAST_BBOX
-  if (!(p.lat >= b.minLat && p.lat <= b.maxLat && p.lon >= b.minLon && p.lon <= b.maxLon)) {
+// Район — полигон, в который попала точка; вне всех районов — значит, вне области
+function assignDistrict(app, record) {
+  const district = require(`${__hooks}/lib/geo.js`).districtAt(app, record.get("location"))
+  if (!district) {
     throw new BadRequestError("Точка обращения должна быть в Гомельской области.", {
       location: new ValidationError("outside_oblast", "Точка вне Гомельской области."),
     })
   }
-}
-
-// Ближайший райцентр по прямой. Приближение: у границ районов может ошибиться — заменить
-// на попадание в полигон района, когда districts.geojson появится в back/seed.
-function nearestDistrictId(app, point) {
-  let bestId = ""
-  let best = Infinity
-  for (const d of app.findAllRecords("districts")) {
-    const c = d.get("center")
-    if (!c || (c.lat === 0 && c.lon === 0)) continue
-    const dLat = c.lat - point.lat
-    const dLon = (c.lon - point.lon) * Math.cos((point.lat * Math.PI) / 180)
-    const dist = dLat * dLat + dLon * dLon
-    if (dist < best) {
-      best = dist
-      bestId = d.id
-    }
-  }
-  return bestId
+  record.set("district", district)
 }
 
 function writeEvent(app, report, fromStatus, actorRole, auth, comment) {
@@ -81,7 +59,6 @@ module.exports = {
   role,
   bodyFields,
   assertOnlyFields,
-  assertInOblast,
-  nearestDistrictId,
+  assignDistrict,
   writeEvent,
 }

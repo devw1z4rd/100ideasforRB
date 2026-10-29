@@ -1,5 +1,5 @@
 // Проверка API rules и хуков (CLAUDE.md §8): запросы от анонима, пользователя, модератора и админа.
-// Нужен запущенный PocketBase с миграциями и хуками из back/:
+// Нужен запущенный PocketBase с миграциями, хуками и справочниками из back/ (`pocketbase seed`):
 //   PB_URL=http://127.0.0.1:8090 PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… node --test back/tests/rules.test.mjs
 // Тест создаёт свои записи с уникальными именами и удаляет их в конце.
 import { after, before, describe, test } from "node:test";
@@ -53,14 +53,9 @@ const GOMEL = { lat: 52.4345, lon: 30.9754 };
 
 before(async () => {
   su.token = await login("_superusers", process.env.PB_SUPERUSER_EMAIL, process.env.PB_SUPERUSER_PASSWORD);
-  for (const [name, center] of [
-    [`Тест-Гомель-${RUN}`, GOMEL],
-    [`Тест-Мозырь-${RUN}`, { lat: 52.0495, lon: 29.2456 }],
-  ]) {
-    const d = await must(su.token, "POST", "/api/collections/districts/records", { name, center });
-    created.push(["districts", d.id]);
-    ids[name.split("-")[1]] = d.id;
-  }
+  const districts = await must(null, "GET", "/api/collections/districts/records?perPage=100&fields=id,name");
+  for (const d of districts.items) ids[d.name] = d.id;
+  assert.ok(ids["г. Гомель"] && ids["Гомельский"], "справочник районов не загружен: pocketbase seed");
   await createUser("author");
   await createUser("other");
   await createUser("moder", "moderator");
@@ -114,9 +109,21 @@ describe("reports", () => {
     assert.equal(res.status, 400);
   });
 
-  test("автор и статус задаёт сервер, район — по ближайшему райцентру", async () => {
+  test("район — по полигону: город отдельно от Гомельского района", async () => {
+    for (const [location, district] of [
+      [{ lat: 52.3143, lon: 30.9933 }, "Гомельский"],
+      [{ lat: 52.04162, lon: 29.21631 }, "Мозырский"],
+      [{ lat: 51.79067, lon: 30.26709 }, "Брагинский"],
+    ]) {
+      const r = await must(tok.author, "POST", reportsUrl, { location, category: "smoke", description: "проверка района" });
+      created.push(["reports", r.id]);
+      assert.equal(r.district, ids[district], district);
+    }
+  });
+
+  test("автор и статус задаёт сервер", async () => {
     report = await must(tok.author, "POST", reportsUrl, {
-      location: { lat: 52.45, lon: 30.9 },
+      location: GOMEL,
       category: "dump",
       description: "Свалка у дороги",
       author: ids.other,
@@ -127,7 +134,7 @@ describe("reports", () => {
     assert.equal(report.author, ids.author);
     assert.equal(report.status, "new");
     assert.equal(report.moderator_comment, "");
-    assert.equal(report.district, ids["Гомель"]);
+    assert.equal(report.district, ids["г. Гомель"]);
   });
 
   test("новое обращение видят автор и модератор, но не аноним и не другой пользователь", async () => {
