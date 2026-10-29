@@ -24,25 +24,28 @@ const KEEP_HOURLY_DAYS = 90
 const pbDate = (ms) => new Date(ms).toISOString().replace("T", " ")
 
 // Забирает почасовые значения по всем активным точкам и обновляет air_readings (upsert по point + ts).
+// range — параметры периода Open-Meteo: "past_days=1&forecast_days=5" или "start_date=…&end_date=…".
 // Час, где Open-Meteo вернул null хоть по одной переменной, пропускается: number-поле PocketBase
 // не хранит null, а 0 выглядел бы как чистый воздух.
-function fetchReadings(app, pastDays, forecastDays) {
+function fetchReadings(app, range) {
   const points = app.findRecordsByFilter("air_points", "active = true", "name", 0, 0)
   if (!points.length) return { points: 0, saved: 0, skipped: 0 }
 
   const url =
     `${API_URL}?latitude=${points.map((p) => p.getFloat("lat")).join(",")}` +
     `&longitude=${points.map((p) => p.getFloat("lon")).join(",")}` +
-    `&hourly=${Object.values(VARS).join(",")}&past_days=${pastDays}&forecast_days=${forecastDays}&timeformat=unixtime`
+    `&hourly=${Object.values(VARS).join(",")}&${range}&timeformat=unixtime`
   const res = $http.send({ url, method: "GET", timeout: 60 })
   if (res.statusCode !== 200) throw new Error(`open-meteo ${res.statusCode}: ${toString(res.body, 500)}`)
   const series = points.length === 1 ? [res.json] : res.json
   if (!Array.isArray(series) || series.length !== points.length) throw new Error("open-meteo: число рядов не совпадает с числом точек")
 
   const now = Date.now()
-  const from = pbDate(series[0].hourly.time[0] * 1000)
+  const times = series[0].hourly.time
+  const from = pbDate(times[0] * 1000)
+  const to = pbDate(times[times.length - 1] * 1000)
   const existing = {}
-  for (const r of app.findRecordsByFilter("air_readings", "ts >= {:from}", "", 0, 0, { from })) {
+  for (const r of app.findRecordsByFilter("air_readings", "ts >= {:from} && ts <= {:to}", "", 0, 0, { from, to })) {
     existing[r.getString("point") + "|" + r.getDateTime("ts").string()] = r
   }
 
@@ -129,9 +132,32 @@ function pruneHourly(app) {
   return app.db().newQuery("DELETE FROM air_readings WHERE ts < {:cut}").bind({ cut }).execute().rowsAffected()
 }
 
+// История с даты since ("YYYY-MM-DD") по сегодня: почасовые кусками по месяцу (Open-Meteo считает длинные
+// запросы как несколько), затем air_daily за весь период и чистка почасовых старше 90 дней.
+// Так история проходит ту же агрегацию, что и ежедневный cron.
+function backfill(app, since) {
+  const today = minskDay(0)
+  let saved = 0
+  let skipped = 0
+  for (let start = since; start <= today; ) {
+    const endMs = Math.min(Date.parse(start + "T00:00:00Z") + 30 * 86400000, Date.parse(today + "T00:00:00Z"))
+    const end = new Date(endMs).toISOString().slice(0, 10)
+    // Местные сутки начинаются в 21:00 UTC накануне — захватить день раньше
+    const from = new Date(Date.parse(start + "T00:00:00Z") - 86400000).toISOString().slice(0, 10)
+    const r = fetchReadings(app, `start_date=${from}&end_date=${end}`)
+    saved += r.saved
+    skipped += r.skipped
+    start = new Date(endMs + 86400000).toISOString().slice(0, 10)
+  }
+  const forecast = fetchReadings(app, "past_days=1&forecast_days=5")
+  const daily = rollupDaily(app, since, today)
+  const pruned = pruneHourly(app)
+  return { saved: saved + forecast.saved, skipped: skipped + forecast.skipped, days: daily.days, rows: daily.rows, pruned }
+}
+
 // "YYYY-MM-DD" местной (минской) даты со сдвигом на shiftDays
 function minskDay(shiftDays) {
   return new Date(Date.now() + MINSK_OFFSET_MS + shiftDays * 86400000).toISOString().slice(0, 10)
 }
 
-module.exports = { fetchReadings, rollupDaily, pruneHourly, minskDay, KEEP_HOURLY_DAYS }
+module.exports = { fetchReadings, backfill, rollupDaily, pruneHourly, minskDay, KEEP_HOURLY_DAYS }

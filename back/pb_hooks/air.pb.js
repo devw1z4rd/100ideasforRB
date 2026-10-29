@@ -5,7 +5,7 @@
 // Каждый час в :05 — сутки назад (уточнённые модельные значения) и прогноз на 5 дней
 cronAdd("air_fetch", "5 * * * *", () => {
   const air = require(`${__hooks}/lib/air.js`)
-  const r = air.fetchReadings($app, 1, 5)
+  const r = air.fetchReadings($app, "past_days=1&forecast_days=5")
   $app.logger().info("air_fetch", "points", r.points, "saved", r.saved, "skipped", r.skipped)
 })
 
@@ -17,16 +17,18 @@ cronAdd("air_daily", "20 21 * * *", () => {
   $app.logger().info("air_daily", "days", r.days, "rows", r.rows, "pruned", pruned)
 })
 
-// Первичное наполнение после деплоя: `pocketbase air-backfill` — 90 дней истории, прогноз и air_daily за них
+// Первичное наполнение после деплоя: `pocketbase air-backfill [YYYY-MM-DD]` — история с даты (по умолчанию 90 дней),
+// прогноз и air_daily за период. Для «с начала года» на главной: `pocketbase air-backfill 2026-01-01`.
 $app.rootCmd.addCommand(
   new Command({
-    use: "air-backfill",
-    short: "Загрузить историю воздуха за 90 дней и посчитать air_daily",
-    run: () => {
+    use: "air-backfill [since]",
+    short: "Загрузить историю воздуха с даты и посчитать air_daily",
+    run: (cmd, args) => {
       const air = require(`${__hooks}/lib/air.js`)
-      const f = air.fetchReadings($app, air.KEEP_HOURLY_DAYS, 5)
-      const d = air.rollupDaily($app, air.minskDay(-air.KEEP_HOURLY_DAYS), air.minskDay(0))
-      console.log(`air-backfill: points ${f.points}, saved ${f.saved}, skipped ${f.skipped}; air_daily ${d.rows} за ${d.days} дн.`)
+      const since = args[0] || air.minskDay(-air.KEEP_HOURLY_DAYS)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(since)) throw new Error("Дата в формате YYYY-MM-DD")
+      const r = air.backfill($app, since)
+      console.log(`air-backfill с ${since}: saved ${r.saved}, skipped ${r.skipped}; air_daily ${r.rows} за ${r.days} дн.; удалено почасовых ${r.pruned}`)
     },
   }),
 )
