@@ -27,7 +27,8 @@ export function SectionPlaceholder({ id, eyebrow, title, variant, minHeight }: P
       <p className="text-[13px] font-medium text-muted-foreground">{eyebrow}</p>
       <h2
         id={titleId}
-        className="mt-1 font-heading text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-semibold tracking-[-0.03em]"
+        tabIndex={-1}
+        className="mt-1 font-heading text-[clamp(28px,3.2vw,40px)] leading-[1.1] font-semibold tracking-[-0.03em] outline-none"
       >
         {title}
       </h2>

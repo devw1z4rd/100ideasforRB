@@ -37,6 +37,16 @@ export function MobileNav({ className }: { className?: string }) {
           if (!target) return
           event.preventDefault()
           navigate({ pathname: "/", hash: target })
+          // Фокус — на заголовок секции, чтобы клавиатура и скринридер не потеряли место (а не на <body>).
+          // Навигация завершается асинхронно, поэтому ждём появления заголовка (до ~1 с)
+          const headingId = `${target}-title`
+          let attempts = 0
+          const focusHeading = () => {
+            const heading = document.getElementById(headingId)
+            if (heading) heading.focus({ preventScroll: true })
+            else if (++attempts < 60) requestAnimationFrame(focusHeading)
+          }
+          requestAnimationFrame(focusHeading)
           setTarget(null)
         }}
       >
@@ -58,6 +68,9 @@ export function MobileNav({ className }: { className?: string }) {
                 href={`/#${a.id}`}
                 className={item}
                 onClick={(event) => {
+                  // Клик с модификатором — штатное поведение ссылки (новая вкладка/окно)
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
+                    return
                   event.preventDefault()
                   setTarget(a.id)
                   setOpen(false)
