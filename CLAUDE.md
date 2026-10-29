@@ -227,6 +227,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 │   ├── Dockerfile          # скачивает фиксированную версию PocketBase
 │   ├── pb_hooks/           # *.pb.js — cron, хуки, кастомные роуты
 │   ├── pb_migrations/      # генерируются PocketBase, коммитятся
+│   ├── tests/              # node --test: API rules и хуки против запущенного PocketBase
 │   └── seed/               # JSON: районы, точки, предприятия, вода, источники
 ├── front/
 │   ├── src/
@@ -379,6 +380,9 @@ cronAdd("air_fetch", "5 * * * *", () => {
 | users | только сам себя / admin | открыта (регистрация) | сам себя, кроме `role` | admin |
 
 > Правила выше — намерение. Синтаксис сверить с документацией текущей версии PocketBase и покрыть тестами (запрос анонимом / юзером / модератором).
+>
+> Реализация: API rules решают, кто допущен к записи; какие поля меняет каждая роль, переходы статусов (new → accepted/rejected, accepted → forwarded/resolved/rejected, forwarded → resolved/rejected), автор/стартовый статус, рамка области и запись `report_events` — в `back/pb_hooks/reports.pb.js`. Роль `user` по умолчанию ставит `back/pb_hooks/users.pb.js`. Район обращения пока — ближайший райцентр; заменить на попадание в полигон, когда в `back/seed` появятся границы. `telegram_id` пользователь сам не задаёт — привязывает бот (S5).
+> Тесты: `PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… node --test back/tests/rules.test.mjs` при запущенном PocketBase.
 
 ---
 
