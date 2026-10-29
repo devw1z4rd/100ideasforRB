@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { Container } from "@/components/layout/Container"
+import { air } from "@/content/air"
 import { dataPage } from "@/content/data"
 import { hero } from "@/content/hero"
 import { AQI_SCALE, type AqiCategory } from "@/lib/aqi"
@@ -35,7 +36,10 @@ export function DataPage() {
 
       <Section id="data-sources" title={dataPage.sources.title}>
         <ul className="mt-6 divide-y divide-border border-y border-border">
-          {hero.factsSources.map((source) => (
+          {[
+            ...hero.factsSources.map((source) => ({ source, usedOn: dataPage.sources.usedOn })),
+            ...air.sources.map((source) => ({ source, usedOn: dataPage.sources.airUsedOn })),
+          ].map(({ source, usedOn }) => (
             <li
               key={`${source.label}-${source.url}`}
               className="grid gap-1 py-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:gap-8"
@@ -50,7 +54,7 @@ export function DataPage() {
               </div>
               <p className="text-[13px] text-muted-foreground md:text-right">
                 <span className="block first-letter:uppercase">{source.label}</span>
-                {dataPage.sources.usedOn}
+                {usedOn}
               </p>
             </li>
           ))}
@@ -100,6 +104,14 @@ export function DataPage() {
             {aqi.source.publisher}, {aqi.source.year}
           </a>
         </p>
+      </Section>
+
+      <Section id="data-air" title={air.methodology.title}>
+        <ul className="mt-4 max-w-[70ch] list-disc space-y-2 pl-5 text-fg-secondary">
+          {air.methodology.items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
       </Section>
 
       <Section id="data-principles" title={dataPage.principles.title}>
