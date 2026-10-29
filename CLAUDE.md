@@ -185,32 +185,12 @@ npx shadcn@latest init
 - Фронт — SPA, собирается в `front/dist` и кладётся в `pb_public/`. PocketBase отдаёт и статику, и API с одного домена → нет CORS.
 - Вся бизнес-логика, которой нельзя доверять клиенту (смена статусов, роли, валидации), — в API rules и `pb_hooks`.
 
-### Набросок cron-сбора воздуха (`back/pb_hooks/air.pb.js`)
+### Сбор воздуха (`back/pb_hooks/air.pb.js`, логика — `lib/air.js`)
 
-```js
-// Каждый час в :05. Набросок — сверить API с документацией текущей версии PocketBase.
-cronAdd("air_fetch", "5 * * * *", () => {
-  const points = $app.findAllRecords("air_points")
-  const lat = points.map(p => p.get("lat")).join(",")
-  const lon = points.map(p => p.get("lon")).join(",")
-  const vars = "pm10,pm2_5,nitrogen_dioxide,sulphur_dioxide,ozone,carbon_monoxide,us_aqi"
-  const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}` +
-              `&hourly=${vars}&past_days=1&forecast_days=5&timezone=Europe%2FMinsk`
-
-  const res = $http.send({ url, method: "GET", timeout: 30 })
-  if (res.statusCode !== 200) throw new Error("open-meteo " + res.statusCode)
-
-  const col = $app.findCollectionByNameOrId("air_readings")
-  const series = Array.isArray(res.json) ? res.json : [res.json]
-  series.forEach((s, i) => {
-    s.hourly.time.forEach((t, j) => {
-      // upsert по уникальному индексу (point, ts): найти существующую запись или создать новую
-      // ... заполнить pm10/pm2_5/no2/so2/o3/co/us_aqi, is_forecast = t > now
-      // $app.save(record)
-    })
-  })
-})
-```
+- `air_fetch`, каждый час в :05 UTC: один запрос Open-Meteo по всем активным `air_points` (`past_days=1`, `forecast_days=5`, время UTC) → upsert в `air_readings` по (point, ts), `is_forecast = ts > now`. Неизменившиеся часы не пересохраняются. Час, где хоть одна переменная пришла `null`, пропускается: number-поле PocketBase не хранит null, а 0 выглядел бы как чистый воздух.
+- `air_daily`, 00:20 по Минску: вчера и позавчера (местные сутки, UTC+3) → `air_daily` по фактическим часам; сутки без 18 из 24 часов не пишутся. Затем удаляются почасовые старше 90 дней.
+- `pocketbase air-backfill` — разово после деплоя: 90 дней истории + прогноз + `air_daily` за них.
+- `AIR_API_URL` переопределяет адрес Open-Meteo (тесты, локальный прокси). Запустить cron вручную — админка → Settings → Crons.
 
 ---
 
@@ -228,7 +208,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 │   ├── pb_hooks/           # *.pb.js — cron, хуки, кастомные роуты
 │   ├── pb_migrations/      # генерируются PocketBase, коммитятся
 │   ├── tests/              # node --test: API rules и хуки против запущенного PocketBase
-│   └── seed/               # JSON: районы, точки, предприятия, вода, источники
+│   └── seed/               # районы (districts.geojson), точки воздуха, источники; tools/ — скрипты сборки seed
 ├── front/
 │   ├── src/
 │   │   ├── api/            # pb-клиент, сгенерированные типы, хуки TanStack Query
@@ -261,6 +241,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 | center | geoPoint | райцентр |
 | area_km2, population | number | |
 | forest_cover | number | % |
+| geometry | json | GeoJSON-полигон района из OSM; по нему хук находит район обращения. У Гомельского района «дырки» под г. Гомель |
 
 **`sources`** — источники данных (на них ссылаются все остальные коллекции)
 | поле | тип | |
@@ -270,7 +251,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 | url | url | |
 | license | text | |
 | accessed_at | date | |
-| kind | select: `model`, `official`, `media`, `user` | |
+| kind | select: `model`, `official`, `media`, `user`, `reference` | `reference` — справочные данные (границы, координаты) |
 
 ### Карта
 
@@ -303,7 +284,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 
 ### Воздух
 
-**`air_points`** — точки опроса Open-Meteo (райцентры + промзоны)
+**`air_points`** — точки опроса Open-Meteo (райцентры + промзоны). Сейчас 21: 20 райцентров + Гомель; у Гомельского района райцентр — сам Гомель, отдельной точки нет
 | поле | тип |
 |---|---|
 | name | text |
@@ -320,7 +301,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 | us_aqi | number | |
 | is_forecast | bool | |
 
-Чистка: почасовые старше 90 дней агрегировать в **`air_daily`** (point, date, avg/max по показателям, max_aqi) — нужна для календаря S2 и графиков «Янв — авг».
+Чистка: почасовые старше 90 дней агрегировать в **`air_daily`** (point, date — местные сутки Минска, avg/max по показателям, aqi_max) — нужна для календаря S2 и графиков «Янв — авг».
 
 ### Вода
 
@@ -381,7 +362,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 
 > Правила выше — намерение. Синтаксис сверить с документацией текущей версии PocketBase и покрыть тестами (запрос анонимом / юзером / модератором).
 >
-> Реализация: API rules решают, кто допущен к записи; какие поля меняет каждая роль, переходы статусов (new → accepted/rejected, accepted → forwarded/resolved/rejected, forwarded → resolved/rejected), автор/стартовый статус, рамка области и запись `report_events` — в `back/pb_hooks/reports.pb.js`. Роль `user` по умолчанию ставит `back/pb_hooks/users.pb.js`. Район обращения пока — ближайший райцентр; заменить на попадание в полигон, когда в `back/seed` появятся границы. `telegram_id` пользователь сам не задаёт — привязывает бот (S5).
+> Реализация: API rules решают, кто допущен к записи; какие поля меняет каждая роль, переходы статусов (new → accepted/rejected, accepted → forwarded/resolved/rejected, forwarded → resolved/rejected), автор/стартовый статус, район и запись `report_events` — в `back/pb_hooks/reports.pb.js`. Роль `user` по умолчанию ставит `back/pb_hooks/users.pb.js`. Район обращения — полигон `districts.geometry`, в который попала точка; точка вне всех полигонов отклоняется как вне области. `telegram_id` пользователь сам не задаёт — привязывает бот (S5).
 > Тесты: `PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… node --test back/tests/rules.test.mjs` при запущенном PocketBase.
 
 ---
@@ -394,7 +375,8 @@ cronAdd("air_fetch", "5 * * * *", () => {
 | Официальные наблюдения воздуха | Белгидромет / Национальная система мониторинга окружающей среды | вручную, из публикуемых сводок и ежегодников | «Белгидромет, <период>» `[проверить доступность и формат]` |
 | Вода (показатели по рекам) | Ежегодники / обзоры НСМОС, Белгидромет | вручную в `water_readings` | с периодом и нормативами `[найти фактические значения]` |
 | Выбросы предприятий | Белстат / Минприроды / отчёты предприятий | вручную в `enterprises` | год + источник `[найти; без источника — не показываем]` |
-| Границы области и районов | geoBoundaries (BLR, ADM1/ADM2) или OSM | один раз → `front/public/geo/` | «© OpenStreetMap / geoBoundaries» |
+| Границы районов и г. Гомеля | OpenStreetMap (ODbL) через Nominatim; relation id зафиксированы в `back/seed/tools/build-districts.mjs` | один раз → `back/seed/districts.geojson` → `districts.geometry` | «© OpenStreetMap contributors» |
+| Координаты райцентров | GeoNames (CC BY 4.0), geonameid в том же скрипте | один раз → `districts.center`, `air_points` | «GeoNames» |
 | Реки | Natural Earth 1:10m или OSM | один раз → GeoJSON | «Natural Earth» |
 | Подложка при зуме | OpenFreeMap | тайлы | «© OpenStreetMap contributors» |
 
@@ -579,6 +561,7 @@ cronAdd("air_fetch", "5 * * * *", () => {
 - **docker-compose:** `caddy` (80/443, авто-TLS Let's Encrypt) + `pocketbase` (volume `pb_data`) + опционально `bot`.
 - **Бэкапы:** встроенные бэкапы PocketBase по расписанию (ежедневно, хранить 7) + копия вне сервера (S3-совместимое хранилище или rsync на другой хост).
 - **CI/CD (GitHub Actions):** на push в `main` → `npm ci && npm run build` → копия `front/dist` в `back/pb_public` → rsync `pb_hooks`, `pb_migrations`, `pb_public` на сервер по SSH → `docker compose up -d`. Миграции применяются автоматически при старте PocketBase.
+- **Первый запуск БД** (из `back/`, локально и после деплоя): `pocketbase migrate up` → `pocketbase seed` → `pocketbase air-backfill`. Свои команды не применяют миграции сами, поэтому `migrate up` первым; `seed` идемпотентен — повторять после правки `back/seed`.
 - **Окружения:** `local` (бинарник PocketBase + `vite dev` с прокси `/api` → `:8090`), `prod`. Staging — отдельный поддомен, если успеем.
 - **Мониторинг:** uptime-пинг (бесплатный внешний сервис) + алерт в Telegram, если cron воздуха не отработал > 3 часов.
 
