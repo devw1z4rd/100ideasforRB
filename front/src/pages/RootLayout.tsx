@@ -18,7 +18,10 @@ export function RootLayout() {
           <Outlet />
         </main>
         <SiteFooter />
-        <ScrollRestoration />
+        {/* Для адресов с якорем ключ не location.key: иначе сохранённая позиция entry "default" перебивает переход к #якорю */}
+        <ScrollRestoration
+          getKey={(location) => (location.hash ? `${location.pathname}${location.hash}` : location.key)}
+        />
       </LazyMotion>
     </MotionConfig>
   )

@@ -9,10 +9,16 @@ export function HomePage() {
   useDocumentTitle()
   const { hash, key } = useLocation()
 
-  // Прокрутка к якорю после навигации: /#air с другой страницы, пункты MobileNav, повторный клик по якорю
+  // Прокрутка к якорю после навигации: /#air с другой страницы, пункты MobileNav, повторный клик по якорю.
   useEffect(() => {
     if (!hash) return
-    document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView()
+    let id: string
+    try {
+      id = decodeURIComponent(hash.slice(1))
+    } catch {
+      return
+    }
+    document.getElementById(id)?.scrollIntoView()
   }, [hash, key])
 
   return (
