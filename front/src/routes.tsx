@@ -1,3 +1,4 @@
+import type { ComponentType } from "react"
 import type { RouteObject } from "react-router"
 import type { RouteHandle } from "@/lib/routeTitle"
 import { DataPage } from "@/pages/DataPage"
@@ -7,6 +8,12 @@ import { RootLayout } from "@/pages/RootLayout"
 import { RouteErrorPage } from "@/pages/RouteErrorPage"
 import { StubPage } from "@/pages/StubPage"
 
+// Новости и база знаний — отдельными чанками: DOMPurify и разметка статей не нужны главной
+const page = (title: string, load: () => Promise<{ Component: ComponentType }>): RouteObject => ({
+  lazy: load,
+  handle: { title } satisfies RouteHandle,
+})
+
 // Страницы CLAUDE.md §11, которые появятся в следующих подпроектах
 const stubs: ReadonlyArray<readonly [path: string, title: string]> = [
   ["reports", "Обращения"],
@@ -14,10 +21,6 @@ const stubs: ReadonlyArray<readonly [path: string, title: string]> = [
   ["reports/:id", "Обращение"],
   ["compare", "Сравнение районов"],
   ["calculator", "Калькулятор углеродного следа"],
-  ["news", "Новости"],
-  ["news/:slug", "Новости"],
-  ["kb", "База знаний"],
-  ["kb/:slug", "База знаний"],
   ["login", "Вход"],
   ["me", "Профиль"],
   ["moderation", "Модерация"],
@@ -38,6 +41,26 @@ export const routes: RouteObject[] = [
             path: "data",
             element: <DataPage />,
             handle: { title: "Данные и методика" } satisfies RouteHandle,
+          },
+          {
+            path: "news",
+            ...page("Новости", () => import("@/pages/NewsPage").then((m) => ({ Component: m.NewsPage }))),
+          },
+          {
+            path: "news/:slug",
+            ...page("Новости", () =>
+              import("@/pages/NewsArticlePage").then((m) => ({ Component: m.NewsArticlePage })),
+            ),
+          },
+          {
+            path: "kb",
+            ...page("База знаний", () => import("@/pages/KbPage").then((m) => ({ Component: m.KbPage }))),
+          },
+          {
+            path: "kb/:slug",
+            ...page("База знаний", () =>
+              import("@/pages/KbArticlePage").then((m) => ({ Component: m.KbArticlePage })),
+            ),
           },
           ...stubs.map(([path, title]) => ({
             path,

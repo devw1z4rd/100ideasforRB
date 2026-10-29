@@ -6,6 +6,7 @@
 //   air_points.json   → air_points   (ключ name; district — по названию района)
 //   emission_stats.json → emission_stats (ключ территория + год + показатель + вещество; source — по названию источника)
 //   water_readings.json → sources + water_readings (ключ квартал + река + пункт + показатель + месяц)
+//   articles.json     → articles     (стартовые статьи базы знаний; только новые по slug — правки в админке не затираются)
 
 $app.rootCmd.addCommand(
   new Command({
@@ -94,9 +95,25 @@ $app.rootCmd.addCommand(
           txApp.save(record)
         }
 
+        const articles = read("articles.json")
+        const articlesCollection = txApp.findCollectionByNameOrId("articles")
+        let articlesAdded = 0
+        for (const a of articles) {
+          try {
+            txApp.findFirstRecordByData("articles", "slug", a.slug)
+            continue
+          } catch {
+            // новой статьи ещё нет
+          }
+          const record = new Record(articlesCollection)
+          record.load({ ...a, is_published: true })
+          txApp.save(record)
+          articlesAdded++
+        }
+
         console.log(
           `seed: sources ${sources.length + water.sources.length}, districts ${districts.length}, air_points ${points.length}, ` +
-            `emission_stats ${stats.length}, water_readings ${water.readings.length}`,
+            `emission_stats ${stats.length}, water_readings ${water.readings.length}, articles +${articlesAdded} из ${articles.length}`,
         )
       })
     },

@@ -27,3 +27,25 @@ export function formatRelativeTime(date: Date, now: Date = new Date()): string {
   if (seconds < DAY) return relativeFormat.format(-Math.floor(seconds / HOUR), "hour")
   return relativeFormat.format(-Math.floor(seconds / DAY), "day")
 }
+
+// Календарный день "YYYY-MM-DD" форматируем в UTC, чтобы часовой пояс браузера не сдвинул дату
+const dateFormat = new Intl.DateTimeFormat("ru-RU", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+})
+
+/** «26 октября 2026» из "2026-10-26" (без « г.») */
+export function formatDate(day: string): string {
+  return dateFormat.format(new Date(`${day}T00:00:00Z`)).replace(/\s?г\.$/, "")
+}
+
+/** Домен источника для подписи: «belgidromet.by»; не URL — строка как есть */
+export function hostname(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}

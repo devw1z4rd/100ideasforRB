@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { Link } from "react-router"
 import { useRiverLevels, useRiverPosts } from "@/api/rivers"
 import { riverColor } from "@/components/map/riverColor"
 import { RiverTriangle } from "@/components/map/RiverTriangle"
@@ -167,6 +168,9 @@ function HowToRead() {
         ))}
       </p>
       <p className="mt-3 leading-[1.5] text-muted-foreground">{text.note}</p>
+      <Link to={text.howTo.more.to} className="mt-3 inline-block font-medium text-link hover:text-link-hover">
+        {text.howTo.more.label} →
+      </Link>
     </aside>
   )
 }

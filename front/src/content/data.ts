@@ -11,6 +11,7 @@ export const dataPage = {
     airUsedOn: "Главная, раздел «Воздух»",
     enterprisesUsedOn: "Главная, раздел «Предприятия»",
     waterUsedOn: "Главная, раздел «Вода»",
+    newsUsedOn: "Новости, рубрика «Реки»",
   },
   aqi: {
     title: "Шкала индекса качества воздуха (AQI)",

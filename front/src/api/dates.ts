@@ -14,3 +14,15 @@ export function parsePbDate(value: string | null | undefined): Date | null {
 export function pbDay(value: string): string {
   return value.slice(0, 10)
 }
+
+// Минск круглый год UTC+3
+const MINSK_OFFSET_MS = 3 * 3600_000
+
+/**
+ * Минский календарный день "YYYY-MM-DD" момента времени из PocketBase ("2026-10-29 23:39:44.000Z" → "2026-10-30").
+ * Для дат публикации и правки: сохранённое после полуночи по Минску не должно показываться вчерашним днём.
+ */
+export function minskDay(value: string): string {
+  const date = parsePbDate(value)
+  return date ? new Date(date.getTime() + MINSK_OFFSET_MS).toISOString().slice(0, 10) : ""
+}

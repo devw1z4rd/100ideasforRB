@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { latestByPoint, type AirReading } from "./air"
-import { parsePbDate, pbDay } from "./dates"
+import { minskDay, parsePbDate, pbDay } from "./dates"
 import { reportsFilter } from "./reports"
 
 const reading = (point: string, ts: string, us_aqi: number): AirReading => ({
@@ -28,6 +28,12 @@ describe("dates", () => {
 
   it("takes the calendar day regardless of the browser time zone", () => {
     expect(pbDay("2026-10-20 00:00:00.000Z")).toBe("2026-10-20")
+  })
+
+  it("minskDay: день по Минску, после полуночи — уже следующий", () => {
+    expect(minskDay("2026-10-29 23:39:44.000Z")).toBe("2026-10-30")
+    expect(minskDay("2026-10-26 00:00:00.000Z")).toBe("2026-10-26")
+    expect(minskDay("")).toBe("")
   })
 })
 

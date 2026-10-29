@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatNumber, formatRelativeTime } from "./format"
+import { formatDate, formatNumber, formatRelativeTime, hostname } from "./format"
 
 describe("formatNumber", () => {
   it("разделяет разряды неразрывным пробелом и ставит запятую в дробной части", () => {
@@ -33,5 +33,20 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime(ago(3 * HOUR), now)).toBe("3 часа назад")
     expect(formatRelativeTime(ago(DAY), now)).toBe("вчера")
     expect(formatRelativeTime(ago(5 * DAY), now)).toBe("5 дней назад")
+  })
+})
+
+describe("formatDate", () => {
+  it("день с месяцем и годом, без «г.»", () => {
+    expect(formatDate("2026-10-26")).toBe("26 октября 2026")
+    expect(formatDate("2026-01-01")).toBe("1 января 2026")
+  })
+})
+
+describe("hostname", () => {
+  it("домен без www, не URL — как есть", () => {
+    expect(hostname("https://belgidromet.by/ru/gidrolog-ru/view/x/")).toBe("belgidromet.by")
+    expect(hostname("https://www.who.int/publications")).toBe("who.int")
+    expect(hostname("Белгидромет")).toBe("Белгидромет")
   })
 })

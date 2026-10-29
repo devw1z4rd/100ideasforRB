@@ -1,7 +1,7 @@
 // Хуки данных против настоящего PocketBase: схема, API rules, seed и сбор воздуха из back/.
 // Запускается только с адресом сервера, иначе пропускается:
 //   PB_TEST_URL=http://127.0.0.1:8090 PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… npx vitest run src/api
-// Нужны `pocketbase seed`, `pocketbase air-backfill` и `pocketbase river-fetch` (CLAUDE.md §12). Созданные записи удаляются в конце.
+// Нужны `pocketbase seed`, `pocketbase air-backfill`, `pocketbase river-fetch` и `pocketbase hydro-news` (CLAUDE.md §12). Созданные записи удаляются в конце.
 import { QueryClient } from "@tanstack/react-query"
 import PocketBase from "pocketbase"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
@@ -14,6 +14,8 @@ import type { TypedPocketBase } from "./pocketbase-types"
 import { changeReportStatus, createReport, reportEventsQuery, reportQuery, reportsQuery } from "./reports"
 import { airPointsQuery, districtGeometryQuery, districtsQuery, sourcesQuery } from "./reference"
 import { riverLevelsQuery, riverPostsQuery } from "./rivers"
+import { articleQuery, articlesQuery } from "./articles"
+import { newsItemQuery, newsListQuery, newsTagsQuery } from "./news"
 import { summarizePosts } from "@/lib/rivers"
 
 // Тесты идут в Node, но собираются с tsconfig приложения, где типов Node нет
@@ -100,6 +102,28 @@ describe.skipIf(!url)("api against PocketBase", () => {
     const sozh = summaries.find((s) => s.post.id === gomel.id)!
     expect(sozh.series.length).toBeGreaterThanOrEqual(25)
     expect(sozh.latest.day >= day(-3)).toBe(true)
+  })
+
+  it("knowledge base: seeded articles, excerpt in the list, full text by slug", async () => {
+    const list = await fetchQuery(articlesQuery())
+    expect(list.length).toBeGreaterThanOrEqual(8)
+    const aqi = list.find((a) => a.slug === "aqi")!
+    expect(aqi.body).not.toContain("<") // в списке — анонс без разметки
+    const full = await fetchQuery(articleQuery("aqi"))
+    expect(full?.body).toContain("<h2>")
+    expect(await fetchQuery(articleQuery("no-such-article"))).toBeNull()
+  })
+
+  it("news: Belgidromet hydrology reviews with covers, tag filter, missing slug is null", async () => {
+    const page = await client.fetchInfiniteQuery(newsListQuery("Реки"))
+    const items = page.pages[0].items
+    expect(items.length).toBeGreaterThan(0)
+    expect(items.every((n) => n.tag === "Реки" && n.source_url.startsWith("https://belgidromet.by/"))).toBe(
+      true,
+    )
+    expect(items[0].cover).not.toBe("")
+    expect(await fetchQuery(newsTagsQuery())).toContain("Реки")
+    expect(await fetchQuery(newsItemQuery("no-such-news"))).toBeNull()
   })
 
   it("reports: create as a user, moderate, history and visibility", async () => {
