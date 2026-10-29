@@ -15,6 +15,7 @@ import {
   type Period,
   type Pollutant,
 } from "@/lib/airStats"
+import { useSelectedTown } from "@/lib/useSelectedTown"
 import { AirNow } from "./AirNow"
 import { PeriodSwitch, TownPicker } from "./AirControls"
 import { PollutantCards } from "./PollutantCards"
@@ -34,7 +35,6 @@ type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "variant">
  */
 export function AirSection(section: Props) {
   const points = useAirPoints()
-  const [pointId, setPointId] = useState<string | null>(null)
   const [period, setPeriod] = useState<Period>("30d")
   const [pollutant, setPollutant] = useState<Pollutant>("pm2_5")
   const [hoveredDay, setHoveredDay] = useState<string | null>(null)
@@ -45,8 +45,7 @@ export function AirSection(section: Props) {
   const daily = useAirDaily(previous?.from ?? current.from, current.to)
 
   const names = useMemo(() => new Map(points.data?.map((p) => [p.id, p.name])), [points.data])
-  const selected =
-    pointId ?? points.data?.find((p) => p.name === air.defaultTown)?.id ?? points.data?.[0]?.id ?? null
+  const [selected, setPointId] = useSelectedTown(points.data)
   const info = pollutants.find((p) => p.key === pollutant)!
   const days = useMemo(() => daysBetween(current.from, current.to), [current.from, current.to])
 
