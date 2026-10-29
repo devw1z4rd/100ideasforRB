@@ -1,11 +1,14 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
+import { createBrowserRouter } from "react-router"
+import { RouterProvider } from "react-router/dom"
+import { routes } from "@/routes"
 import "./index.css"
+
+const router = createBrowserRouter(routes)
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <h1 className="p-10 font-heading text-5xl font-semibold tracking-[-0.04em]">
-      Экологический профиль Гомельщины
-    </h1>
+    <RouterProvider router={router} />
   </StrictMode>,
 )
