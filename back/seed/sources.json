@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Open-Meteo Air Quality API (CAMS)",
+    "publisher": "Open-Meteo; Copernicus Atmosphere Monitoring Service",
+    "url": "https://open-meteo.com/en/docs/air-quality-api",
+    "license": "CC BY 4.0",
+    "accessed_at": "2026-10-29",
+    "kind": "model"
+  },
+  {
+    "title": "OpenStreetMap: границы районов и г. Гомеля",
+    "publisher": "OpenStreetMap contributors",
+    "url": "https://www.openstreetmap.org/copyright",
+    "license": "ODbL 1.0",
+    "accessed_at": "2026-10-29",
+    "kind": "reference"
+  },
+  {
+    "title": "GeoNames: координаты райцентров",
+    "publisher": "GeoNames",
+    "url": "https://www.geonames.org/",
+    "license": "CC BY 4.0",
+    "accessed_at": "2026-10-29",
+    "kind": "reference"
+  }
+]
