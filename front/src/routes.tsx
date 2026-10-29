@@ -1,5 +1,6 @@
 import type { RouteObject } from "react-router"
 import type { RouteHandle } from "@/lib/routeTitle"
+import { DataPage } from "@/pages/DataPage"
 import { HomePage } from "@/pages/HomePage"
 import { NotFoundPage } from "@/pages/NotFoundPage"
 import { RootLayout } from "@/pages/RootLayout"
@@ -17,7 +18,6 @@ const stubs: ReadonlyArray<readonly [path: string, title: string]> = [
   ["news/:slug", "Новости"],
   ["kb", "База знаний"],
   ["kb/:slug", "База знаний"],
-  ["data", "Данные и методика"],
   ["login", "Вход"],
   ["me", "Профиль"],
   ["moderation", "Модерация"],
@@ -34,6 +34,11 @@ export const routes: RouteObject[] = [
         errorElement: <RouteErrorPage />,
         children: [
           { index: true, element: <HomePage /> },
+          {
+            path: "data",
+            element: <DataPage />,
+            handle: { title: "Данные и методика" } satisfies RouteHandle,
+          },
           ...stubs.map(([path, title]) => ({
             path,
             element: <StubPage />,

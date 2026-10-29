@@ -27,7 +27,7 @@ describe("aqiCategory", () => {
     expect(aqiCategory(50.5)?.level).toBe("moderate")
   })
 
-  it("значения выше 500 относит к «опасный»", () => {
+  it("«опасный» открыт сверху: значения выше 500 тоже в нём", () => {
     expect(aqiCategory(742)?.level).toBe("hazardous")
   })
 
@@ -39,9 +39,9 @@ describe("aqiCategory", () => {
 })
 
 describe("AQI_SCALE", () => {
-  it("покрывает 0–500 без пропусков и пересечений", () => {
+  it("начинается с 0, идёт без пропусков и пересечений, последняя категория открыта сверху", () => {
     expect(AQI_SCALE[0]?.min).toBe(0)
-    expect(AQI_SCALE.at(-1)?.max).toBe(500)
+    expect(AQI_SCALE.at(-1)?.max).toBe(Number.POSITIVE_INFINITY)
     AQI_SCALE.slice(1).forEach((category, i) => {
       expect(category.min).toBe(AQI_SCALE[i]!.max + 1)
     })
