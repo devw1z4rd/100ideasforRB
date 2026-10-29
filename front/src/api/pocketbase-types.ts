@@ -16,6 +16,7 @@ export const Collections = {
 	AirReadings: "air_readings",
 	Articles: "articles",
 	Districts: "districts",
+	EmissionStats: "emission_stats",
 	Enterprises: "enterprises",
 	News: "news",
 	Places: "places",
@@ -181,6 +182,26 @@ export type DistrictsRecord<Tgeometry = unknown> = {
 	name_be?: string
 	population?: number
 	updated: IsoAutoDateString
+}
+
+export const EmissionStatsIndicatorOptions = {
+	"generated": "generated",
+	"captured": "captured",
+	"stationary": "stationary",
+	"mobile": "mobile",
+} as const
+export type EmissionStatsIndicatorOptions = typeof EmissionStatsIndicatorOptions[keyof typeof EmissionStatsIndicatorOptions]
+export type EmissionStatsRecord = {
+	created: IsoAutoDateString
+	id: string
+	indicator: EmissionStatsIndicatorOptions
+	pollutant?: string
+	source?: RecordIdString
+	territory: string
+	unit?: string
+	updated: IsoAutoDateString
+	value: number
+	year: number
 }
 
 export type EnterprisesRecord = {
@@ -395,6 +416,7 @@ export type AirPointsResponse<Texpand = unknown> = Required<AirPointsRecord> & B
 export type AirReadingsResponse<Texpand = unknown> = Required<AirReadingsRecord> & BaseSystemFields<Texpand>
 export type ArticlesResponse<Texpand = unknown> = Required<ArticlesRecord> & BaseSystemFields<Texpand>
 export type DistrictsResponse<Tgeometry = unknown, Texpand = unknown> = Required<DistrictsRecord<Tgeometry>> & BaseSystemFields<Texpand>
+export type EmissionStatsResponse<Texpand = unknown> = Required<EmissionStatsRecord> & BaseSystemFields<Texpand>
 export type EnterprisesResponse<Texpand = unknown> = Required<EnterprisesRecord> & BaseSystemFields<Texpand>
 export type NewsResponse<Texpand = unknown> = Required<NewsRecord> & BaseSystemFields<Texpand>
 export type PlacesResponse<Texpand = unknown> = Required<PlacesRecord> & BaseSystemFields<Texpand>
@@ -417,6 +439,7 @@ export type CollectionRecords = {
 	air_readings: AirReadingsRecord
 	articles: ArticlesRecord
 	districts: DistrictsRecord
+	emission_stats: EmissionStatsRecord
 	enterprises: EnterprisesRecord
 	news: NewsRecord
 	places: PlacesRecord
@@ -438,6 +461,7 @@ export type CollectionResponses = {
 	air_readings: AirReadingsResponse
 	articles: ArticlesResponse
 	districts: DistrictsResponse
+	emission_stats: EmissionStatsResponse
 	enterprises: EnterprisesResponse
 	news: NewsResponse
 	places: PlacesResponse

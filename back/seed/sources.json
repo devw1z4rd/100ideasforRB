@@ -22,5 +22,29 @@
     "license": "CC BY 4.0",
     "accessed_at": "2026-10-29",
     "kind": "reference"
+  },
+  {
+    "title": "Белстат: открытые данные (dataportal.belstat.gov.by)",
+    "publisher": "Национальный статистический комитет Республики Беларусь",
+    "url": "https://dataportal.belstat.gov.by/",
+    "license": "Официальная статистическая информация",
+    "accessed_at": "2026-10-30",
+    "kind": "official"
+  },
+  {
+    "title": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026",
+    "publisher": "Национальный статистический комитет Республики Беларусь",
+    "url": "https://www.belstat.gov.by/ofitsialnaya-statistika/makroekonomika-i-okruzhayushchaya-sreda/okruzhayuschaya-sreda/ofitsialnye-publikatsii_17/",
+    "license": "Официальная статистическая информация",
+    "accessed_at": "2026-10-30",
+    "kind": "official"
+  },
+  {
+    "title": "Региональная стратегия устойчивого развития Гомельской области до 2040 года",
+    "publisher": "Гомельский облисполком",
+    "url": "https://sdgs.by/wp-content/uploads/2026/02/gomel-region_strategy-2040_elektronnaya-versiya.pdf",
+    "license": "",
+    "accessed_at": "2026-10-30",
+    "kind": "official"
   }
 ]

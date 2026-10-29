@@ -4,6 +4,7 @@
 //   sources.json      → sources      (ключ title)
 //   districts.geojson → districts    (ключ name; center и geometry из GeoJSON)
 //   air_points.json   → air_points   (ключ name; district — по названию района)
+//   emission_stats.json → emission_stats (ключ территория + год + показатель + вещество; source — по названию источника)
 
 $app.rootCmd.addCommand(
   new Command({
@@ -12,7 +13,7 @@ $app.rootCmd.addCommand(
     run: () => {
       // Свои команды не применяют миграции из pb_migrations — это делают serve и migrate up
       try {
-        $app.findCollectionByNameOrId("air_points")
+        $app.findCollectionByNameOrId("emission_stats")
       } catch {
         throw new Error("Коллекций нет: сначала `pocketbase migrate up`")
       }
@@ -33,7 +34,8 @@ $app.rootCmd.addCommand(
 
       $app.runInTransaction((txApp) => {
         const sources = read("sources.json")
-        for (const s of sources) upsert(txApp, "sources", "title", s.title, s)
+        const sourceIds = {}
+        for (const s of sources) sourceIds[s.title] = upsert(txApp, "sources", "title", s.title, s).id
 
         const districtIds = {}
         const districts = read("districts.geojson").features
@@ -54,7 +56,27 @@ $app.rootCmd.addCommand(
           upsert(txApp, "air_points", "name", p.name, { ...p, district: districtIds[p.district] })
         }
 
-        console.log(`seed: sources ${sources.length}, districts ${districts.length}, air_points ${points.length}`)
+        const stats = read("emission_stats.json")
+        const statsCollection = txApp.findCollectionByNameOrId("emission_stats")
+        for (const r of stats) {
+          if (!sourceIds[r.source]) throw new Error(`emission_stats.json: неизвестный источник «${r.source}»`)
+          let record
+          try {
+            record = txApp.findFirstRecordByFilter(
+              "emission_stats",
+              "territory = {:territory} && year = {:year} && indicator = {:indicator} && pollutant = {:pollutant}",
+              r,
+            )
+          } catch {
+            record = new Record(statsCollection)
+          }
+          record.load({ ...r, source: sourceIds[r.source] })
+          txApp.save(record)
+        }
+
+        console.log(
+          `seed: sources ${sources.length}, districts ${districts.length}, air_points ${points.length}, emission_stats ${stats.length}`,
+        )
       })
     },
   }),

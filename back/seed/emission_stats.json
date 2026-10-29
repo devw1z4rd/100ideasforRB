@@ -1,0 +1,1388 @@
+[
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 3937.846,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 2200.931,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 2433.362,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 2492.445,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 2183.453,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2021,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 141.82,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2022,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 161.91,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2023,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 152.892,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2024,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 156.483,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2025,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 132.824,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2021,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 232.264,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2022,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 228.51,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2023,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 282.365,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2024,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 290.956,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2025,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 298.761,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2021,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 332.722,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2022,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 515.07,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2023,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 512.922,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2024,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 478.849,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2025,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 415.024,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2021,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 190.905,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2022,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 175.969,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2023,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 149.402,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2024,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 141.245,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2025,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 125.802,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2021,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 105.023,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2022,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 109.014,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2023,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 87.096,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2024,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 76.174,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2025,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 57.114,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2021,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 1207.718,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2022,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 718.035,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2023,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 929.846,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2024,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 905.665,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2025,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 713.103,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2021,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 1727.394,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2022,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 292.423,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2023,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 318.839,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2024,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 443.073,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2025,
+    "indicator": "generated",
+    "pollutant": "",
+    "value": 440.827,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 3472.909,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 1744.772,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 1943.82,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 2048.674,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 1784.675,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2021,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 78.815,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2022,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 98.608,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2023,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 88.411,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2024,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 99.473,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2025,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 81.925,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2021,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 132.964,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2022,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 137.12,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2023,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 175.484,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2024,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 203.83,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2025,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 215.278,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2021,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 234.022,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2022,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 418.295,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2023,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 404.716,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2024,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 383.772,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2025,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 335.13,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2021,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 131.789,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2022,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 115.889,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2023,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 86.219,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2024,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 79.407,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2025,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 75.474,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2021,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 83.234,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2022,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 90.086,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2023,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 70.044,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2024,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 59.931,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2025,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 43.241,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2021,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 1135.796,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2022,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 635.819,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2023,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 851.083,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2024,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 829.339,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2025,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 643.949,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2021,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 1676.289,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2022,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 248.956,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2023,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 267.864,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2024,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 392.923,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2025,
+    "indicator": "captured",
+    "pollutant": "",
+    "value": 389.677,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "stationary",
+    "pollutant": "твердые",
+    "value": 25.548,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "stationary",
+    "pollutant": "твердые частицы (недифференцированная по составу пыль (аэрозоль))",
+    "value": 28.737,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "stationary",
+    "pollutant": "твердые частицы (недифференцированная по составу пыль (аэрозоль))",
+    "value": 28.452,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "stationary",
+    "pollutant": "твердые частицы (недифференцированная по составу пыль (аэрозоль))",
+    "value": 24.959,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "stationary",
+    "pollutant": "твердые частицы (недифференцированная по составу пыль (аэрозоль))",
+    "value": 24.228,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "stationary",
+    "pollutant": "диоксид серы",
+    "value": 44.859,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "stationary",
+    "pollutant": "диоксид серы",
+    "value": 41.948,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "stationary",
+    "pollutant": "диоксид серы",
+    "value": 56.815,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "stationary",
+    "pollutant": "диоксид серы",
+    "value": 37.116,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "stationary",
+    "pollutant": "диоксид серы",
+    "value": 26.032,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "stationary",
+    "pollutant": "оксид углерода",
+    "value": 81.169,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "stationary",
+    "pollutant": "оксид углерода",
+    "value": 74.143,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "stationary",
+    "pollutant": "оксид углерода",
+    "value": 76.445,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "stationary",
+    "pollutant": "оксид углерода",
+    "value": 72.665,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "stationary",
+    "pollutant": "оксид углерода",
+    "value": 69.391,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "stationary",
+    "pollutant": "диоксид азота",
+    "value": 46.995,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "stationary",
+    "pollutant": "диоксид азота",
+    "value": 43.237,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "stationary",
+    "pollutant": "диоксид азота",
+    "value": 44.448,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "stationary",
+    "pollutant": "диоксид азота",
+    "value": 42.981,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "stationary",
+    "pollutant": "диоксид азота",
+    "value": 42.483,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "stationary",
+    "pollutant": "углеводороды",
+    "value": 169.914,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "stationary",
+    "pollutant": "метан",
+    "value": 174.241,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "stationary",
+    "pollutant": "метан",
+    "value": 189.975,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "stationary",
+    "pollutant": "метан",
+    "value": 178.191,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "stationary",
+    "pollutant": "метан",
+    "value": 157.626,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "stationary",
+    "pollutant": "летучие органические соединения (за исключением метана)",
+    "value": 49.825,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "stationary",
+    "pollutant": "летучие органические соединения (за исключением метана)",
+    "value": 44.96,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "stationary",
+    "pollutant": "летучие органические соединения (за исключением метана)",
+    "value": 55.815,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "stationary",
+    "pollutant": "летучие органические соединения (за исключением метана)",
+    "value": 49.443,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "stationary",
+    "pollutant": "летучие органические соединения (за исключением метана)",
+    "value": 49.021,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "stationary",
+    "pollutant": "оксид азота",
+    "value": 6.369,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "stationary",
+    "pollutant": "оксид азота",
+    "value": 5.673,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "stationary",
+    "pollutant": "оксид азота",
+    "value": 5.454,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "stationary",
+    "pollutant": "оксид азота",
+    "value": 5.094,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "stationary",
+    "pollutant": "оксид азота",
+    "value": 5.165,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "mobile",
+    "pollutant": "диоксид серы",
+    "value": 2.8,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "mobile",
+    "pollutant": "диоксид серы",
+    "value": 2.5,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "mobile",
+    "pollutant": "диоксид серы",
+    "value": 2.5,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "диоксид серы",
+    "value": 2.5,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "диоксид серы",
+    "value": 2.8,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "mobile",
+    "pollutant": "оксид углерода",
+    "value": 282.6,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "mobile",
+    "pollutant": "оксид углерода",
+    "value": 278.1,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "mobile",
+    "pollutant": "оксид углерода",
+    "value": 272.7,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "оксид углерода",
+    "value": 281.3,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "оксид углерода",
+    "value": 297.3,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "mobile",
+    "pollutant": "диоксид азота",
+    "value": 103.6,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "mobile",
+    "pollutant": "диоксид азота",
+    "value": 99.6,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "mobile",
+    "pollutant": "диоксид азота",
+    "value": 97.6,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "диоксид азота",
+    "value": 100.1,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "диоксид азота",
+    "value": 106.5,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "mobile",
+    "pollutant": "углеводороды",
+    "value": 32.6,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "mobile",
+    "pollutant": "углеводороды",
+    "value": 32.1,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "mobile",
+    "pollutant": "углеводороды",
+    "value": 31.2,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "углеводороды",
+    "value": 32.3,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "углеводороды",
+    "value": 34.3,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2021,
+    "indicator": "mobile",
+    "pollutant": "сажа",
+    "value": 4.6,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2022,
+    "indicator": "mobile",
+    "pollutant": "сажа",
+    "value": 4.4,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2023,
+    "indicator": "mobile",
+    "pollutant": "сажа",
+    "value": 4.4,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "сажа",
+    "value": 4.5,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Республика Беларусь",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "сажа",
+    "value": 4.7,
+    "unit": "тыс. т",
+    "source": "Белстат: открытые данные (dataportal.belstat.gov.by)"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 65,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 39,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 43,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 50,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 74,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 111,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2024,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 41,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Брестская область",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 68,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Витебская область",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 40,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Гомельская область",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 43,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Гродненская область",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 51,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "г. Минск",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 79,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Минская область",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 120,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  },
+  {
+    "territory": "Могилевская область",
+    "year": 2025,
+    "indicator": "mobile",
+    "pollutant": "",
+    "value": 43,
+    "unit": "тыс. т",
+    "source": "Белстат: «Охрана окружающей среды в Республике Беларусь», 2025 и 2026"
+  }
+]
