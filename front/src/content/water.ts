@@ -11,6 +11,15 @@ const belgidromet: FactSource = {
   year: 2026,
 }
 
+const pogoda: FactSource = {
+  label: "Уровни воды",
+  title: "Белгидромет: ежедневные гидрологические наблюдения (pogoda.by, раздел «Гидро»)",
+  publisher:
+    "Белгидромет (Республиканский центр по гидрометеорологии, контролю радиоактивного загрязнения и мониторингу окружающей среды)",
+  url: "https://pogoda.by/observation/hydrology",
+  year: 2026,
+}
+
 export type IndicatorInfo = { label: string; short: string; hint: string }
 
 export const indicators: Record<string, IndicatorInfo> = {
@@ -52,10 +61,53 @@ export const months = [
 ]
 
 export const water = {
-  eyebrow: (quarter: string) => `Вода · ${quarter}`,
   error: "Не удалось загрузить данные о реках.",
   empty: "Данных о реках пока нет.",
-  lead: "Что показал государственный мониторинг рек области за последний квартал: где вода не дотягивала до нормативов качества, где реки обмелели и где вода была теплее обычного.",
+  lead: "Сколько воды в реках области сегодня и чистая ли она: ежедневные уровни на постах Белгидромета и квартальный обзор качества воды.",
+  levels: {
+    title: "Уровень воды",
+    asOf: (date: string) => `на 8:00 ${date}`,
+    source: "Белгидромет, pogoda.by",
+    summary: (low: number, total: number) => `${low} из ${total}`,
+    summaryCaption: "постов на судоходных реках — вода ниже уровня, нужного для судоходства",
+    summaryNone: "На всех постах судоходных рек воды достаточно для судоходства",
+    unit: "см",
+    status: {
+      low: "маловодье",
+      normal: "обычный уровень",
+      flood: "вода на пойме",
+      danger: "опасно высокий",
+    },
+    change: (cm: number) =>
+      cm === 0 ? "без изменений за сутки" : `${cm > 0 ? "+" : "−"}${Math.abs(cm)} см за сутки`,
+    belowLow: (cm: number, low: number) => `на ${cm} см ниже судоходного уровня (${low} см)`,
+    aboveLow: (cm: number, low: number) => `на ${cm} см выше судоходного уровня (${low} см)`,
+    aboveFlood: (cm: number, flood: number) => `на ${cm} см выше выхода на пойму (${flood} см)`,
+    toFlood: (cm: number) => `до выхода на пойму ${cm} см`,
+    daysLow: (n: number, total: number) => `ниже судоходного ${n} из ${total} дн.`,
+    threshold: { low: "судоходный", flood: "пойма", danger: "опасный" },
+    stale: (date: string) => `данные на ${date}`,
+    chartLabel: (river: string, post: string) => `Уровень воды: ${river}, ${post}, за 30 дней`,
+    others: "Другие реки и водоёмы области",
+    columns: { river: "Река", post: "Пост", level: "Уровень, см", change: "За сутки", note: "Пороги" },
+    noThresholds: "порогов нет",
+    howTo: {
+      title: "Как читать",
+      status: {
+        low: "ниже судоходного уровня: мелко для речного транспорта",
+        normal: "между судоходным уровнем и поймой",
+        flood: "вода вышла на пойму",
+        danger: "выше опасного уровня",
+      },
+      trend: { up: "растёт", flat: "без изменений", down: "падает" },
+    },
+    note: "Уровень — высота воды над нулём поста в сантиметрах. У каждого поста свой ноль, поэтому реки по сантиметрам между собой не сравнивают — только с порогами того же поста. Данные Белгидромета на 8:00, раз в сутки.",
+  },
+  quality: {
+    title: "Качество воды",
+    eyebrow: (quarter: string) => `Качество воды · ${quarter}`,
+    lead: "Что показал государственный мониторинг рек области за последний квартал: где вода не дотягивала до нормативов качества, где реки обмелели и где вода была теплее обычного.",
+  },
   sourceLine: (quarter: string) => `Обзор Белгидромета за ${quarter}`,
   summary: {
     sections: "участков рек с отклонениями от нормативов",
@@ -71,7 +123,7 @@ export const water = {
       `${value} ${unit} при нормативе ${sign} ${norm} · ${month}`,
   },
   hydrology: {
-    title: "Маловодье и уровни воды",
+    title: "Водность за квартал",
   },
   temperature: {
     title: "Вода теплее обычного",
@@ -79,5 +131,7 @@ export const water = {
   },
   glossary: "Что значат показатели",
   note: "В обзоре Белгидромета перечислены отклонения и максимумы за квартал — участки, где нормативы соблюдались, отдельно не называются. Пункты наблюдений на карте поставлены условно: на русле реки у названного населённого пункта.",
-  sources: [belgidromet] as const,
+  levelsSource: pogoda,
+  qualitySource: belgidromet,
+  sources: [pogoda, belgidromet] as const,
 } as const

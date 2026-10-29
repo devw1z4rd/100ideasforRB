@@ -1,7 +1,7 @@
 // Хуки данных против настоящего PocketBase: схема, API rules, seed и сбор воздуха из back/.
 // Запускается только с адресом сервера, иначе пропускается:
 //   PB_TEST_URL=http://127.0.0.1:8090 PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… npx vitest run src/api
-// Нужны `pocketbase seed` и `pocketbase air-backfill` (CLAUDE.md §12). Созданные записи удаляются в конце.
+// Нужны `pocketbase seed`, `pocketbase air-backfill` и `pocketbase river-fetch` (CLAUDE.md §12). Созданные записи удаляются в конце.
 import { QueryClient } from "@tanstack/react-query"
 import PocketBase from "pocketbase"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
@@ -13,6 +13,8 @@ import { pb } from "./pb"
 import type { TypedPocketBase } from "./pocketbase-types"
 import { changeReportStatus, createReport, reportEventsQuery, reportQuery, reportsQuery } from "./reports"
 import { airPointsQuery, districtGeometryQuery, districtsQuery, sourcesQuery } from "./reference"
+import { riverLevelsQuery, riverPostsQuery } from "./rivers"
+import { summarizePosts } from "@/lib/rivers"
 
 // Тесты идут в Node, но собираются с tsconfig приложения, где типов Node нет
 declare const process: { env: Record<string, string | undefined> }
@@ -83,6 +85,21 @@ describe.skipIf(!url)("api against PocketBase", () => {
     expect(gomel(2024).emitted).toBeCloseTo(95.08, 1)
     expect(Math.round(gomel(2025).emitted)).toBe(80)
     expect(gomel(2025).rank).toBe(2)
+  })
+
+  it("rivers: oblast posts with thresholds and a month of daily levels", async () => {
+    const posts = await fetchQuery(riverPostsQuery())
+    const gomel = posts.find((p) => p.river === "Сож" && p.name === "Гомель")!
+    expect(gomel.low_level).toBeGreaterThan(0)
+    expect(gomel.district).not.toBe("")
+    // Пост на пограничном Днепре — в 0,5 км за полигоном района, должен попасть в область
+    expect(posts.some((p) => p.name === "Лоев")).toBe(true)
+
+    const summaries = summarizePosts(posts, await fetchQuery(riverLevelsQuery()))
+    expect(summaries).toHaveLength(posts.length)
+    const sozh = summaries.find((s) => s.post.id === gomel.id)!
+    expect(sozh.series.length).toBeGreaterThanOrEqual(25)
+    expect(sozh.latest.day >= day(-3)).toBe(true)
   })
 
   it("reports: create as a user, moderate, history and visibility", async () => {

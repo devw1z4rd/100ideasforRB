@@ -6,9 +6,11 @@ import { parsePbDate } from "@/api/dates"
 import { usePlaces } from "@/api/places"
 import { useAirPoints, useDistrictGeometry } from "@/api/reference"
 import { useReports, useReportsRealtime } from "@/api/reports"
+import { useRiverLevels, useRiverPosts } from "@/api/rivers"
 import { useWaterReadings } from "@/api/water"
 import type { MapApi } from "@/components/map/MapView"
 import { ReportIcon } from "@/components/map/ReportIcon"
+import { RiverTriangle } from "@/components/map/RiverTriangle"
 import type { MapPlace, MapReport, MapTown } from "@/components/map/types"
 import { HomeSectionShell } from "@/components/sections/HomeSectionShell"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -17,6 +19,7 @@ import type { HomeSection } from "@/content/home"
 import { map as text } from "@/content/map"
 import { publicStatuses } from "@/content/reports"
 import { minskToday, periodRange, summarizeByPoint } from "@/lib/airStats"
+import { summarizePosts } from "@/lib/rivers"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { useSelectedTown } from "@/lib/useSelectedTown"
 import { latestQuarter, quarterLabel, sections as waterSectionsOf } from "@/lib/water"
@@ -28,7 +31,7 @@ import { AirOverview, MapLegend, TownCard } from "./MapOverlays"
 const MapView = lazy(() => import("@/components/map/MapView"))
 
 type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "variant">
-type LayerKey = "air" | "reports" | "water" | "problem" | "oopt"
+type LayerKey = "air" | "reports" | "levels" | "water" | "problem" | "oopt"
 
 const dateFormat = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" })
 const formatCreated = (value: string) => {
@@ -62,7 +65,9 @@ export function MapSection(section: Props) {
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>({
     air: true,
     reports: true,
-    water: true,
+    levels: true,
+    // Качество воды — квартальное и стоит у тех же городов, что и посты уровня: по умолчанию выключено
+    water: false,
     problem: true,
     oopt: true,
   })
@@ -137,6 +142,14 @@ export function MapSection(section: Props) {
     [water.data, waterQuarter],
   )
 
+  // Посты уровня воды Белгидромета — ежедневно, те же данные, что «Уровень воды» в разделе «Вода»
+  const riverPosts = useRiverPosts()
+  const riverLevels = useRiverLevels()
+  const levelPosts = useMemo(
+    () => (riverPosts.data && riverLevels.data ? summarizePosts(riverPosts.data, riverLevels.data) : []),
+    [riverPosts.data, riverLevels.data],
+  )
+
   const problemCount = allPlaces.filter((p) => p.kind !== "oopt").length
   const ooptCount = allPlaces.filter((p) => p.kind === "oopt").length
   const shownPlaces = allPlaces.filter((p) => (p.kind === "oopt" ? layers.oopt : layers.problem))
@@ -169,6 +182,16 @@ export function MapSection(section: Props) {
       count: mapReports.length,
       mark: <ReportIcon category="dump" className="size-3.5" />,
     },
+    ...(levelPosts.length
+      ? [
+          {
+            key: "levels" as const,
+            label: text.layers.levels,
+            count: levelPosts.length,
+            mark: <RiverTriangle trend="up" status="normal" className="size-3" />,
+          },
+        ]
+      : []),
     ...(waterSections.length
       ? [
           {
@@ -242,6 +265,7 @@ export function MapSection(section: Props) {
                 reports={mapReports}
                 places={shownPlaces}
                 waterSections={layers.water ? waterSections : []}
+                levelPosts={layers.levels ? levelPosts : []}
                 waterQuarter={waterQuarter ? quarterLabel(waterQuarter) : ""}
                 shown={{ air: layers.air, reports: layers.reports, ...toggles }}
                 padding={desktop ? PADDING_DESKTOP : PADDING_MOBILE}

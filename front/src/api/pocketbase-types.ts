@@ -22,6 +22,8 @@ export const Collections = {
 	Places: "places",
 	ReportEvents: "report_events",
 	Reports: "reports",
+	RiverLevels: "river_levels",
+	RiverPosts: "river_posts",
 	Sources: "sources",
 	Users: "users",
 	WaterReadings: "water_readings",
@@ -332,6 +334,35 @@ export type ReportsRecord = {
 	updated: IsoAutoDateString
 }
 
+export type RiverLevelsRecord = {
+	change?: number
+	created: IsoAutoDateString
+	date: IsoDateString
+	ice?: string
+	ice_thickness?: number
+	id: string
+	level?: number
+	post: RecordIdString
+	state?: string
+	updated: IsoAutoDateString
+}
+
+export type RiverPostsRecord = {
+	code: number
+	created: IsoAutoDateString
+	danger_level?: number
+	district?: RecordIdString
+	flood_level?: number
+	id: string
+	lat: number
+	lon: number
+	low_level?: number
+	name: string
+	river: string
+	source?: RecordIdString
+	updated: IsoAutoDateString
+}
+
 export const SourcesKindOptions = {
 	"model": "model",
 	"official": "official",
@@ -451,6 +482,8 @@ export type NewsResponse<Texpand = unknown> = Required<NewsRecord> & BaseSystemF
 export type PlacesResponse<Texpand = unknown> = Required<PlacesRecord> & BaseSystemFields<Texpand>
 export type ReportEventsResponse<Texpand = unknown> = Required<ReportEventsRecord> & BaseSystemFields<Texpand>
 export type ReportsResponse<Texpand = unknown> = Required<ReportsRecord> & BaseSystemFields<Texpand>
+export type RiverLevelsResponse<Texpand = unknown> = Required<RiverLevelsRecord> & BaseSystemFields<Texpand>
+export type RiverPostsResponse<Texpand = unknown> = Required<RiverPostsRecord> & BaseSystemFields<Texpand>
 export type SourcesResponse<Texpand = unknown> = Required<SourcesRecord> & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
 export type WaterReadingsResponse<Texpand = unknown> = Required<WaterReadingsRecord> & BaseSystemFields<Texpand>
@@ -474,6 +507,8 @@ export type CollectionRecords = {
 	places: PlacesRecord
 	report_events: ReportEventsRecord
 	reports: ReportsRecord
+	river_levels: RiverLevelsRecord
+	river_posts: RiverPostsRecord
 	sources: SourcesRecord
 	users: UsersRecord
 	water_readings: WaterReadingsRecord
@@ -496,6 +531,8 @@ export type CollectionResponses = {
 	places: PlacesResponse
 	report_events: ReportEventsResponse
 	reports: ReportsResponse
+	river_levels: RiverLevelsResponse
+	river_posts: RiverPostsResponse
 	sources: SourcesResponse
 	users: UsersResponse
 	water_readings: WaterReadingsResponse

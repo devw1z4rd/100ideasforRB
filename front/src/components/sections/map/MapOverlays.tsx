@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, Droplets } from "lucide-react"
 import { Link } from "react-router"
 import type { AirReading } from "@/api/air"
 import { ReportIcon } from "@/components/map/ReportIcon"
+import { RiverTriangle } from "@/components/map/RiverTriangle"
 import type { MapTown } from "@/components/map/types"
 import { air, pollutants } from "@/content/air"
 import { map as text } from "@/content/map"
@@ -296,6 +297,13 @@ export function MapLegend({
             <ReportIcon category="dump" className="size-3" />
           </span>
           {text.legend.report}
+        </li>
+        <li className="flex items-center gap-2">
+          <span aria-hidden="true" className="flex w-5 items-center justify-center gap-px">
+            <RiverTriangle trend="up" status="low" className="size-2.5" />
+            <RiverTriangle trend="down" status="normal" className="size-2.5" />
+          </span>
+          {text.legend.level}
         </li>
         <li className="flex items-center gap-2">
           <span className="grid size-5 place-items-center rounded-full border-2 border-level-elevated text-map-river-label">

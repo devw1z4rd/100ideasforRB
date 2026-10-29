@@ -215,3 +215,14 @@ describe("news", () => {
     assert.equal((await call(tok.admin, "PATCH", path, { is_published: true })).ok, false);
   });
 });
+
+describe("rivers", () => {
+  test("посты и уровни читают все, пишет только cron", async () => {
+    for (const collection of ["river_posts", "river_levels"]) {
+      const path = `/api/collections/${collection}/records`;
+      assert.equal((await call(null, "GET", path)).status, 200);
+      assert.equal((await call(null, "POST", path, {})).ok, false);
+      assert.equal((await call(tok.admin, "POST", path, {})).ok, false);
+    }
+  });
+});

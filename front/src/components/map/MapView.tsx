@@ -18,11 +18,16 @@ import { map as text } from "@/content/map"
 import { categoryLabels, statusLabels } from "@/content/reports"
 import { indicators, months } from "@/content/water"
 import { formatNumber } from "@/lib/format"
+import type { PostSummary } from "@/lib/rivers"
 import type { Section as WaterSection } from "@/lib/water"
+import { formatDayLong } from "@/components/sections/air/format"
+import { levelPosition } from "@/components/sections/water/levelText"
+import { water as waterText } from "@/content/water"
 import { aqiCategory } from "@/lib/aqi"
 import { scaleBar, snapToLines } from "@/lib/mapGeo"
 import { cn } from "@/lib/utils"
 import { ReportIcon } from "./ReportIcon"
+import { RiverTriangle } from "./RiverTriangle"
 import type { MapPlace, MapReport, MapTown } from "./types"
 
 export type MapLayersShown = {
@@ -48,6 +53,8 @@ type Props = {
   waterSections: readonly WaterSection[]
   /** «II квартал 2026» — подпись источника во всплывашке */
   waterQuarter: string
+  /** Посты уровня воды Белгидромета (§10.8) */
+  levelPosts: readonly PostSummary[]
   shown: MapLayersShown
   /** Отступы при «Вся область»: на десктопе слева и справа лежат панели */
   padding: { top: number; right: number; bottom: number; left: number }
@@ -92,6 +99,7 @@ export default function MapView({
   places,
   waterSections,
   waterQuarter,
+  levelPosts,
   shown,
   padding,
   apiRef,
@@ -103,6 +111,7 @@ export default function MapView({
   const [openReport, setOpenReport] = useState<MapReport | null>(null)
   const [openPlace, setOpenPlace] = useState<MapPlace | null>(null)
   const [openWater, setOpenWater] = useState<WaterSection | null>(null)
+  const [openLevel, setOpenLevel] = useState<PostSummary | null>(null)
 
   const style = useMemo<StyleSpecification>(
     () => ({
@@ -419,6 +428,29 @@ export default function MapView({
           )
         })}
 
+        {/* Посты уровня — поверх городов (пост часто в самом городе), треугольник над точкой поста, как у Белгидромета */}
+        {levelPosts.map((s) => (
+          <Marker
+            key={s.post.id}
+            longitude={s.post.lon}
+            latitude={s.post.lat}
+            anchor="bottom"
+            offset={[0, -3]}
+          >
+            <button
+              type="button"
+              aria-label={`${s.post.river}, ${s.post.name}: ${s.latest.level} см, ${waterText.levels.status[s.status]}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                setOpenLevel(s)
+              }}
+              className="block cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              <RiverTriangle trend={s.trend} status={s.status} className="size-4" />
+            </button>
+          </Marker>
+        ))}
+
         {shown.reports &&
           reports.map((r) => (
             <Marker key={r.id} longitude={r.lon} latitude={r.lat} anchor="center">
@@ -485,6 +517,39 @@ export default function MapView({
             ) : (
               <p className="mt-1.5">{text.water.clean}</p>
             )}
+            <a href="#water" className="mt-2 inline-block text-link hover:text-link-hover">
+              {text.water.more} →
+            </a>
+          </Popup>
+        )}
+
+        {openLevel && (
+          <Popup
+            longitude={openLevel.post.lon}
+            latitude={openLevel.post.lat}
+            anchor="bottom"
+            offset={20}
+            closeButton={false}
+            closeOnClick
+            onClose={() => setOpenLevel(null)}
+            className="eco-popup"
+            maxWidth="280px"
+          >
+            <p className="font-medium">
+              {openLevel.post.river} · {openLevel.post.name}
+            </p>
+            <p className="text-[12px] text-muted-foreground">
+              {text.levels.asOf(formatDayLong(openLevel.latest.day))}
+            </p>
+            <p className="mt-1.5 flex items-center gap-1.5">
+              <RiverTriangle trend={openLevel.trend} status={openLevel.status} />
+              <span className="font-medium tabular-nums">
+                {openLevel.latest.level} {waterText.levels.unit}
+              </span>
+              · {waterText.levels.status[openLevel.status]}
+            </p>
+            <p className="mt-0.5">{levelPosition(openLevel)}</p>
+            <p className="mt-0.5 text-muted-foreground">{waterText.levels.change(openLevel.latest.change)}</p>
             <a href="#water" className="mt-2 inline-block text-link hover:text-link-hover">
               {text.water.more} →
             </a>

@@ -43,6 +43,13 @@
   --level-elevated: var(--aqi-moderate);
   --level-high: var(--aqi-usg);
 
+  /* Уровень воды относительно порогов поста — как на карте уровенного режима Белгидромета:
+     маловодье жёлтым, обычный зелёным, пойма синим, опасный красным */
+  --river-low: var(--aqi-moderate);
+  --river-normal: var(--aqi-good);
+  --river-flood: #3d8bea;
+  --river-danger: var(--aqi-usg);
+
   /* Карта (§10.4) — всегда тёмная, значения сняты с макета. MapLibre читает их через getComputedStyle */
   --map-bg: #141816;
   --map-land: #232825;
@@ -114,6 +121,10 @@
   --color-level-ok: var(--level-ok);
   --color-level-elevated: var(--level-elevated);
   --color-level-high: var(--level-high);
+  --color-river-low: var(--river-low);
+  --color-river-normal: var(--river-normal);
+  --color-river-flood: var(--river-flood);
+  --color-river-danger: var(--river-danger);
   --color-focus: var(--focus);
   --color-map-river-label: var(--map-river-label);
 
