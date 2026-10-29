@@ -1,6 +1,7 @@
 import { LazyMotion, MotionConfig, domAnimation } from "motion/react"
 import { Outlet, ScrollRestoration } from "react-router"
 import { SiteFooter } from "@/components/layout/SiteFooter"
+import { SiteHeader } from "@/components/layout/SiteHeader"
 
 export function RootLayout() {
   return (
@@ -12,6 +13,7 @@ export function RootLayout() {
         >
           К содержимому
         </a>
+        <SiteHeader />
         <main id="content" tabIndex={-1} className="outline-none">
           <Outlet />
         </main>
