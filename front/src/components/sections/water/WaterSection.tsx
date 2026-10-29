@@ -45,9 +45,11 @@ export function WaterSection(section: Props) {
   return (
     <HomeSectionShell {...section} eyebrow={quarter ? text.eyebrow(label) : section.eyebrow}>
       {readings.isError ? (
-        <p className="text-sm text-muted-foreground">Не удалось загрузить данные о реках.</p>
-      ) : !rows || !quarter ? (
+        <p className="text-sm text-muted-foreground">{text.error}</p>
+      ) : readings.isPending ? (
         <Skeleton className="h-[480px] w-full rounded-xl" />
+      ) : !rows || !quarter ? (
+        <p className="text-sm text-muted-foreground">{text.empty}</p>
       ) : (
         <>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">

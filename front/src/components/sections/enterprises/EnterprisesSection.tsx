@@ -41,9 +41,11 @@ export function EnterprisesSection(section: Props) {
   return (
     <HomeSectionShell {...section} eyebrow={year ? text.eyebrow(year) : section.eyebrow}>
       {stats.isError ? (
-        <p className="text-sm text-muted-foreground">Не удалось загрузить данные о выбросах.</p>
-      ) : !data || !home ? (
+        <p className="text-sm text-muted-foreground">{text.error}</p>
+      ) : stats.isPending ? (
         <Skeleton className="h-[560px] w-full rounded-xl" />
+      ) : !data || !home ? (
+        <p className="text-sm text-muted-foreground">{text.empty}</p>
       ) : (
         <div ref={box} className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
           <div>
