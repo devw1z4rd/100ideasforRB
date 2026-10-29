@@ -1,3 +1,4 @@
+import { useReducedMotion } from "motion/react"
 import * as m from "motion/react-m"
 import type { CSSProperties } from "react"
 import { Container } from "@/components/layout/Container"
@@ -8,7 +9,8 @@ import { cn } from "@/lib/utils"
 type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "variant" | "minHeight">
 
 // Анимируется внутренний m.div, а не сам якорь: transform на <section> смещает позицию при scrollIntoView.
-// Появление при скролле один раз (§10.11); при prefers-reduced-motion его гасит MotionConfig в RootLayout
+// Появление при скролле один раз (§10.11); при prefers-reduced-motion анимации нет вовсе
+// (MotionConfig гасит только transform, но не opacity — поэтому initial отключаем сами)
 const reveal = {
   initial: { opacity: 0, y: 8 },
   whileInView: { opacity: 1, y: 0 },
@@ -19,6 +21,7 @@ const reveal = {
 /** Секция-якорь главной до своего подпроекта: заголовок + скелетон зарезервированной высоты. */
 export function SectionPlaceholder({ id, eyebrow, title, variant, minHeight }: Props) {
   const titleId = `${id}-title`
+  const reduceMotion = useReducedMotion()
   const content = (
     <>
       <p className="text-[13px] font-medium text-muted-foreground">{eyebrow}</p>
@@ -45,7 +48,7 @@ export function SectionPlaceholder({ id, eyebrow, title, variant, minHeight }: P
         variant === "bleed" && "dark bg-background text-foreground",
       )}
     >
-      <m.div {...reveal}>
+      <m.div {...reveal} initial={reduceMotion ? false : reveal.initial}>
         <Container>
           {variant === "card" ? (
             <div className="dark rounded-2xl bg-background p-6 text-foreground md:p-8">{content}</div>
