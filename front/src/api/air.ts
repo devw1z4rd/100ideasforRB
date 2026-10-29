@@ -37,7 +37,7 @@ export const latestAirQuery = () =>
     },
   })
 
-/** Когда cron последний раз что-то записал — для «Обновлено N минут назад» в шапке (§10.2). null — данных нет. */
+/** Когда cron последний раз что-то записал — для «обновлено N минут назад» в футере. null — данных нет. */
 export const airUpdatedAtQuery = () =>
   queryOptions({
     queryKey: ["air", "updated"],
@@ -45,6 +45,8 @@ export const airUpdatedAtQuery = () =>
       const page = await pb.collection("air_readings").getList(1, 1, { sort: "-updated", fields: "updated" })
       return parsePbDate(page.items[0]?.updated)
     },
+    // Cron пишет раз в час; страница может быть открыта долго
+    refetchInterval: 5 * 60_000,
   })
 
 /** Суточные агрегаты по местным (минским) дням from…to включительно, "YYYY-MM-DD". Все точки — агрегирует вызывающий. */

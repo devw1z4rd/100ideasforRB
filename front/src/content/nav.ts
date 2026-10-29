@@ -26,6 +26,8 @@ export const login = { to: "/login", label: "Войти" } as const
 
 export const footer = {
   data: { to: "/data", label: "Данные и методика" },
+  // Свежесть автосбора воздуха (CLAUDE.md §4 M2): тихая строка в футере, не в шапке
+  airUpdated: { to: "/data", label: "Воздух: обновлено" },
   // Админка PocketBase — вне SPA, обычная ссылка (в dev идёт через прокси Vite)
   admin: { href: "/_/", label: "Вход для администратора" },
   toTop: { label: "Наверх" },
