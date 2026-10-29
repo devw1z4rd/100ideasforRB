@@ -5,6 +5,7 @@
 //   districts.geojson → districts    (ключ name; center и geometry из GeoJSON)
 //   air_points.json   → air_points   (ключ name; district — по названию района)
 //   emission_stats.json → emission_stats (ключ территория + год + показатель + вещество; source — по названию источника)
+//   water_readings.json → sources + water_readings (ключ квартал + река + пункт + показатель + месяц)
 
 $app.rootCmd.addCommand(
   new Command({
@@ -74,8 +75,28 @@ $app.rootCmd.addCommand(
           txApp.save(record)
         }
 
+        const water = read("water_readings.json")
+        for (const src of water.sources) sourceIds[src.title] = upsert(txApp, "sources", "title", src.title, src).id
+        const waterCollection = txApp.findCollectionByNameOrId("water_readings")
+        for (const r of water.readings) {
+          if (!sourceIds[r.source]) throw new Error(`water_readings.json: неизвестный источник «${r.source}»`)
+          let record
+          try {
+            record = txApp.findFirstRecordByFilter(
+              "water_readings",
+              "quarter = {:quarter} && river = {:river} && post = {:post} && indicator = {:indicator} && period = {:period}",
+              r,
+            )
+          } catch {
+            record = new Record(waterCollection)
+          }
+          record.load({ ...r, source: sourceIds[r.source] })
+          txApp.save(record)
+        }
+
         console.log(
-          `seed: sources ${sources.length}, districts ${districts.length}, air_points ${points.length}, emission_stats ${stats.length}`,
+          `seed: sources ${sources.length + water.sources.length}, districts ${districts.length}, air_points ${points.length}, ` +
+            `emission_stats ${stats.length}, water_readings ${water.readings.length}`,
         )
       })
     },

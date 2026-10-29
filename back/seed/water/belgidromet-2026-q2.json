@@ -1,0 +1,41 @@
+{
+  "quarter": "2026-Q2",
+  "source": {
+    "title": "Белгидромет: состояние поверхностных вод во II квартале 2026 г.",
+    "publisher": "Белгидромет (Республиканский центр по гидрометеорологии, контролю радиоактивного загрязнения и мониторингу окружающей среды)",
+    "url": "https://rad.org.by/articles/voda/sostoyanie-poverhnostnyh-vod-vo-2-kvartale-2026-g/",
+    "license": "",
+    "accessed_at": "2026-10-30",
+    "kind": "official"
+  },
+  "readings": [
+    { "river": "Припять", "settlement": "Наровля", "post": "2,0 км ниже г. Наровля", "indicator": "oxygen", "value": 7, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 5 },
+    { "river": "Припять", "settlement": "Наровля", "post": "2,0 км ниже г. Наровля", "indicator": "cod", "value": 55, "unit": "мгO₂/дм³", "norm": 25, "norm_type": "max", "month": 4 },
+    { "river": "Припять", "settlement": "Наровля", "post": "2,0 км ниже г. Наровля", "indicator": "temperature", "value": 3.8, "unit": "°C", "month": 6, "note": "повышенный температурный режим" },
+    { "river": "Припять", "settlement": "Мозырь", "post": "1,0 км выше г. Мозырь", "indicator": "oxygen", "value": 7.6, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 5 },
+    { "river": "Припять", "settlement": "Мозырь", "post": "1,0 км выше г. Мозырь", "indicator": "temperature", "value": 3.3, "unit": "°C", "month": 6, "note": "повышенный температурный режим" },
+    { "river": "Припять", "settlement": "Мозырь", "post": "1,0 км ниже г. Мозырь", "indicator": "oxygen", "value": 7.2, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 5 },
+    { "river": "Припять", "settlement": "Мозырь", "post": "1,0 км ниже г. Мозырь", "indicator": "temperature", "value": 3.5, "unit": "°C", "month": 6, "note": "повышенный температурный режим" },
+    { "river": "Припять", "settlement": "Довляды", "post": "2,0 км восточнее н.п. Довляды", "indicator": "chromium", "value": 0.006, "unit": "мг/дм³", "norm": 0.005, "norm_type": "max", "month": 6 },
+    { "river": "Припять", "settlement": "Довляды", "post": "2,0 км восточнее н.п. Довляды", "indicator": "temperature", "value": 4.1, "unit": "°C", "month": 6, "note": "повышенный температурный режим" },
+    { "river": "Уборть", "settlement": "Милашевичи", "post": "1,0 км выше н.п. Милашевичи", "indicator": "oxygen", "value": 4.8, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 6 },
+    { "river": "Уборть", "settlement": "Краснобережье", "post": "н.п. Краснобережье", "indicator": "cod", "value": 68, "unit": "мгO₂/дм³", "norm": 30, "norm_type": "max", "month": 4 },
+    { "river": "Птичь", "settlement": "Лучицы", "post": "1,0 км выше н.п. Лучицы", "indicator": "oxygen", "value": 5, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 5 },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "bod5", "value": 3.6, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 5 },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "cod", "value": 43, "unit": "мгO₂/дм³", "norm": 25, "norm_type": "max", "month": 4 },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "1,0 км выше г. Светлогорск", "indicator": "bod5", "value": 3.1, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 5 },
+    { "river": "Беседь", "settlement": "Светиловичи", "post": "0,5 км выше н.п. Светиловичи", "indicator": "oxygen", "value": 7.2, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 4 },
+    { "river": "Днепр", "settlement": "Лоев", "post": "8,5 км ниже г.п. Лоев", "indicator": "temperature", "value": 2, "unit": "°C", "month": 6, "note": "повышенный температурный режим" },
+    { "river": "Сож", "settlement": "Гомель", "post": "0,6 км выше г. Гомель", "indicator": "temperature", "value": 0.5, "unit": "°C", "month": 5, "note": "повышенный температурный режим" },
+
+    { "river": "Днепр", "settlement": "Жлобин", "post": "у г. Жлобин", "indicator": "hydrology", "month": 6, "note": "Уровень воды опустился ниже опасной низкой отметки для судоходства" },
+    { "river": "Днепр", "settlement": "Лоев", "post": "у г.п. Лоев", "indicator": "hydrology", "month": 6, "note": "Уровень воды опустился ниже опасной низкой отметки для судоходства" },
+    { "river": "Сож", "settlement": "Гомель", "post": "у г. Гомель", "indicator": "hydrology", "month": 6, "note": "Уровень воды опустился ниже отметки, лимитирующей судоходство" },
+    { "river": "Днепр", "settlement": "Речица", "post": "у г. Речица", "indicator": "hydrology", "month": 4, "note": "Вода выходила на пойму; в мае ушла с поймы" },
+    { "river": "Ипуть", "settlement": "Добруш", "post": "у г. Добруш", "indicator": "hydrology", "month": 4, "note": "Вода вышла на пойму; в мае ушла с поймы" },
+    { "river": "Днепр", "post": "водность реки", "indicator": "hydrology", "month": 5, "note": "Водность ниже нормы: в апреле на 20 %, в мае на 30–40 %, в июне близка к норме" },
+    { "river": "Сож", "post": "водность реки", "indicator": "hydrology", "month": 5, "note": "Водность ниже нормы: в апреле на 40 %, в мае и июне на 20–30 %" },
+    { "river": "Березина", "post": "водность реки", "indicator": "hydrology", "month": 4, "note": "Водность в апреле ниже обычной на 40–50 %, в мае и июне близка к норме" },
+    { "river": "Припять", "post": "водность реки", "indicator": "hydrology", "month": 5, "note": "Водность во II квартале значительно меньше нормы" }
+  ]
+}

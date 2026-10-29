@@ -380,6 +380,10 @@ export const WaterReadingsRiverOptions = {
 	"Припять": "Припять",
 	"Днепр": "Днепр",
 	"Березина": "Березина",
+	"Беседь": "Беседь",
+	"Уборть": "Уборть",
+	"Птичь": "Птичь",
+	"Ипуть": "Ипуть",
 } as const
 export type WaterReadingsRiverOptions = typeof WaterReadingsRiverOptions[keyof typeof WaterReadingsRiverOptions]
 
@@ -389,20 +393,45 @@ export const WaterReadingsIndicatorOptions = {
 	"bod5": "bod5",
 	"ph": "ph",
 	"hardness": "hardness",
+	"oxygen": "oxygen",
+	"cod": "cod",
+	"ammonium": "ammonium",
+	"nitrite": "nitrite",
+	"phosphate": "phosphate",
+	"phosphorus": "phosphorus",
+	"chromium": "chromium",
+	"iron": "iron",
+	"manganese": "manganese",
+	"copper": "copper",
+	"zinc": "zinc",
+	"oil": "oil",
+	"temperature": "temperature",
+	"hydrology": "hydrology",
 } as const
 export type WaterReadingsIndicatorOptions = typeof WaterReadingsIndicatorOptions[keyof typeof WaterReadingsIndicatorOptions]
+
+export const WaterReadingsNormTypeOptions = {
+	"max": "max",
+	"min": "min",
+} as const
+export type WaterReadingsNormTypeOptions = typeof WaterReadingsNormTypeOptions[keyof typeof WaterReadingsNormTypeOptions]
 export type WaterReadingsRecord = {
 	created: IsoAutoDateString
 	id: string
 	indicator: WaterReadingsIndicatorOptions
+	location?: GeoPoint
 	norm?: number
+	norm_type?: WaterReadingsNormTypeOptions
+	note?: string
 	period: IsoDateString
 	post?: string
+	quarter?: string
 	river: WaterReadingsRiverOptions
+	section?: string
 	source?: RecordIdString
 	unit?: string
 	updated: IsoAutoDateString
-	value: number
+	value?: number
 }
 
 // Response types include system fields and match responses from the PocketBase API
