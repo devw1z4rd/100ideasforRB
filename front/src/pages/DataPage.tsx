@@ -4,6 +4,7 @@ import { air } from "@/content/air"
 import { dataPage } from "@/content/data"
 import { enterprises } from "@/content/enterprises"
 import { calculator } from "@/content/calculator"
+import { compare } from "@/content/compare"
 import { news } from "@/content/news"
 import { water } from "@/content/water"
 import { hero } from "@/content/hero"
@@ -50,6 +51,7 @@ export function DataPage() {
             ...water.sources.map((source) => ({ source, usedOn: dataPage.sources.waterUsedOn })),
             ...news.sources.map((source) => ({ source, usedOn: dataPage.sources.newsUsedOn })),
             ...calculator.sources.map((source) => ({ source, usedOn: dataPage.sources.calculatorUsedOn })),
+            ...compare.sources.map((source) => ({ source, usedOn: dataPage.sources.compareUsedOn })),
           ].map(({ source, usedOn }) => (
             <li
               key={`${source.label}-${source.url}`}

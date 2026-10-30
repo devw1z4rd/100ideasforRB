@@ -8,7 +8,7 @@ import { RootLayout } from "@/pages/RootLayout"
 import { RouteErrorPage } from "@/pages/RouteErrorPage"
 import { StubPage } from "@/pages/StubPage"
 
-// Новости, база знаний и калькулятор — отдельными чанками: главной они не нужны
+// Новости, база знаний, калькулятор и сравнение районов — отдельными чанками: главной они не нужны
 const page = (title: string, load: () => Promise<{ Component: ComponentType }>): RouteObject => ({
   lazy: load,
   handle: { title } satisfies RouteHandle,
@@ -19,7 +19,6 @@ const stubs: ReadonlyArray<readonly [path: string, title: string]> = [
   ["reports", "Обращения"],
   ["reports/new", "Сообщить о проблеме"],
   ["reports/:id", "Обращение"],
-  ["compare", "Сравнение районов"],
   ["login", "Вход"],
   ["me", "Профиль"],
   ["moderation", "Модерация"],
@@ -55,6 +54,12 @@ export const routes: RouteObject[] = [
             path: "calculator",
             ...page("Калькулятор углеродного следа", () =>
               import("@/pages/CalculatorPage").then((m) => ({ Component: m.CalculatorPage })),
+            ),
+          },
+          {
+            path: "compare",
+            ...page("Сравнение районов", () =>
+              import("@/pages/ComparePage").then((m) => ({ Component: m.ComparePage })),
             ),
           },
           {

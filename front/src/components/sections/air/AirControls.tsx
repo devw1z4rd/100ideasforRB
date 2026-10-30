@@ -80,27 +80,37 @@ export function TownPicker({
   )
 }
 
-/** Сегмент периода (§10.6): активный — чёрный. */
-export function PeriodSwitch({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
+/** Сегмент периода (§10.6): активный — чёрный. options — подмножество периодов (сравнение районов — без 7 дней). */
+export function PeriodSwitch({
+  value,
+  onChange,
+  options,
+}: {
+  value: Period
+  onChange: (p: Period) => void
+  options?: readonly Period[]
+}) {
   return (
     <div role="radiogroup" aria-label="Период" className="inline-flex rounded-md border border-input p-0.5">
-      {periods.map((p) => (
-        <button
-          key={p.key}
-          type="button"
-          role="radio"
-          aria-checked={value === p.key}
-          onClick={() => onChange(p.key)}
-          className={cn(
-            "h-8 cursor-pointer rounded-[5px] px-3 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-ring",
-            value === p.key
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          {p.label}
-        </button>
-      ))}
+      {periods
+        .filter((p) => !options || options.includes(p.key))
+        .map((p) => (
+          <button
+            key={p.key}
+            type="button"
+            role="radio"
+            aria-checked={value === p.key}
+            onClick={() => onChange(p.key)}
+            className={cn(
+              "h-8 cursor-pointer rounded-[5px] px-3 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+              value === p.key
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
     </div>
   )
 }

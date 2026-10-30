@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
+import type { PolygonGeometry } from "@/lib/geo"
 import { pb } from "./pb"
 import type { DistrictsResponse } from "./pocketbase-types"
 
@@ -6,8 +7,7 @@ import type { DistrictsResponse } from "./pocketbase-types"
 const REFERENCE_STALE = 60 * 60_000
 
 /** Полигон района из OSM (back/seed/districts.geojson); у Гомельского района внутренние кольца — г. Гомель. */
-export type DistrictGeometry =
-  { type: "Polygon"; coordinates: number[][][] } | { type: "MultiPolygon"; coordinates: number[][][][] }
+export type DistrictGeometry = PolygonGeometry
 
 export type DistrictWithGeometry = DistrictsResponse<DistrictGeometry>
 

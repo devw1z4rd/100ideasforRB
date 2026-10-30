@@ -59,6 +59,11 @@
   --map-river-label: #7fb6c7;
   --focus: #336bf1;
 
+  /* Сравнение районов (§10.14): первый район — графитовый, второй — синий; одни и те же цвета на картограмме,
+     в списке и в барах */
+  --compare-a: var(--foreground);
+  --compare-b: var(--focus);
+
   --radius: 8px;
   --header-h: 56px;
 }
@@ -126,6 +131,8 @@
   --color-river-flood: var(--river-flood);
   --color-river-danger: var(--river-danger);
   --color-focus: var(--focus);
+  --color-compare-a: var(--compare-a);
+  --color-compare-b: var(--compare-b);
   --color-map-river-label: var(--map-river-label);
 
   --radius-sm: 6px;

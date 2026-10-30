@@ -19,6 +19,7 @@ import type { HomeSection } from "@/content/home"
 import { map as text } from "@/content/map"
 import { publicStatuses } from "@/content/reports"
 import { minskToday, periodRange, summarizeByPoint } from "@/lib/airStats"
+import { districtPoints } from "@/lib/compare"
 import { summarizePosts } from "@/lib/rivers"
 import { useMediaQuery } from "@/lib/useMediaQuery"
 import { useSelectedTown } from "@/lib/useSelectedTown"
@@ -93,16 +94,7 @@ export function MapSection(section: Props) {
   )
 
   // Клик по району выбирает его город; у Гомельского района райцентр — сам Гомель
-  const districtTown = useMemo(() => {
-    const byDistrict = new Map(towns.map((t) => [t.district, t.id]))
-    const gomel = towns.find((t) => t.name === "Гомель")?.id
-    const result = new Map<string, string>()
-    for (const d of districts.data ?? []) {
-      const town = byDistrict.get(d.id) ?? (d.name === "Гомельский" ? gomel : undefined)
-      if (town) result.set(d.id, town)
-    }
-    return result
-  }, [towns, districts.data])
+  const districtTown = useMemo(() => districtPoints(districts.data ?? [], towns), [towns, districts.data])
 
   const districtNames = useMemo(() => new Map(districts.data?.map((d) => [d.id, d.name])), [districts.data])
 
