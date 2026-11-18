@@ -1,0 +1,36 @@
+{
+  "quarter": "2026-Q3",
+  "source": {
+    "title": "Белгидромет: состояние поверхностных вод в III квартале 2026 г.",
+    "publisher": "Белгидромет (Республиканский центр по гидрометеорологии, контролю радиоактивного загрязнения и мониторингу окружающей среды)",
+    "url": "https://rad.org.by/articles/voda/sostoyanie-poverhnostnyh-vod-v-3-kvartale-2026-g/",
+    "license": "",
+    "accessed_at": "2026-11-14",
+    "kind": "official"
+  },
+  "readings": [
+    { "river": "Днепр", "settlement": "Речица", "post": "0,8 км выше г. Речица", "indicator": "oxygen", "value": 7.9, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 8 },
+    { "river": "Беседь", "settlement": "Светиловичи", "post": "0,5 км выше н.п. Светиловичи", "indicator": "oxygen", "value": 7.7, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 8 },
+    { "river": "Ипуть", "settlement": "Добруш", "post": "1,7 км ниже и 0,5 км выше г. Добруш", "indicator": "oxygen", "value": 5.8, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 8, "note": "5,8 мгO₂/дм³ — значение по группе пунктов вместе с р. Ведрич у Бабичей" },
+    { "river": "Ведрич", "post": "1,0 км выше н.п. Бабичи", "indicator": "oxygen", "value": 5.8, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 8, "note": "5,8 мгO₂/дм³ — значение по группе пунктов вместе с р. Ипуть у Добруша" },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "bod5", "value": 3.1, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 9 },
+    { "river": "Сож", "settlement": "Гомель", "post": "13,7 км ниже г. Гомель", "indicator": "bod5", "value": 3.3, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 7 },
+    { "river": "Сож", "settlement": "Гомель", "post": "0,6 км выше г. Гомель", "indicator": "bod5", "value": 3.2, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 7 },
+    { "river": "Днепр", "settlement": "Речица", "post": "5,6 км ниже г. Речица", "indicator": "bod5", "value": 3.1, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 8 },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "cod", "value": 36.6, "unit": "мгO₂/дм³", "norm": 25, "norm_type": "max", "month": 7, "note": "до 1,46 ПДК в июле–сентябре" },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "1,0 км выше г. Светлогорск", "indicator": "cod", "value": 36.25, "unit": "мгO₂/дм³", "norm": 25, "norm_type": "max", "month": 7, "note": "до 1,45 ПДК в июле–сентябре; значение пересчитано из кратности" },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "iron", "value": 0.844, "unit": "мг/дм³", "norm": 0.456, "norm_type": "max", "month": 7, "note": "1,85 ПДК по обзору; норматив пересчитан из этой кратности" },
+    { "river": "Днепр", "settlement": "Лоев", "post": "8,5 км ниже г.п. Лоев", "indicator": "manganese", "value": 0.655, "unit": "мг/дм³", "norm": 0.052, "norm_type": "max", "month": 8, "note": "12,6 ПДК по обзору; в III квартале 2022–2025 гг. здесь было 2,6–9,6 ПДК" },
+    { "river": "Сож", "settlement": "Гомель", "post": "13,7 км ниже г. Гомель", "indicator": "temperature", "value": 8.4, "unit": "°C", "month": 7, "note": "повышенный температурный режим в июле–августе; превышение допустимой температуры для рыб — наибольшее в бассейне Днепра" },
+    { "river": "Припять", "settlement": "Наровля", "post": "2,0 км ниже г. Наровля", "indicator": "cod", "value": 51, "unit": "мгO₂/дм³", "norm": 25, "norm_type": "max", "month": 7 },
+    { "river": "Уборть", "settlement": "Милашевичи", "post": "1,0 км выше н.п. Милашевичи", "indicator": "manganese", "value": 0.586, "unit": "мг/дм³", "norm": 0.0945, "norm_type": "max", "month": 7, "note": "6,2 ПДК по обзору; в 2024–2025 гг. здесь было 2–3,8 ПДК" },
+
+    { "river": "Припять", "settlement": "Черничи", "post": "у д. Черничи", "indicator": "hydrology", "month": 7, "note": "Уровень воды опустился ниже отметки, лимитирующей судоходство" },
+    { "river": "Припять", "settlement": "Мозырь", "post": "у г. Мозырь", "indicator": "hydrology", "month": 7, "note": "Уровень воды опустился ниже отметки, лимитирующей судоходство" },
+    { "river": "Припять", "settlement": "Петриков", "post": "у г. Петриков", "indicator": "hydrology", "month": 7, "note": "С июля по сентябрь минимальные уровни — самые низкие для летне-осенней межени за весь период наблюдений" },
+    { "river": "Днепр", "post": "водность реки", "indicator": "hydrology", "month": 8, "note": "Водность близка к обычной и несколько меньше" },
+    { "river": "Березина", "post": "водность реки", "indicator": "hydrology", "month": 8, "note": "Водность близка к норме и несколько меньше" },
+    { "river": "Сож", "post": "водность реки", "indicator": "hydrology", "month": 8, "note": "Водность близка к норме и несколько меньше" },
+    { "river": "Припять", "post": "водность реки", "indicator": "hydrology", "month": 8, "note": "Водность значительно меньше обычной" }
+  ]
+}

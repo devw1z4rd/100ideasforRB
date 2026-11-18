@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest"
 import {
   chartThresholds,
+  hasThresholds,
   latestDay,
+  levelScale,
   riverStatus,
   summarizePosts,
   trendOf,
@@ -63,6 +65,8 @@ describe("summarizePosts", () => {
     post("gom", "Сож", "Гомель", 70, 330, 500),
     post("svt", "Березина", "Светлогорск", 400, 550, 690),
     post("empty", "Уза", "Прибор"),
+    post("ptich", "Птичь", "1-я Слободка", 0, 286),
+    post("ipu", "Ипуть", "Добруш", 0, 220, 430),
   ]
   const levels = [
     level("gom", "2026-10-29", 15, 1),
@@ -71,6 +75,8 @@ describe("summarizePosts", () => {
     level("zhl", "2026-10-29", 49, -1),
     level("svt", "2026-10-29", 410),
     level("small", "2026-10-29", 84),
+    level("ptich", "2026-10-29", 300),
+    level("ipu", "2026-10-29", 120),
   ]
   const result = summarizePosts(posts, levels)
 
@@ -87,9 +93,14 @@ describe("summarizePosts", () => {
     expect(result.find((s) => s.post.id === "small")!.daysLow).toBeNull()
   })
 
-  it("сначала судоходные: маловодье по доле от порога, потом норма; несудоходные в конце", () => {
-    // Гомель 15/70 ≈ 0,21 хуже Жлобина 49/94 ≈ 0,52
-    expect(result.map((s) => s.post.id)).toEqual(["gom", "zhl", "svt", "small"])
+  it("хуже всего сверху: пойма и на малой реке, маловодье по доле от порога; затем норма — судоходные, с порогами, без порогов", () => {
+    // Птичь выше поймы; Гомель 15/70 ≈ 0,21 хуже Жлобина 49/94 ≈ 0,52; в норме Березина (судоходная), Ипуть (порог поймы), Брагинка (без порогов)
+    expect(result.map((s) => s.post.id)).toEqual(["ptich", "gom", "zhl", "svt", "ipu", "small"])
+  })
+
+  it("hasThresholds — хоть один порог у поста", () => {
+    expect(hasThresholds(posts[0])).toBe(false)
+    expect(hasThresholds(posts[5])).toBe(true)
   })
 
   it("latestDay — самый свежий день", () => {
@@ -105,5 +116,29 @@ describe("chartThresholds", () => {
     expect(chartThresholds(low).map((t) => t.kind)).toEqual(["low"])
     const high = summarizePosts([p], [level("g", "2026-04-10", 300)])[0]
     expect(chartThresholds(high).map((t) => t.kind)).toEqual(["low", "flood"])
+  })
+})
+
+describe("levelScale", () => {
+  it("шкала — ряд и пороги с запасом 15 % (не меньше 4 см), зона «мелко» — до судоходного", () => {
+    const p = post("g", "Сож", "Гомель", 70, 330, 500)
+    const s = summarizePosts([p], [level("g", "2026-10-29", 15)])[0]
+    const { lo, hi, zones } = levelScale(s)
+    expect(lo).toBeCloseTo(15 - 55 * 0.15)
+    expect(hi).toBeCloseTo(70 + 55 * 0.15)
+    expect(zones).toEqual([{ kind: "low", from: lo, to: 70 }])
+  })
+
+  it("пойма — до опасного, опасно — до верха шкалы; ровный ряд без порогов — запас 4 см", () => {
+    const p = post("g", "Сож", "Гомель", 70, 330, 500)
+    const s = summarizePosts([p], [level("g", "2026-04-09", 420), level("g", "2026-04-10", 480)])[0]
+    const { hi, zones } = levelScale(s)
+    expect(zones.map((z) => [z.kind, z.to])).toEqual([
+      ["low", 70],
+      ["flood", 500],
+      ["danger", hi],
+    ])
+    const flat = summarizePosts([post("b", "Брагинка", "Рудня")], [level("b", "2026-10-29", 84)])[0]
+    expect(levelScale(flat)).toEqual({ lo: 80, hi: 88, zones: [] })
   })
 })

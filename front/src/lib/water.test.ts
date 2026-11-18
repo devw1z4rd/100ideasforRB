@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest"
-import { byIndicator, exceedances, latestQuarter, quarterLabel, sections, type Reading } from "./water"
+import {
+  byIndicator,
+  exceedances,
+  latestQuarter,
+  quarterLabel,
+  quarterSeason,
+  quarters,
+  sections,
+  type Reading,
+} from "./water"
 
 const at = { lat: 52, lon: 29 }
 const rows: Reading[] = [
@@ -83,5 +92,10 @@ describe("water", () => {
 
   it("filters other indicators by quarter", () => {
     expect(byIndicator(rows, "2026-Q2", "hydrology").map((r) => r.river)).toEqual(["Днепр"])
+  })
+
+  it("lists quarters from old to new and gives each a season for the cover", () => {
+    expect(quarters(rows)).toEqual(["2026-Q1", "2026-Q2"])
+    expect(["2026-Q1", "2026-Q2", "2026-Q3", "2026-Q4"].map(quarterSeason)).toEqual(["winter", "spring", "summer", "autumn"])
   })
 })

@@ -1,0 +1,43 @@
+{
+  "quarter": "2026-Q1",
+  "source": {
+    "title": "Белгидромет: состояние поверхностных вод в I квартале 2026 г.",
+    "publisher": "Белгидромет (Республиканский центр по гидрометеорологии, контролю радиоактивного загрязнения и мониторингу окружающей среды)",
+    "url": "https://rad.org.by/articles/voda/sostoyanie-poverhnostnyh-vod-v-1-kvartale-2026-g/",
+    "license": "",
+    "accessed_at": "2026-11-14",
+    "kind": "official"
+  },
+  "readings": [
+    { "river": "Припять", "settlement": "Довляды", "post": "2,0 км восточнее н.п. Довляды", "indicator": "oxygen", "value": 3.1, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 2, "note": "до 3,1 мгO₂/дм³ в феврале и январе — худшее значение по группе пунктов: Довляды, ниже Наровли, выше Мозыря" },
+    { "river": "Припять", "settlement": "Наровля", "post": "2,0 км ниже г. Наровля", "indicator": "oxygen", "value": 3.1, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 2, "note": "до 3,1 мгO₂/дм³ в феврале и январе — худшее значение по группе пунктов: Довляды, ниже Наровли, выше Мозыря" },
+    { "river": "Припять", "settlement": "Мозырь", "post": "1,0 км выше г. Мозырь", "indicator": "oxygen", "value": 3.1, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 2, "note": "до 3,1 мгO₂/дм³ в феврале и январе — худшее значение по группе пунктов: Довляды, ниже Наровли, выше Мозыря" },
+    { "river": "Припять", "settlement": "Мозырь", "post": "1,0 км ниже г. Мозырь", "indicator": "oxygen", "value": 3.2, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 2, "note": "до 3,2 мгO₂/дм³ в феврале и январе" },
+    { "river": "Птичь", "settlement": "Лучицы", "post": "1,0 км выше н.п. Лучицы", "indicator": "oxygen", "value": 1, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 2 },
+    { "river": "Уборть", "settlement": "Краснобережье", "post": "н.п. Краснобережье", "indicator": "oxygen", "value": 1.7, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 2, "note": "до 1,7 мгO₂/дм³ в феврале, январе и марте — худшее значение по двум пунктам: Краснобережье и выше Милашевичей" },
+    { "river": "Уборть", "settlement": "Милашевичи", "post": "1,0 км выше н.п. Милашевичи", "indicator": "oxygen", "value": 1.7, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 2, "note": "до 1,7 мгO₂/дм³ в феврале, январе и марте — худшее значение по двум пунктам: Краснобережье и выше Милашевичей" },
+    { "river": "Припять", "settlement": "Наровля", "post": "2,0 км ниже г. Наровля", "indicator": "cod", "value": 55, "unit": "мгO₂/дм³", "norm": 25, "norm_type": "max", "month": 1 },
+    { "river": "Уборть", "settlement": "Краснобережье", "post": "н.п. Краснобережье", "indicator": "cod", "value": 74, "unit": "мгO₂/дм³", "norm": 30, "norm_type": "max", "month": 2 },
+
+    { "river": "Березина", "settlement": "Светлогорск", "post": "1,0 км выше и 2,7 км ниже г. Светлогорск", "indicator": "oxygen", "value": 3.5, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 1, "note": "до 3,5 мгO₂/дм³ в январе, феврале и марте — худшее значение по группе пунктов на Березине вместе с Борисовом, Бобруйском и Бродами" },
+    { "river": "Днепр", "settlement": "Речица", "post": "5,6 км ниже и 0,8 км выше г. Речица", "indicator": "oxygen", "value": 4.8, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 2, "note": "до 4,8 мгO₂/дм³ в феврале и марте — худшее значение по группе пунктов на Днепре вместе с Лоевом и Оршей" },
+    { "river": "Днепр", "settlement": "Лоев", "post": "8,5 км ниже и 0,8 км выше г.п. Лоев", "indicator": "oxygen", "value": 4.8, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 2, "note": "до 4,8 мгO₂/дм³ в феврале и марте — худшее значение по группе пунктов на Днепре вместе с Речицей и Оршей" },
+    { "river": "Беседь", "settlement": "Светиловичи", "post": "0,5 км выше н.п. Светиловичи", "indicator": "oxygen", "value": 6.6, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 2, "note": "до 6,6 мгO₂/дм³ в феврале и марте" },
+    { "river": "Сож", "settlement": "Гомель", "post": "13,7 км ниже и 0,6 км выше г. Гомель", "indicator": "oxygen", "value": 7.2, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 3, "note": "до 7,2 мгO₂/дм³" },
+    { "river": "Ипуть", "settlement": "Добруш", "post": "0,5 км выше и 1,7 км ниже г. Добруш", "indicator": "oxygen", "value": 4.1, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 2, "note": "до 4,1 мгO₂/дм³ в феврале и марте" },
+    { "river": "Ведрич", "post": "1,0 км выше н.п. Бабичи", "indicator": "oxygen", "value": 5.4, "unit": "мгO₂/дм³", "norm": 6, "norm_type": "min", "month": 2 },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "bod5", "value": 3.5, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 1, "note": "до 3,5 мгO₂/дм³ в январе, феврале и марте" },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "1,0 км выше г. Светлогорск", "indicator": "bod5", "value": 3.3, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 2 },
+    { "river": "Днепр", "settlement": "Речица", "post": "0,8 км выше г. Речица", "indicator": "bod5", "value": 3.3, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 2 },
+    { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "cod", "value": 46.2, "unit": "мгO₂/дм³", "norm": 25, "norm_type": "max", "month": 2 },
+    { "river": "Добысна", "post": "1,0 км выше н.п. Малевичская Рудня", "indicator": "iron", "value": 1.14, "unit": "мг/дм³", "norm": 0.475, "norm_type": "max", "month": 2, "note": "2,4 ПДК по обзору; норматив пересчитан из этой кратности" },
+
+    { "river": "Птичь", "settlement": "Першая Слободка", "post": "у д. Першая Слободка", "indicator": "hydrology", "month": 1, "note": "В январе уровень воды превысил отметку выхода на пойму, в марте был близок к опасной высокой отметке" },
+    { "river": "Уборть", "settlement": "Краснобережье", "post": "у д. Краснобережье", "indicator": "hydrology", "month": 3, "note": "В марте уровень воды был близок к опасной высокой отметке" },
+    { "river": "Беседь", "settlement": "Светиловичи", "post": "у д. Светиловичи", "indicator": "hydrology", "month": 3, "note": "В марте вода находилась на пойме" },
+    { "river": "Днепр", "post": "водность реки", "indicator": "hydrology", "month": 2, "note": "Водность близка к норме; в марте на большинстве рек бассейна вода вышла на пойму" },
+    { "river": "Березина", "post": "водность реки", "indicator": "hydrology", "month": 2, "note": "Водность близка к норме" },
+    { "river": "Сож", "post": "водность реки", "indicator": "hydrology", "month": 2, "note": "Водность близка к норме" },
+    { "river": "Припять", "post": "водность реки", "indicator": "hydrology", "month": 2, "note": "Водность несколько меньше нормы; в марте вода находилась на пойме на большинстве рек бассейна" }
+  ]
+}

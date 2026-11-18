@@ -14,6 +14,8 @@ export type Reading = {
   period: string
   quarter?: string
   note?: string
+  /** Адрес обзора Белгидромета, из которого выписана запись */
+  sourceUrl?: string
 }
 
 export type Exceedance = Reading & {
@@ -29,6 +31,16 @@ export function latestQuarter(rows: readonly Reading[]): string | null {
     null,
   )
 }
+
+/** Все кварталы с записями — от старого к новому (полка книжек) */
+export function quarters(rows: readonly Reading[]): string[] {
+  return [...new Set(rows.map((r) => r.quarter).filter((q): q is string => !!q))].sort()
+}
+
+export type Season = "winter" | "spring" | "summer" | "autumn"
+/** Сезон квартала — цвет обложки книжки: I — зима, II — весна, III — лето, IV — осень */
+export const quarterSeason = (quarter: string): Season =>
+  (["winter", "spring", "summer", "autumn"] as const)[Number(quarter.split("-Q")[1]) - 1] ?? "spring"
 
 /** «2026-Q2» → «II квартал 2026» */
 export function quarterLabel(quarter: string): string {

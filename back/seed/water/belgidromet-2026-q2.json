@@ -24,6 +24,7 @@
     { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "bod5", "value": 3.6, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 5 },
     { "river": "Березина", "settlement": "Светлогорск", "post": "2,7 км ниже г. Светлогорск", "indicator": "cod", "value": 43, "unit": "мгO₂/дм³", "norm": 25, "norm_type": "max", "month": 4 },
     { "river": "Березина", "settlement": "Светлогорск", "post": "1,0 км выше г. Светлогорск", "indicator": "bod5", "value": 3.1, "unit": "мгO₂/дм³", "norm": 3, "norm_type": "max", "month": 5 },
+    { "river": "Добысна", "post": "1,0 км выше н.п. Малевичская Рудня", "indicator": "iron", "value": 0.736, "unit": "мг/дм³", "norm": 0.46, "norm_type": "max", "month": 5, "note": "1,6 ПДК по обзору; норматив пересчитан из этой кратности" },
     { "river": "Беседь", "settlement": "Светиловичи", "post": "0,5 км выше н.п. Светиловичи", "indicator": "oxygen", "value": 7.2, "unit": "мгO₂/дм³", "norm": 8, "norm_type": "min", "month": 4 },
     { "river": "Днепр", "settlement": "Лоев", "post": "8,5 км ниже г.п. Лоев", "indicator": "temperature", "value": 2, "unit": "°C", "month": 6, "note": "повышенный температурный режим" },
     { "river": "Сож", "settlement": "Гомель", "post": "0,6 км выше г. Гомель", "indicator": "temperature", "value": 0.5, "unit": "°C", "month": 5, "note": "повышенный температурный режим" },
