@@ -100,9 +100,30 @@ describe("users", () => {
 describe("reports", () => {
   let report;
 
-  test("аноним не создаёт обращение", async () => {
-    const res = await call(null, "POST", reportsUrl, { location: GOMEL, category: "dump", description: "x" });
-    assert.equal(res.ok, false);
+  test("аноним создаёт обращение и открывает его только по своему ключу", async () => {
+    const key = `k${RUN}abcdefghijklmnopqrstuvwxyz`;
+    const res = await fetch(PB + reportsUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json", "X-Report-Key": key },
+      body: JSON.stringify({ location: GOMEL, category: "dump", description: "Без входа", author: ids.other }),
+    });
+    const anon = await res.json();
+    assert.equal(res.status, 200, JSON.stringify(anon));
+    created.push(["reports", anon.id]);
+    assert.equal(anon.author, "");
+    assert.equal(anon.status, "new");
+    assert.equal(anon.access_key, undefined);
+    const link = `/api/eco/reports/${anon.id}`;
+    assert.equal((await must(null, "GET", `${link}?key=${key}`)).report.id, anon.id);
+    assert.equal((await call(null, "GET", `${link}?key=x${key}`)).status, 404);
+    assert.equal((await call(null, "GET", `${reportsUrl}/${anon.id}`)).status, 404);
+  });
+
+  test("без ключа в заголовке сервер придумывает свой", async () => {
+    const anon = await must(null, "POST", reportsUrl, { location: GOMEL, category: "smoke", description: "Без ключа" });
+    created.push(["reports", anon.id]);
+    const stored = await must(su.token, "GET", `${reportsUrl}/${anon.id}`);
+    assert.match(stored.access_key, /^[A-Za-z0-9]{32}$/);
   });
 
   test("точка вне области отклоняется", async () => {

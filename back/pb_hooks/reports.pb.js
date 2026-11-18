@@ -14,7 +14,8 @@ onRecordCreateRequest((e) => {
     if (e.auth) r.set("access_key", "")
     else {
       // PocketBase strips hidden fields from the request body, so the key arrives in the X-Report-Key header.
-      const sent = String(e.request.header.get("X-Report-Key") || "")
+      // Read via requestInfo(): e.request is undefined in record request hooks on PocketBase 0.42.
+      const sent = String(e.requestInfo().headers["x_report_key"] || "")
       r.set("access_key", /^[A-Za-z0-9_-]{16,64}$/.test(sent) ? sent : $security.randomString(32))
     }
     r.set("status", "new")
