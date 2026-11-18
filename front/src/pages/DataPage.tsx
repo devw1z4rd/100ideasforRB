@@ -3,11 +3,12 @@ import { Container } from "@/components/layout/Container"
 import { air } from "@/content/air"
 import { dataPage } from "@/content/data"
 import { enterprises } from "@/content/enterprises"
-import { calculator } from "@/content/calculator"
 import { compare } from "@/content/compare"
+import { map } from "@/content/map"
 import { news } from "@/content/news"
 import { water } from "@/content/water"
-import { hero } from "@/content/hero"
+import { Tooltip } from "@/components/ui/tooltip"
+// import { hero } from "@/content/hero" — вводный абзац на главной скрыт, его источники тоже не выводим
 import { AQI_SCALE, type AqiCategory } from "@/lib/aqi"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
@@ -42,7 +43,7 @@ export function DataPage() {
       <Section id="data-sources" title={dataPage.sources.title}>
         <ul className="mt-6 divide-y divide-border border-y border-border">
           {[
-            ...hero.factsSources.map((source) => ({ source, usedOn: dataPage.sources.usedOn })),
+            // ...hero.factsSources.map((source) => ({ source, usedOn: dataPage.sources.usedOn })),
             ...air.sources.map((source) => ({ source, usedOn: dataPage.sources.airUsedOn })),
             ...enterprises.sourcesList.map((source) => ({
               source,
@@ -50,8 +51,8 @@ export function DataPage() {
             })),
             ...water.sources.map((source) => ({ source, usedOn: dataPage.sources.waterUsedOn })),
             ...news.sources.map((source) => ({ source, usedOn: dataPage.sources.newsUsedOn })),
-            ...calculator.sources.map((source) => ({ source, usedOn: dataPage.sources.calculatorUsedOn })),
             ...compare.sources.map((source) => ({ source, usedOn: dataPage.sources.compareUsedOn })),
+            ...map.sources.map((source) => ({ source, usedOn: dataPage.sources.mapUsedOn })),
           ].map(({ source, usedOn }) => (
             <li
               key={`${source.label}-${source.url}`}
@@ -107,15 +108,16 @@ export function DataPage() {
         </table>
         <p className="mt-3 text-xs text-muted-foreground">
           {aqi.source.label}:{" "}
-          <a
-            href={aqi.source.url}
-            target="_blank"
-            rel="noreferrer"
-            title={aqi.source.title}
-            className="underline underline-offset-2 transition-colors hover:text-foreground"
-          >
-            {aqi.source.publisher}, {aqi.source.year}
-          </a>
+          <Tooltip content={aqi.source.title} side="top">
+            <a
+              href={aqi.source.url}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-2 transition-colors hover:text-foreground"
+            >
+              {aqi.source.publisher}, {aqi.source.year}
+            </a>
+          </Tooltip>
         </p>
       </Section>
 

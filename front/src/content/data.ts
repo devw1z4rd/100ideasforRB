@@ -1,6 +1,6 @@
 import type { FactSource } from "./hero"
 
-// Страница «Данные и методика» (CLAUDE.md M7). Источники — из hero.factsSources (вводный абзац) и air.sources
+// Страница «Данные и методика» (CLAUDE.md M7). Источники — из air.sources (hero.factsSources вводного абзаца — пока абзац скрыт, не выводятся)
 // (раздел «Воздух»), enterprises.sourcesList (раздел «Предприятия»); позже страница перейдёт на коллекцию sources в PocketBase.
 export const dataPage = {
   title: "Данные и методика",
@@ -12,8 +12,8 @@ export const dataPage = {
     enterprisesUsedOn: "Главная, раздел «Предприятия»",
     waterUsedOn: "Главная, раздел «Вода»; сравнение районов",
     newsUsedOn: "Новости, рубрика «Реки»",
-    calculatorUsedOn: "Калькулятор углеродного следа",
     compareUsedOn: "Сравнение районов",
+    mapUsedOn: "Главная, карта",
   },
   aqi: {
     title: "Шкала индекса качества воздуха (AQI)",
