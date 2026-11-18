@@ -1,10 +1,10 @@
 import { ArrowRight } from "lucide-react"
 import { Link } from "react-router"
 import type { ReportsCategoryOptions } from "@/api/pocketbase-types"
-import { reportPhotoUrl, useReportsRealtime, useShowcase, type ShowcaseReport } from "@/api/reports"
+import { useReportsRealtime, useShowcase, type ShowcaseReport } from "@/api/reports"
 import { Container } from "@/components/layout/Container"
 import { ReportIcon } from "@/components/map/ReportIcon"
-import { districtLabel, ReportList } from "@/components/reports/ReportBits"
+import { districtLabel, ReportList, ReportPhoto } from "@/components/reports/ReportBits"
 import { Button } from "@/components/ui/button"
 import { cta } from "@/content/nav"
 import { categoryLabels, resultsPage as text } from "@/content/reports"
@@ -145,10 +145,11 @@ function Story({ report: r }: { report: ShowcaseReport & { resolvedAt: string } 
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border transition-colors outline-none hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring"
     >
       {r.photos?.[0] ? (
-        <img
-          src={reportPhotoUrl(r, r.photos[0], "640x0")}
-          alt=""
-          loading="lazy"
+        <ReportPhoto
+          report={r}
+          file={r.photos[0]}
+          thumb="640x0"
+          iconClassName="size-10"
           className="aspect-[16/10] w-full object-cover"
         />
       ) : (

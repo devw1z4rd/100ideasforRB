@@ -1,9 +1,15 @@
 import { ArrowRight, Eye } from "lucide-react"
 import { useState } from "react"
 import { Link } from "react-router"
-import { reportPhotoUrl, useChangeReportStatus, type ReportWithDistrict } from "@/api/reports"
+import { useChangeReportStatus, type ReportWithDistrict } from "@/api/reports"
 import { ReportIcon } from "@/components/map/ReportIcon"
-import { districtLabel, formatDateTime, ScoreBadge, StatusBadge } from "@/components/reports/ReportBits"
+import {
+  districtLabel,
+  formatDateTime,
+  ReportPhoto,
+  ScoreBadge,
+  StatusBadge,
+} from "@/components/reports/ReportBits"
 import { Button } from "@/components/ui/button"
 import { categoryLabels, moderationPage as text, statusActions, statusTransitions } from "@/content/reports"
 import { cn } from "@/lib/utils"
@@ -18,10 +24,11 @@ export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
       <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted sm:aspect-square">
         {photo ? (
           <>
-            <img
-              src={reportPhotoUrl(r, photo, "640x0")}
-              alt=""
-              loading="lazy"
+            <ReportPhoto
+              report={r}
+              file={photo}
+              thumb="640x0"
+              iconClassName="size-10"
               className={cn("size-full object-cover transition-[filter]", !revealed && "blur-xl")}
             />
             {!revealed && (

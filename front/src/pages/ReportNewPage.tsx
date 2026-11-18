@@ -83,15 +83,16 @@ export function ReportNewPage() {
     setPhotoError(files.length > picked.length ? text.photosTooMany : null)
     if (!point && locating === "idle") locate()
     setProcessing((n) => n + picked.length)
-    let big: string | null = null
+    let problem: string | null = null
     // One at a time: decoding several 12+ MP shots at once can run a phone out of memory.
     for (const file of picked) {
       const photo = await compressPhoto(file)
       setProcessing((n) => n - 1)
-      if (photo.size > MAX_PHOTO_BYTES) big ??= file.name
+      if (!photo) problem ??= text.photoUnreadable(file.name)
+      else if (photo.size > MAX_PHOTO_BYTES) problem ??= text.photoTooBig(file.name)
       else setPhotos((current) => [...current, photo].slice(0, MAX_PHOTOS))
     }
-    if (big) setPhotoError(text.photoTooBig(big))
+    if (problem) setPhotoError(problem)
   }
 
   const serverPointError = create.error ? fieldError(create.error, "location") : null

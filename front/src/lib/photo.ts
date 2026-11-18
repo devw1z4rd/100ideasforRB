@@ -14,14 +14,17 @@ export function jpegName(name: string) {
 /**
  * Re-encodes a photo as JPEG no larger than 2048 px: a phone shot goes from 4–8 MB to ~0.5 MB. Re-encoding
  * also drops EXIF (GPS, device, time), which would otherwise be downloadable with the public report, and
- * bakes in the EXIF rotation. Returns the file as is if the browser can't decode it (HEIC outside Safari).
+ * bakes in the EXIF rotation.
+ *
+ * Returns null if the browser can't decode the file (HEIC outside Safari): moderators' browsers couldn't
+ * show it either. If only re-encoding fails, returns the file as is.
  */
-export async function compressPhoto(file: File): Promise<File> {
+export async function compressPhoto(file: File): Promise<File | null> {
   let bitmap: ImageBitmap
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" })
   } catch {
-    return file
+    return null
   }
   try {
     const { width, height } = fitWithin(bitmap.width, bitmap.height)

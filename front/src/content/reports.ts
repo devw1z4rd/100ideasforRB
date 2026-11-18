@@ -51,6 +51,8 @@ export const reportForm = {
   removePhoto: "Убрать фото",
   photosTooMany: "Не больше 5 фото",
   photoTooBig: (name: string) => `${name} больше 8 МБ`,
+  photoUnreadable: (name: string) =>
+    `${name}: браузер не открывает этот формат. Выберите JPEG или PNG либо сфотографируйте камерой`,
   photosProcessing: "Готовим фото…",
   point: "Где это",
   locate: "Определить моё место",

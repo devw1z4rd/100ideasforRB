@@ -376,7 +376,7 @@ The map intro animation was profiled separately on a throttled CPU. The flight f
 - **Modelled air data.** CAMS values describe a ~10–40 km grid cell, not a measurement at a station. Integrating official monitoring data from Belhydromet depends on its availability in machine-readable form.
 - **No enterprise- or district-level emissions.** These figures are not published, so the industry section stays at the regional level.
 - **Manual quarterly extraction.** Water-quality data is extracted from Belhydromet's reviews by hand each quarter.
-- **Photos are processed in the browser only.** Before upload the report form re-encodes each photo as JPEG of at most 2048 px, which also removes EXIF metadata, including location. A browser that cannot decode the format (HEIC outside Safari) uploads the original as is, and the server does not re-check it, because PocketBase hooks have no image library.
+- **Photos are processed in the browser only.** Before upload the report form re-encodes each photo as JPEG of at most 2048 px, which also removes EXIF metadata, including location. A photo the browser cannot decode (HEIC outside Safari) is not attached; the form asks for JPEG or PNG instead, since moderators' browsers could not show it either. The server does not re-check uploads, because PocketBase hooks have no image library; a photo that still cannot be shown is replaced by the category icon.
 - **Open items before production:**
   - the `Caddyfile` has been checked locally with Caddy 2.11.9 (compression, caching, SPA fallback, realtime, client IP), but not yet on a production host;
   - docker-compose and CI/CD are not part of the repository yet.

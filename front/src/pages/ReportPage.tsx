@@ -14,7 +14,13 @@ import {
 } from "@/api/reports"
 import { Container } from "@/components/layout/Container"
 import { PointPicker } from "@/components/reports/PointPicker"
-import { districtLabel, formatDateTime, ScoreBadge, StatusBadge } from "@/components/reports/ReportBits"
+import {
+  districtLabel,
+  formatDateTime,
+  ReportPhoto,
+  ScoreBadge,
+  StatusBadge,
+} from "@/components/reports/ReportBits"
 import { Button } from "@/components/ui/button"
 import {
   categoryLabels,
@@ -97,10 +103,10 @@ export function ReportPage() {
               {r.photos.map((f) => (
                 <li key={f}>
                   <a href={reportPhotoUrl(r, f)} target="_blank" rel="noreferrer" className="block">
-                    <img
-                      src={reportPhotoUrl(r, f, "640x0")}
-                      alt=""
-                      loading="lazy"
+                    <ReportPhoto
+                      report={r}
+                      file={f}
+                      thumb="640x0"
                       className={cn(
                         "aspect-square w-full rounded-lg object-cover",
                         isModerator && r.status === "new" && !revealed && "blur-xl",

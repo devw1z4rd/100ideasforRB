@@ -1,8 +1,47 @@
+import { useState } from "react"
 import { Link } from "react-router"
 import { deviceKey, reportPhotoUrl, type ReportWithDistrict } from "@/api/reports"
 import type { ReportsStatusOptions } from "@/api/pocketbase-types"
+import { ReportIcon } from "@/components/map/ReportIcon"
 import { categoryLabels, statusLabels } from "@/content/reports"
 import { cn } from "@/lib/utils"
+
+type PhotoUrlArgs = Parameters<typeof reportPhotoUrl>
+
+/**
+ * A report photo, or the category icon if the browser can't show it: the form only uploads photos the
+ * browser could decode, but a HEIC sent past it (straight to the API) would otherwise be a broken image.
+ */
+export function ReportPhoto({
+  report,
+  file,
+  thumb,
+  className,
+  iconClassName = "size-8",
+}: {
+  report: PhotoUrlArgs[0]
+  file: string
+  thumb?: PhotoUrlArgs[2]
+  className?: string
+  iconClassName?: string
+}) {
+  const [broken, setBroken] = useState(false)
+  if (broken)
+    return (
+      <div className={cn("grid place-items-center bg-muted text-muted-foreground", className)}>
+        <ReportIcon category={report.category} className={iconClassName} />
+      </div>
+    )
+  return (
+    <img
+      src={reportPhotoUrl(report, file, thumb)}
+      alt=""
+      loading="lazy"
+      onError={() => setBroken(true)}
+      className={className}
+    />
+  )
+}
 
 const statusDot: Record<ReportsStatusOptions, string> = {
   new: "bg-muted-foreground",
@@ -79,10 +118,11 @@ export function ReportList({ reports, empty }: { reports: readonly ReportWithDis
               )}
             </div>
             {r.photos?.[0] && (
-              <img
-                src={reportPhotoUrl(r, r.photos[0], "160x160")}
-                alt=""
-                loading="lazy"
+              <ReportPhoto
+                report={r}
+                file={r.photos[0]}
+                thumb="160x160"
+                iconClassName="size-6"
                 className={cn(
                   "size-16 shrink-0 rounded-lg object-cover md:size-20",
                   r.status === "new" && r.auto_check && "blur-md",
