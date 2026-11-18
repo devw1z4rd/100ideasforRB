@@ -6,10 +6,16 @@ import { RouterProvider } from "react-router/dom"
 import { queryClient } from "@/api/queryClient"
 import { loadMapView } from "@/components/map/loadMapView"
 import { registerServiceWorker } from "@/lib/serviceWorker"
+import { reloadOnStaleChunk } from "@/lib/staleChunks"
 import { routes } from "@/routes"
 import "./index.css"
 
 const router = createBrowserRouter(routes)
+
+reloadOnStaleChunk(() => {
+  const next = router.state.navigation.location
+  return next ? router.createHref(next) : null
+})
 
 // In builds CSS is moved to the end of <body> (stylesAfterShell in vite.config.ts) so it doesn't block the
 // index.html shell; render only once it has loaded, otherwise the page flashes unstyled.
