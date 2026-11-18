@@ -31,12 +31,17 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# PocketBase: данные и бинарник (в проде бинарник качает Dockerfile, §5)
+# PocketBase: data and the local binary
 pb_data/
 back/pocketbase.exe
 
-# Временные материалы (макет и старый прототип)
+# Temporary materials (mockups, old prototype)
 temp-*/
+temp-old/
+temp-urls-of-water-data.md
 
-# Локальная документация (спеки, планы)
+# Local docs and AI assistant files
 docs/
+CLAUDE.md
+.claude/
+.superpowers/
