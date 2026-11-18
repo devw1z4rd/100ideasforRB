@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   change,
   compositionForYear,
+  compositionShares,
   countryMobile,
   emissionYears,
   mobileFor,
@@ -95,5 +96,13 @@ describe("series and helpers", () => {
     expect(compositionForYear(rows, 2025).map((c) => c.pollutant)).toEqual(["метан", "диоксид серы"])
     expect(countryMobile(rows, 2025)).toBeCloseTo(403.8, 6)
     expect(countryMobile(rows, 2024)).toBeNull()
+  })
+
+  it("gives each substance its share of all enterprise emissions and the rest as other substances", () => {
+    const { items, other } = compositionShares(rows, 2025, 398.778)
+    expect(items.map((c) => c.pollutant)).toEqual(["метан", "диоксид серы"])
+    expect(items[0].share).toBeCloseTo((157.626 / 398.778) * 100, 6)
+    expect(other?.value).toBeCloseTo(398.778 - 157.626 - 26.032, 6)
+    expect(compositionShares(rows, 2025, 183.658).other).toBeNull()
   })
 })

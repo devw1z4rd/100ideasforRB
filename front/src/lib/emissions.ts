@@ -102,3 +102,16 @@ export function countryMobile(rows: readonly Stat[], year: number): number | nul
   )
   return parts.length ? parts.reduce((sum, r) => sum + r.value, 0) : null
 }
+
+/**
+ * Вещества за год с долей от всех выбросов предприятий страны (total) и остаток «другие вещества»:
+ * Белстат выделяет основные вещества, их сумма — 91–94 % итога. Остаток null, если почти ноль.
+ */
+export function compositionShares(rows: readonly Stat[], year: number, total: number) {
+  const items = compositionForYear(rows, year).map((c) => ({
+    ...c,
+    share: total ? (c.value / total) * 100 : 0,
+  }))
+  const rest = total - items.reduce((sum, c) => sum + c.value, 0)
+  return { items, other: total && rest > 0.05 ? { value: rest, share: (rest / total) * 100 } : null }
+}
