@@ -51,6 +51,7 @@ export const reportForm = {
   removePhoto: "Убрать фото",
   photosTooMany: "Не больше 5 фото",
   photoTooBig: (name: string) => `${name} больше 8 МБ`,
+  photosProcessing: "Готовим фото…",
   point: "Где это",
   locate: "Определить моё место",
   locateAgain: "Я здесь",

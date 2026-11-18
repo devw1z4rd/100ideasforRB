@@ -184,7 +184,9 @@ export function useChangeReportStatus() {
   })
 }
 
-export const reportPhotoUrl = (report: ReportsResponse, file: string) => pb.files.getURL(report, file)
+// Only sizes listed in the photos field's `thumbs` are generated; any other size gets the original.
+export const reportPhotoUrl = (report: ReportsResponse, file: string, thumb?: "160x160" | "640x0") =>
+  pb.files.getURL(report, file, thumb ? { thumb } : undefined)
 
 export function fieldError(error: unknown, field: string): string | null {
   if (!(error instanceof ClientResponseError)) return null

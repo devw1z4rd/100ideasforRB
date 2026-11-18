@@ -146,7 +146,7 @@ function Story({ report: r }: { report: ShowcaseReport & { resolvedAt: string } 
     >
       {r.photos?.[0] ? (
         <img
-          src={reportPhotoUrl(r, r.photos[0])}
+          src={reportPhotoUrl(r, r.photos[0], "640x0")}
           alt=""
           loading="lazy"
           className="aspect-[16/10] w-full object-cover"

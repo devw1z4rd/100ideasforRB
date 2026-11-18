@@ -80,7 +80,7 @@ export function ReportList({ reports, empty }: { reports: readonly ReportWithDis
             </div>
             {r.photos?.[0] && (
               <img
-                src={reportPhotoUrl(r, r.photos[0])}
+                src={reportPhotoUrl(r, r.photos[0], "160x160")}
                 alt=""
                 loading="lazy"
                 className={cn(

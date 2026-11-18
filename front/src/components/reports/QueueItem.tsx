@@ -19,7 +19,7 @@ export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
         {photo ? (
           <>
             <img
-              src={reportPhotoUrl(r, photo)}
+              src={reportPhotoUrl(r, photo, "640x0")}
               alt=""
               loading="lazy"
               className={cn("size-full object-cover transition-[filter]", !revealed && "blur-xl")}

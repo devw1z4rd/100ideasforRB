@@ -9,6 +9,7 @@ import { ReportIcon } from "@/components/map/ReportIcon"
 import { PointPicker } from "@/components/reports/PointPicker"
 import { Button } from "@/components/ui/button"
 import { categoryLabels, reportForm as text } from "@/content/reports"
+import { compressPhoto } from "@/lib/photo"
 import { clearDraft, loadDraft, loadPhotos, saveDraft, savePhotos } from "@/lib/reportDraft"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 import { cn } from "@/lib/utils"
@@ -28,6 +29,7 @@ export function ReportNewPage() {
 
   const [draft] = useState(loadDraft)
   const [photos, setPhotos] = useState<File[]>([])
+  const [processing, setProcessing] = useState(0)
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [point, setPoint] = useState<GeoPoint | null>(draft.point)
   const [focus, setFocus] = useState<GeoPoint | null>(draft.point)
@@ -75,16 +77,21 @@ export function ReportNewPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const addPhotos = (files: FileList | null) => {
+  const addPhotos = async (files: FileList | null) => {
     if (!files) return
-    const picked = [...files]
-    const big = picked.find((f) => f.size > MAX_PHOTO_BYTES)
-    const fit = picked.filter((f) => f.size <= MAX_PHOTO_BYTES)
-    setPhotoError(
-      big ? text.photoTooBig(big.name) : photos.length + fit.length > MAX_PHOTOS ? text.photosTooMany : null,
-    )
-    setPhotos([...photos, ...fit].slice(0, MAX_PHOTOS))
+    const picked = [...files].slice(0, Math.max(0, MAX_PHOTOS - photos.length - processing))
+    setPhotoError(files.length > picked.length ? text.photosTooMany : null)
     if (!point && locating === "idle") locate()
+    setProcessing((n) => n + picked.length)
+    let big: string | null = null
+    // One at a time: decoding several 12+ MP shots at once can run a phone out of memory.
+    for (const file of picked) {
+      const photo = await compressPhoto(file)
+      setProcessing((n) => n - 1)
+      if (photo.size > MAX_PHOTO_BYTES) big ??= file.name
+      else setPhotos((current) => [...current, photo].slice(0, MAX_PHOTOS))
+    }
+    if (big) setPhotoError(text.photoTooBig(big))
   }
 
   const serverPointError = create.error ? fieldError(create.error, "location") : null
@@ -100,7 +107,7 @@ export function ReportNewPage() {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     setTried(true)
-    if (!point || !category) return
+    if (!point || !category || processing) return
     create.mutate(
       { location: point, category, description: description.trim(), photos },
       {
@@ -121,7 +128,7 @@ export function ReportNewPage() {
 
       <form onSubmit={submit} noValidate className="mt-8 flex flex-col gap-9">
         <Step n={1} title={text.photos} hint={text.photosHint}>
-          {photos.length === 0 ? (
+          {photos.length === 0 && processing === 0 ? (
             <label className="flex h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-input text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring">
               <Camera className="size-8" />
               <span className="text-sm font-medium">{text.addPhoto}</span>
@@ -142,7 +149,14 @@ export function ReportNewPage() {
                   </button>
                 </div>
               ))}
-              {photos.length < MAX_PHOTOS && (
+              {Array.from({ length: processing }, (_, i) => (
+                <div
+                  key={`processing-${i}`}
+                  aria-hidden="true"
+                  className="size-24 animate-pulse rounded-xl bg-muted"
+                />
+              ))}
+              {photos.length + processing < MAX_PHOTOS && (
                 <label className="grid size-24 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-input text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring">
                   <Camera className="size-6" />
                   <span className="sr-only">{text.addPhoto}</span>
@@ -250,9 +264,18 @@ export function ReportNewPage() {
           )}
           <div className="flex items-center gap-4">
             <p className="min-w-0 flex-1 text-[13px] text-muted-foreground" aria-live="polite">
-              {missing.length ? `${text.remaining}: ${missing.join(", ")}` : text.ready}
+              {processing
+                ? text.photosProcessing
+                : missing.length
+                  ? `${text.remaining}: ${missing.join(", ")}`
+                  : text.ready}
             </p>
-            <Button type="submit" size="lg" disabled={create.isPending} className="h-11 px-6">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={create.isPending || processing > 0}
+              className="h-11 px-6"
+            >
               {create.isPending ? text.submitting : text.submit}
             </Button>
           </div>

@@ -98,7 +98,7 @@ export function ReportPage() {
                 <li key={f}>
                   <a href={reportPhotoUrl(r, f)} target="_blank" rel="noreferrer" className="block">
                     <img
-                      src={reportPhotoUrl(r, f)}
+                      src={reportPhotoUrl(r, f, "640x0")}
                       alt=""
                       loading="lazy"
                       className={cn(
