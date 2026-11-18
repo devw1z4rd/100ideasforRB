@@ -11,6 +11,7 @@ import { emissionStatsQuery } from "./emissions"
 import { login, logout, register } from "./auth"
 import { pb } from "./pb"
 import type { TypedPocketBase } from "./pocketbase-types"
+import { refetchOnAuthChange } from "./queryClient"
 import { changeReportStatus, createReport, reportEventsQuery, reportQuery, reportsQuery } from "./reports"
 import { airPointsQuery, districtGeometryQuery, districtsQuery, sourcesQuery } from "./reference"
 import { riverLevelsQuery, riverPostsQuery } from "./rivers"
@@ -32,6 +33,8 @@ const day = (shift: number) =>
 describe.skipIf(!url)("api against PocketBase", () => {
   const admin = new PocketBase(url) as TypedPocketBase
   const created: Array<["users" | "reports", string]> = []
+  // As in the app: without this, a query cached as the author would still be served after logout.
+  const stopRefetch = refetchOnAuthChange(client)
 
   beforeAll(async () => {
     pb.baseURL = url!
@@ -42,6 +45,7 @@ describe.skipIf(!url)("api against PocketBase", () => {
 
   afterAll(async () => {
     logout()
+    stopRefetch()
     for (const [collection, id] of created.reverse())
       await admin
         .collection(collection)

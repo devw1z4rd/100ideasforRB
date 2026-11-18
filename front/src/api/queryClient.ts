@@ -12,6 +12,9 @@ export const queryClient = new QueryClient({
 })
 
 // Sign-in/out changes what API rules expose (own reports, moderation queue) — refetch everything.
-pb.authStore.onChange(() => {
-  void queryClient.invalidateQueries()
-})
+export const refetchOnAuthChange = (client: QueryClient) =>
+  pb.authStore.onChange(() => {
+    void client.invalidateQueries()
+  })
+
+refetchOnAuthChange(queryClient)
