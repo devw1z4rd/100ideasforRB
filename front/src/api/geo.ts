@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
 
-// Статичные слои карты из front/public/geo (собирает back/seed/tools/build-map-geo.mjs). Меняются только с деплоем.
+// Статичные слои карты из front/public/geo (собирают back/seed/tools/build-map-geo.mjs и build-map-borders.mjs).
+// Меняются только с деплоем.
 
 export type LineFeature = {
   type: "Feature"
@@ -14,6 +15,19 @@ export type OblastFeature = {
   geometry:
     { type: "Polygon"; coordinates: number[][][] } | { type: "MultiPolygon"; coordinates: number[][][][] }
 }
+
+/**
+ * Окружение области (build-map-borders.mjs): границы стран и областей — линии, вдоль контура области без дублей;
+ * контур Беларуси — полигон, им остальная страна отделяется от соседних государств
+ */
+export type BorderFeature =
+  | {
+      type: "Feature"
+      // blr — линия Беларуси (граница страны или её областей): на старте карты видна только она
+      properties: { kind: "country" | "region"; blr?: boolean }
+      geometry: { type: "MultiLineString"; coordinates: number[][][] }
+    }
+  | { type: "Feature"; properties: { kind: "belarus" }; geometry: OblastFeature["geometry"] }
 
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(path)
@@ -35,5 +49,13 @@ export const riversQuery = () =>
     staleTime: Infinity,
   })
 
+export const bordersQuery = () =>
+  queryOptions({
+    queryKey: ["geo", "borders"],
+    queryFn: () => getJson<GeoCollection<BorderFeature>>("/geo/borders.geojson"),
+    staleTime: Infinity,
+  })
+
 export const useOblast = () => useQuery(oblastQuery())
 export const useRivers = () => useQuery(riversQuery())
+export const useBorders = () => useQuery(bordersQuery())

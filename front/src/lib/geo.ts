@@ -26,6 +26,30 @@ export function inGeometry(lon: number, lat: number, geometry: PolygonGeometry |
   )
 }
 
+/**
+ * Один контур из района и его анклавов (г. Гомель внутри Гомельского района): «дырки», которые занимает
+ * другой полигон из списка, заливаются, а сам полигон-анклав выбрасывается. Пересечения вне «дырок» не ищутся.
+ */
+export function mergeEnclaves(geometries: readonly PolygonGeometry[]): PolygonGeometry {
+  const polygons = geometries.flatMap(polygonsOf)
+  // Точка внутри полигона-анклава: среднее вершин внешнего кольца (вершины лежат на границе «дырки» — не годятся)
+  const inner = (rings: number[][][]) => {
+    const ring = rings[0]
+    const sum = ring.reduce(([x, y], [lon, lat]) => [x + lon, y + lat], [0, 0])
+    return [sum[0] / ring.length, sum[1] / ring.length]
+  }
+  const absorbed = new Set<number[][][]>()
+  const merged = polygons.map(([outer, ...holes]) => [
+    outer,
+    ...holes.filter((hole) => {
+      const fillers = polygons.filter((q) => q[0] !== outer && inRing(inner(q)[0], inner(q)[1], hole))
+      fillers.forEach((q) => absorbed.add(q))
+      return fillers.length === 0
+    }),
+  ])
+  return { type: "MultiPolygon", coordinates: merged.filter((_, i) => !absorbed.has(polygons[i])) }
+}
+
 /** id района, в который попадает точка, или null — точка вне области */
 export function districtAt(
   districts: readonly { id: string; geometry?: PolygonGeometry | null }[],

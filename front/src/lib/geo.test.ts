@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest"
-import { districtAt, fitProjection, geometryPath, inGeometry, type PolygonGeometry } from "./geo"
+import {
+  districtAt,
+  fitProjection,
+  geometryPath,
+  inGeometry,
+  mergeEnclaves,
+  type PolygonGeometry,
+} from "./geo"
 
 // Квадрат 30–31° в. д. × 52–53° с. ш. с «дыркой» в середине — как Гомельский район вокруг г. Гомеля
 const district: PolygonGeometry = {
@@ -84,5 +91,30 @@ describe("geometryPath", () => {
     }
     const d = geometryPath(dense, fitProjection([dense], 100), 1)
     expect(d.match(/L/g)).toHaveLength(3)
+  })
+})
+
+describe("mergeEnclaves", () => {
+  const square = (x0: number, y0: number, size: number) => [
+    [x0, y0],
+    [x0 + size, y0],
+    [x0 + size, y0 + size],
+    [x0, y0 + size],
+    [x0, y0],
+  ]
+
+  it("fills the hole taken by the enclave and drops the enclave itself", () => {
+    const district: PolygonGeometry = { type: "Polygon", coordinates: [square(0, 0, 10), square(4, 4, 2)] }
+    const city: PolygonGeometry = { type: "Polygon", coordinates: [square(4, 4, 2)] }
+    expect(mergeEnclaves([district, city])).toEqual({ type: "MultiPolygon", coordinates: [[square(0, 0, 10)]] })
+  })
+
+  it("keeps holes nobody fills and unrelated polygons", () => {
+    const district: PolygonGeometry = { type: "Polygon", coordinates: [square(0, 0, 10), square(1, 1, 2)] }
+    const island: PolygonGeometry = { type: "Polygon", coordinates: [square(20, 20, 2)] }
+    expect(mergeEnclaves([district, island]).coordinates).toEqual([
+      [square(0, 0, 10), square(1, 1, 2)],
+      [square(20, 20, 2)],
+    ])
   })
 })
