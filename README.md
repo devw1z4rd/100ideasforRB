@@ -278,6 +278,7 @@ The service worker is installed only in production builds. `npm run preview` ins
 | Variable | Where | Purpose |
 |---|---|---|
 | `VITE_PB_URL` | frontend build | PocketBase URL when the frontend is not served from the API origin (default `/`) |
+| `VITE_SITE_URL` | frontend build | Site address, e.g. `https://eco.example.by`, for the absolute `og:image` URL in link previews. Without it the URL stays relative and the build warns |
 | `AIR_API_URL` | PocketBase | Overrides the Open-Meteo host (tests, proxy) |
 | `RIVER_API_URL` | PocketBase | Overrides the pogoda.by host |
 | `BELGIDROMET_URL` | PocketBase | Overrides the belgidromet.by host |
@@ -313,7 +314,7 @@ The schema enables PocketBase's default rate limits, including 2 sign-ins per 3 
 
 The target is a small Linux VPS: 1 vCPU, 1–2 GB RAM, Ubuntu 24.04.
 
-1. **Build the frontend:** `cd front && npm ci && npm run build`.
+1. **Build the frontend:** `cd front && npm ci && VITE_SITE_URL=https://<domain> npm run build`.
 2. **Copy to the server:**
    - `back/pb_hooks/`, `back/pb_migrations/` and `back/seed/`;
    - the PocketBase 0.42.3 binary for Linux, placed next to them;

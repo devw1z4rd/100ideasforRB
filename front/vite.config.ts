@@ -89,8 +89,27 @@ const precompress = (): Plugin => {
   }
 }
 
+/**
+ * Link previews (Telegram, VK, Facebook) want an absolute og:image, so __SITE_URL__ in index.html becomes
+ * VITE_SITE_URL. Without it the URL stays relative, which not every previewer resolves.
+ */
+const socialMeta = (): Plugin => {
+  let site = ""
+  return {
+    name: "social-meta",
+    configResolved(config) {
+      site = String(config.env.VITE_SITE_URL ?? "").replace(/\/+$/, "")
+      if (config.command === "build" && !site)
+        config.logger.warn(
+          "VITE_SITE_URL is not set: og:image stays relative, link previews may lack the image",
+        )
+    },
+    transformIndexHtml: (html) => html.replaceAll("__SITE_URL__", site),
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss(), stylesAfterShell(), serviceWorker(), precompress()],
+  plugins: [react(), tailwindcss(), stylesAfterShell(), serviceWorker(), precompress(), socialMeta()],
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "./src") } },
   server: { proxy: { "/api": pocketbase, "/_/": pocketbase } },
   build: {

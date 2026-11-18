@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
@@ -107,7 +108,8 @@
         }
       }
     </style>
-    <!-- TODO: og:url and og:image once the domain is set -->
+    <!-- __SITE_URL__ becomes VITE_SITE_URL at build time (socialMeta in vite.config.ts): previews want absolute URLs.
+         No og:url: in an SPA every page would claim the home page's address. -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ru_RU" />
     <meta property="og:site_name" content="Экология Гомельской области" />
@@ -116,7 +118,12 @@
       property="og:description"
       content="Экологическое состояние Гомельской области: карта проблемных территорий, качество воздуха, предприятия, реки и обращения жителей."
     />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="__SITE_URL__/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Карта Гомельской области с районами и реками" />
+    <meta name="twitter:card" content="summary_large_image" />
     <title>Экологический профиль Гомельщины</title>
   </head>
   <body>
