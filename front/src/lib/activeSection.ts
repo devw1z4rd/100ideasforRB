@@ -4,8 +4,9 @@ import { useEffect, useState } from "react"
 export const HEADER_HEIGHT = 56
 
 /**
- * id последней секции, чей верх ушёл под шапку; null — если ни одна ещё не дошла (виден hero).
- * В самом низу страницы активна последняя секция: короткая «Вода» иначе не подсветится никогда.
+ * id последней секции, чей верх ушёл под шапку. Пока ни одна не дошла — первая: над картой
+ * только заголовок страницы, и вверху главной подсвечена «Карта». null — только для пустого списка.
+ * В самом низу страницы активна последняя секция: иначе она может не подсветиться никогда.
  */
 export function pickActiveSection(
   sections: ReadonlyArray<{ id: string; top: number }>,
@@ -13,7 +14,7 @@ export function pickActiveSection(
   atBottom = false,
 ): string | null {
   if (atBottom) return sections.at(-1)?.id ?? null
-  let active: string | null = null
+  let active: string | null = sections[0]?.id ?? null
   for (const section of sections) {
     if (section.top <= headerHeight + 1) active = section.id
   }

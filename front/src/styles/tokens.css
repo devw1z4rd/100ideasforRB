@@ -30,6 +30,18 @@
   --link-hover: #1f4fd1;
   --success: #4cc38a;
 
+  /* Панели и бары секции «Предприятия» (§10.7) в светлой теме; тёмные значения — в .dark ниже */
+  --panel-border: #ececea;
+  --panel-raised: #f7f7f5;
+  --panel-highlight: #f0f0ed;
+  --fg-dim: #8a8f8c;
+  --bar: #8f9490;
+  --bar-muted: #c3c6c3;
+  --bar-faint: #e6e7e4;
+  --rule: #e1e3e0;
+  --success-ink: #1d7a4c;
+  --destructive-ink: #b8391f;
+
   /* Шкала AQI (lib/aqi.ts): 0–200 — цвета макета, 201+ — стандартные цвета EPA (в макете шкала до 200) */
   --aqi-good: #4cc38a;
   --aqi-moderate: #f0a92e;
@@ -37,6 +49,21 @@
   --aqi-unhealthy: #9e2f1a;
   --aqi-very-unhealthy: #8f3f97;
   --aqi-hazardous: #7e0023;
+
+  /* Плашка с AQI по категории ([data-aqi-surface] ниже) и цвет числа на ней. Светлые категории — тот же оттенок,
+     чуть светлее, с тёмным числом; тёмные — цвет шкалы как есть с белым */
+  --aqi-good-surface: color-mix(in oklab, var(--aqi-good) 78%, white);
+  --aqi-good-ink: #0c3a24;
+  --aqi-moderate-surface: color-mix(in oklab, var(--aqi-moderate) 78%, white);
+  --aqi-moderate-ink: #3d2803;
+  --aqi-usg-surface: color-mix(in oklab, var(--aqi-usg) 78%, white);
+  --aqi-usg-ink: #3b1007;
+  --aqi-unhealthy-surface: var(--aqi-unhealthy);
+  --aqi-unhealthy-ink: #ffffff;
+  --aqi-very-unhealthy-surface: var(--aqi-very-unhealthy);
+  --aqi-very-unhealthy-ink: #ffffff;
+  --aqi-hazardous-surface: var(--aqi-hazardous);
+  --aqi-hazardous-ink: #ffffff;
 
   /* Уровень относительно нормы ВОЗ (секция «Воздух»): до нормы / до двух норм / выше — те же цвета, что у AQI */
   --level-ok: var(--aqi-good);
@@ -50,13 +77,77 @@
   --river-flood: #3d8bea;
   --river-danger: var(--aqi-usg);
 
+  /* Квартальный отчёт о воде — книжка (§10.8): обложка цвета глубокой реки, страницы — бумага */
+  --book-cover: #0f3a45;
+  /* Обложка по сезону квартала (полка обзоров): I — зима, II — весна, III — лето, IV — осень */
+  --book-winter: #1c3150;
+  --book-spring: #0f3a45;
+  --book-summer: #1d3b2a;
+  --book-autumn: #4a2f1b;
+  --book-cover-ink: #eaf4f3;
+  --book-cover-muted: #a7c9cd;
+  --book-river: #7cc8dc;
+  --book-paper: #fbfaf6;
+  --book-edge: #e2ded3;
+  --book-shadow: rgb(15 30 35 / 0.28);
+
+  /* Графики bklit (components/charts, графики воды): переменные их реестра — через роли сайта, поэтому тёмная
+     тема и тёмные блоки работают сами. Основная линия — цвет рек */
+  --chart-1: var(--map-river);
+  --chart-2: var(--level-elevated);
+  --chart-3: var(--river-flood);
+  --chart-4: var(--muted-foreground);
+  --chart-5: var(--foreground);
+  --chart-positive: var(--success);
+  --chart-negative: var(--destructive);
+  --chart-background: var(--background);
+  --chart-foreground: var(--foreground);
+  --chart-foreground-muted: var(--muted-foreground);
+  --chart-line-primary: var(--chart-1);
+  --chart-line-secondary: var(--chart-2);
+  --chart-crosshair: var(--foreground);
+  --chart-grid: var(--border);
+  --chart-brush-border: var(--chart-grid);
+  --chart-tooltip-background: var(--popover);
+  --chart-tooltip-foreground: var(--popover-foreground);
+  --chart-tooltip-muted: var(--muted-foreground);
+  --chart-marker-background: var(--muted);
+  --chart-marker-border: var(--input);
+  --chart-marker-foreground: var(--foreground);
+  --chart-label: var(--muted-foreground);
+  --chart-scale-mix: var(--background);
+  --chart-scale-01: var(--muted);
+  --chart-scale-02: color-mix(in oklab, var(--chart-1) 35%, var(--chart-scale-mix));
+  --chart-scale-03: color-mix(in oklab, var(--chart-1) 55%, var(--chart-scale-mix));
+  --chart-scale-04: color-mix(in oklab, var(--chart-1) 78%, var(--chart-scale-mix));
+  --chart-scale-05: var(--chart-1);
+  --chart-scale-pattern-color: var(--background);
+  --chart-indicator-color: var(--foreground);
+  --chart-indicator-secondary-color: var(--muted);
+  --chart-marker-badge-background: var(--foreground);
+  --chart-marker-badge-foreground: var(--background);
+  --chart-segment-background: color-mix(in oklab, var(--foreground) 6%, transparent);
+  --chart-segment-line: color-mix(in oklab, var(--foreground) 25%, transparent);
+
   /* Карта (§10.4) — всегда тёмная, значения сняты с макета. MapLibre читает их через getComputedStyle */
-  --map-bg: #141816;
-  --map-land: #232825;
-  --map-outline: #f2f3f1;
-  --map-district: #3a413d;
+  --map-bg: #151517;
+  --map-land: #252528;
+  --map-outline: #f4f4f5;
+  --map-district: #3d3d43;
   --map-river: #4e93a8;
   --map-river-label: #7fb6c7;
+  /* Границы соседей (Natural Earth): страны — пунктир светлее, области — тонкая линия чуть светлее фона */
+  --map-border-country: #8e8e95;
+  --map-border-region: #3d3d43;
+  /* Остальная Беларусь — между фоном (соседние государства) и заливкой области */
+  --map-belarus: #1e1e21;
+  /* Детали при приближении (OpenFreeMap): лес, водоёмы, дороги, застройка, подписи деревень */
+  --map-wood: #1b3023;
+  --map-water: #1f3e4b;
+  --map-road: #45454b;
+  --map-road-major: #616168;
+  --map-building: #2d2d31;
+  --map-place: #909097;
   --focus: #336bf1;
 
   /* Сравнение районов (§10.14): первый район — графитовый, второй — синий; одни и те же цвета на картограмме,
@@ -68,27 +159,126 @@
   --header-h: 56px;
 }
 
-/* Тёмные блоки главной (карта, предприятия): класс .dark на секции переключает роли */
+/* Тёмные блоки главной (карта) и тёмная тема сайта (.dark на <html>): класс .dark переключает роли */
 .dark {
-  --background: #0e1110;
-  --foreground: #f2f3f1;
-  --card: #171b19;
-  --card-foreground: #f2f3f1;
-  --popover: #171b19;
-  --popover-foreground: #f2f3f1;
-  --primary: #f2f3f1;
-  --primary-foreground: #0e1110;
-  --secondary: #171b19;
-  --secondary-foreground: #f2f3f1;
-  --muted: #171b19;
-  --muted-foreground: #a3a8a5;
-  --accent: #171b19;
-  --accent-foreground: #f2f3f1;
-  --border: #1e2320;
-  --input: #2a302d;
+  --background: #0f0f11;
+  --foreground: #f4f4f5;
+  --card: #19191c;
+  --card-foreground: #f4f4f5;
+  --popover: #19191c;
+  --popover-foreground: #f4f4f5;
+  --primary: #f4f4f5;
+  --primary-foreground: #0f0f11;
+  --secondary: #19191c;
+  --secondary-foreground: #f4f4f5;
+  --muted: #19191c;
+  --muted-foreground: #a6a6ad;
+  --accent: #19191c;
+  --accent-foreground: #f4f4f5;
+  --border: #232326;
+  --input: #2e2e33;
   --ring: #8fb0ff;
   --link: #8fb0ff;
   --link-hover: #b9ceff;
+
+  /* Панели и бары секции «Предприятия» (§10.7) — значения сняты с temp-design (temp-factory, Mobile · 390) */
+  --panel-border: #29292d;
+  --panel-raised: #1f1f22;
+  --panel-highlight: #27272b;
+  --fg-dim: #8a8a91;
+  --bar: #94949b;
+  --bar-muted: #66666d;
+  --bar-faint: #404046;
+  --rule: #303035;
+  --success-ink: #6fd9a0;
+  --destructive-ink: #ff8f7a;
+}
+
+/*
+ * Тёмная тема сайта (переключатель в футере, lib/theme.ts): .dark на <html> включает тёмные роли на всей странице,
+ * а эти значения поднимают страницу на полтона над тёмными блоками (карта, «Предприятия») — они остаются
+ * отдельными панелями. Блоки со своим .dark переопределяют роли обратно на значения выше.
+ */
+:root {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+  --background: #18181b;
+  --card: #1f1f23;
+  --popover: #1f1f23;
+  --primary-foreground: #18181b;
+  --secondary: #222226;
+  --muted: #222226;
+  --accent: #222226;
+  --border: #2a2a2e;
+  --input: #38383d;
+  --fg-secondary: #c6c6cc;
+  --book-paper: #1f1f23;
+  --book-edge: #34343a;
+  --book-shadow: rgb(0 0 0 / 0.55);
+}
+/* На кадр смены темы — без переходов, чтобы всё перекрасилось разом (lib/theme.ts) */
+.theme-switching,
+.theme-switching * {
+  transition: none !important;
+}
+
+/* Футер (§10.9) окрашен по худшему AQI в области прямо сейчас: data-aqi-footer="<категория>".
+   Нет данных — инверсия страницы. Цвет — сам цвет шкалы (ярче плашек), текст — ink категории */
+[data-aqi-footer] {
+  --footer-bg: var(--foreground);
+  --footer-ink: var(--background);
+}
+[data-aqi-footer="good"] {
+  --footer-bg: var(--aqi-good);
+  --footer-ink: var(--aqi-good-ink);
+}
+[data-aqi-footer="moderate"] {
+  --footer-bg: var(--aqi-moderate);
+  --footer-ink: var(--aqi-moderate-ink);
+}
+[data-aqi-footer="usg"] {
+  --footer-bg: var(--aqi-usg);
+  --footer-ink: var(--aqi-usg-ink);
+}
+[data-aqi-footer="unhealthy"] {
+  --footer-bg: var(--aqi-unhealthy);
+  --footer-ink: var(--aqi-unhealthy-ink);
+}
+[data-aqi-footer="very-unhealthy"] {
+  --footer-bg: var(--aqi-very-unhealthy);
+  --footer-ink: var(--aqi-very-unhealthy-ink);
+}
+[data-aqi-footer="hazardous"] {
+  --footer-bg: var(--aqi-hazardous);
+  --footer-ink: var(--aqi-hazardous-ink);
+}
+
+/* Плашка с AQI в карточке города на карте (§10.4): data-aqi-surface="<категория>" задаёт --surface и --ink */
+[data-aqi-surface="good"] {
+  --surface: var(--aqi-good-surface);
+  --ink: var(--aqi-good-ink);
+}
+[data-aqi-surface="moderate"] {
+  --surface: var(--aqi-moderate-surface);
+  --ink: var(--aqi-moderate-ink);
+}
+[data-aqi-surface="usg"] {
+  --surface: var(--aqi-usg-surface);
+  --ink: var(--aqi-usg-ink);
+}
+[data-aqi-surface="unhealthy"] {
+  --surface: var(--aqi-unhealthy-surface);
+  --ink: var(--aqi-unhealthy-ink);
+}
+[data-aqi-surface="very-unhealthy"] {
+  --surface: var(--aqi-very-unhealthy-surface);
+  --ink: var(--aqi-very-unhealthy-ink);
+}
+[data-aqi-surface="hazardous"] {
+  --surface: var(--aqi-hazardous-surface);
+  --ink: var(--aqi-hazardous-ink);
 }
 
 @theme inline {
@@ -134,6 +324,32 @@
   --color-compare-a: var(--compare-a);
   --color-compare-b: var(--compare-b);
   --color-map-river-label: var(--map-river-label);
+  --color-chart-line-primary: var(--chart-line-primary);
+  --color-chart-line-secondary: var(--chart-line-secondary);
+  --color-chart-brush-border: var(--chart-brush-border);
+  --color-chart-tooltip-background: var(--chart-tooltip-background);
+  --color-chart-tooltip-foreground: var(--chart-tooltip-foreground);
+  --color-chart-tooltip-muted: var(--chart-tooltip-muted);
+  --color-chart-scale-02: var(--chart-scale-02);
+  --color-chart-scale-03: var(--chart-scale-03);
+  --color-chart-scale-04: var(--chart-scale-04);
+  --color-chart-scale-05: var(--chart-scale-05);
+  --color-book-cover: var(--book-cover);
+  --color-book-cover-ink: var(--book-cover-ink);
+  --color-book-cover-muted: var(--book-cover-muted);
+  --color-book-river: var(--book-river);
+  --color-book-paper: var(--book-paper);
+  --color-book-edge: var(--book-edge);
+  --color-panel-border: var(--panel-border);
+  --color-panel-raised: var(--panel-raised);
+  --color-panel-highlight: var(--panel-highlight);
+  --color-fg-dim: var(--fg-dim);
+  --color-bar: var(--bar);
+  --color-bar-muted: var(--bar-muted);
+  --color-bar-faint: var(--bar-faint);
+  --color-rule: var(--rule);
+  --color-success-ink: var(--success-ink);
+  --color-destructive-ink: var(--destructive-ink);
 
   --radius-sm: 6px;
   --radius-md: var(--radius);

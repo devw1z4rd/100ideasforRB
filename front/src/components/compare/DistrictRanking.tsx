@@ -237,7 +237,7 @@ function RankRow({ id, rank, name, value, share, role, hovered, onHover, onSelec
         onPointerEnter={() => onHover(id)}
         onFocus={() => onHover(id)}
         className={cn(
-          "grid w-full grid-cols-[24px_minmax(0,1fr)_minmax(0,0.9fr)_72px] items-center gap-x-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+          "grid min-h-11 w-full grid-cols-[20px_minmax(0,1.6fr)_minmax(0,1fr)_56px] items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring sm:min-h-0 sm:grid-cols-[24px_minmax(0,1fr)_minmax(0,0.9fr)_72px] sm:gap-x-3",
           role !== "a" && "cursor-pointer",
           hovered && "bg-muted",
         )}

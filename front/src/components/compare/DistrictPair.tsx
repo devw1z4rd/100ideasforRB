@@ -13,6 +13,7 @@ import { formatNumber } from "@/lib/format"
 import type { PostSummary } from "@/lib/rivers"
 import { cn } from "@/lib/utils"
 import type { Section } from "@/lib/water"
+import { Tooltip } from "@/components/ui/tooltip"
 
 const text = compare.pair
 
@@ -80,15 +81,16 @@ export function DistrictPair({
           >
             <NearMe locate={locate} onFound={onA} />
           </Picker>
-          <button
-            type="button"
-            onClick={onSwap}
-            aria-label={text.swap}
-            title={text.swap}
-            className={cn(control, "inline-flex cursor-pointer items-center justify-center px-2.5")}
-          >
-            <ArrowLeftRight aria-hidden="true" className="size-4" />
-          </button>
+          <Tooltip content={text.swap}>
+            <button
+              type="button"
+              onClick={onSwap}
+              aria-label={text.swap}
+              className={cn(control, "inline-flex cursor-pointer items-center justify-center px-2.5")}
+            >
+              <ArrowLeftRight aria-hidden="true" className="size-4" />
+            </button>
+          </Tooltip>
           <Picker
             id="pair-b"
             label={text.second}
@@ -225,19 +227,20 @@ function NearMe({ locate, onFound }: { locate: Props["locate"]; onFound: (id: st
   const message = state === "error" ? text.nearMeError : state === "outside" ? text.outside : null
   return (
     <>
-      <button
-        type="button"
-        onClick={run}
-        disabled={state === "busy"}
-        title={message ?? undefined}
-        className={cn(
-          control,
-          "hidden cursor-pointer items-center gap-1.5 disabled:opacity-60 sm:inline-flex",
-        )}
-      >
-        <LocateFixed aria-hidden="true" className="size-4" />
-        {text.nearMe}
-      </button>
+      <Tooltip content={message}>
+        <button
+          type="button"
+          onClick={run}
+          disabled={state === "busy"}
+          className={cn(
+            control,
+            "hidden cursor-pointer items-center gap-1.5 disabled:opacity-60 sm:inline-flex",
+          )}
+        >
+          <LocateFixed aria-hidden="true" className="size-4" />
+          {text.nearMe}
+        </button>
+      </Tooltip>
       {message && (
         <span role="status" className="hidden text-xs text-muted-foreground sm:inline">
           {message}

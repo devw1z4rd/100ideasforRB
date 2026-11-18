@@ -12,10 +12,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { sectionHeadingId, type SectionId } from "@/content/home"
-import { anchors, cta, login, pages } from "@/content/nav"
+import { anchors, cta, login as guestLogin, account, pages } from "@/content/nav"
+import { useAuth } from "@/api/auth"
 import { cn } from "@/lib/utils"
 
-const item = "block rounded-md px-3 py-2 text-[15px] font-medium transition-colors hover:bg-muted"
+// Строки по 48 px — под палец
+const item =
+  "flex min-h-12 items-center rounded-md px-3 text-base font-medium transition-colors hover:bg-muted"
 const groupLabel = "px-3 pb-1 text-xs font-medium text-muted-foreground"
 
 type Props = {
@@ -26,6 +29,8 @@ type Props = {
 
 /** Навигация для экранов < 1024px: Sheet с якорями главной, страницами и входом. */
 export function MobileNav({ className, activeSection }: Props) {
+  const { user } = useAuth()
+  const login = user ? account(user.name) : guestLogin
   const [open, setOpen] = useState(false)
   const [target, setTarget] = useState<SectionId | null>(null)
   const navigate = useNavigate()

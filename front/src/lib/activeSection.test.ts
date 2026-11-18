@@ -6,8 +6,8 @@ const layout = (...tops: number[]) =>
   ["map", "air", "enterprises", "water"].map((id, i) => ({ id, top: tops[i] ?? 9999 }))
 
 describe("pickActiveSection", () => {
-  it("возвращает null, пока все секции ниже шапки (виден hero)", () => {
-    expect(pickActiveSection(layout(300, 1100, 1800, 2500), HEADER)).toBeNull()
+  it("пока все секции ниже шапки (вверху страницы), активна первая", () => {
+    expect(pickActiveSection(layout(300, 1100, 1800, 2500), HEADER)).toBe("map")
   })
 
   it("активирует первую секцию, когда её верх дошёл до шапки", () => {
