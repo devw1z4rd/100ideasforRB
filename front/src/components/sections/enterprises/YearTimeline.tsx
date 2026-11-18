@@ -8,10 +8,6 @@ const t = text.timeline
 const roundButton =
   "grid size-11 flex-none cursor-pointer place-items-center rounded-full border border-rule bg-panel-raised text-foreground transition-colors hover:bg-input disabled:cursor-default disabled:opacity-40 disabled:hover:bg-panel-raised"
 
-/**
- * Выбор года — он же мини-график выбросов области по годам; ← → — соседний год.
- * Прилипание (сверху под шапкой / снизу на мобиле) задаёт секция.
- */
 export function YearTimeline({
   series,
   year,

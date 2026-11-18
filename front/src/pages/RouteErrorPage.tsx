@@ -3,7 +3,6 @@ import { Container } from "@/components/layout/Container"
 import { Button } from "@/components/ui/button"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
-/** errorElement маршрутов: ошибка рендера или загрузки данных — сообщение на русском вместо экрана React Router. */
 export function RouteErrorPage() {
   const error = useRouteError()
   useDocumentTitle("Ошибка")

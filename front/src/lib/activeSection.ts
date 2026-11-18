@@ -1,13 +1,8 @@
 import { useEffect, useState } from "react"
 
-/** Высота sticky-шапки, px (= --header-h в tokens.css) */
+/** Sticky header height, px (= --header-h in tokens.css). */
 export const HEADER_HEIGHT = 56
 
-/**
- * id последней секции, чей верх ушёл под шапку. Пока ни одна не дошла — первая: над картой
- * только заголовок страницы, и вверху главной подсвечена «Карта». null — только для пустого списка.
- * В самом низу страницы активна последняя секция: иначе она может не подсветиться никогда.
- */
 export function pickActiveSection(
   sections: ReadonlyArray<{ id: string; top: number }>,
   headerHeight: number,
@@ -21,7 +16,6 @@ export function pickActiveSection(
   return active
 }
 
-/** Активная секция главной для подсветки навигации; пересчёт на scroll/resize через requestAnimationFrame. */
 export function useActiveSection(ids: readonly string[], headerHeight = HEADER_HEIGHT): string | null {
   const [active, setActive] = useState<string | null>(null)
 

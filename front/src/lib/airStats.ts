@@ -1,17 +1,14 @@
-// Расчёты секции «Воздух» (CLAUDE.md §10.6). Принцип: не прятать плохие места и дни в среднем по области —
-// показывать выбранный город, разброс по всем городам и число дней выше нормы.
 import { aqiCategory, type AqiLevel } from "./aqi"
 
 export type Pollutant = "pm2_5" | "pm10" | "no2" | "so2"
 export type Period = "7d" | "30d" | "90d" | "ytd"
 
-/** Суточная запись air_daily, уже с календарным днём "YYYY-MM-DD" */
 export type DailyRow = { point: string; day: string; aqi_max: number } & Record<`${Pollutant}_avg`, number>
 
 export type NormLevel = "ok" | "elevated" | "high"
 
 const DAY_MS = 86_400_000
-// Минск круглый год UTC+3 — сутки в air_daily считаются по местному времени (back/pb_hooks/lib/air.js)
+// Minsk is UTC+3 all year; air_daily days are local (back/pb_hooks/lib/air.js).
 const MINSK_OFFSET_MS = 3 * 3_600_000
 
 export function minskToday(now: Date = new Date()): string {
@@ -30,10 +27,6 @@ export function daysBetween(from: string, to: string): string[] {
 
 export type Range = { from: string; to: string }
 
-/**
- * Период из завершённых суток: заканчивается вчера (сегодняшние сутки ещё не свёрнуты в air_daily).
- * previous — столько же дней сразу перед периодом; для «с начала года» сравнивать не с чем.
- */
 export function periodRange(period: Period, today: string): { current: Range; previous: Range | null } {
   const to = addDays(today, -1)
   if (period === "ytd") return { current: { from: `${to.slice(0, 4)}-01-01`, to }, previous: null }
@@ -42,8 +35,6 @@ export function periodRange(period: Period, today: string): { current: Range; pr
   return { current: { from, to }, previous: { from: addDays(from, -length), to: addDays(from, -1) } }
 }
 
-/** Первые сутки периода, за которые есть данные; null — данных нет. Если история загружена не с начала
- *  периода (на проде до air-backfill), график и таблица начинаются с этого дня, а не с пустоты */
 export function firstDataDay(rows: readonly { day: string }[], range: Range): string | null {
   let first: string | null = null
   for (const r of rows)
@@ -51,10 +42,8 @@ export function firstDataDay(rows: readonly { day: string }[], range: Range): st
   return first
 }
 
-/** Клетка таблицы «где и когда»: сутки или неделя (с понедельника), from–to включительно */
 export type Bucket = { from: string; to: string; days: string[] }
 
-/** Сутки — клетками, пока их не больше maxDaily; дальше — недели с понедельника: иначе клетки в 2 px и месиво */
 export function buckets(days: readonly string[], maxDaily = 92): Bucket[] {
   if (days.length <= maxDaily) return days.map((d) => ({ from: d, to: d, days: [d] }))
   const out: Bucket[] = []
@@ -70,7 +59,6 @@ export function buckets(days: readonly string[], maxDaily = 92): Bucket[] {
   return out
 }
 
-/** Насколько значение выше нормы: до нормы, до двух норм, больше двух норм */
 export function normLevel(value: number, norm: number): NormLevel {
   if (value <= norm) return "ok"
   return value <= 2 * norm ? "elevated" : "high"
@@ -78,9 +66,7 @@ export function normLevel(value: number, norm: number): NormLevel {
 
 export type SeriesPoint = {
   day: string
-  /** Значение выбранного города; null — данных за день нет */
   value: number | null
-  /** Разброс по всем городам за день: [минимум, максимум] и где они */
   band: [number, number] | null
   minPoint: string | null
   maxPoint: string | null
@@ -88,7 +74,6 @@ export type SeriesPoint = {
 
 const key = (pollutant: Pollutant) => `${pollutant}_avg` as const
 
-/** Ряд по дням для графика: выбранный город на фоне разброса по всем городам. */
 export function buildSeries(
   rows: readonly DailyRow[],
   pollutant: Pollutant,
@@ -117,14 +102,8 @@ export function buildSeries(
   })
 }
 
-/** Сегодня, пока сутки не закончились: среднее выбранного города за прошедшие часы и сколько их */
 export type TodayPoint = SeriesPoint & { value: number; hours: number }
 
-/**
- * Незавершённая точка «сегодня» для графика: среднее за прошедшие часы сегодняшних минских суток по выбранному
- * городу и разброс по всем городам (по их прошедшим часам). В подсчёт дней выше нормы не входит — сутки
- * не закончились. null — у города сегодня ещё нет ни одного фактического часа.
- */
 export function todayPoint(
   readings: ReadonlyArray<{ point: string } & Partial<Record<Pollutant, number>>>,
   pollutant: Pollutant,
@@ -156,17 +135,12 @@ export function todayPoint(
 }
 
 export type PointSummary = {
-  /** Дней со среднесуточным значением выше нормы */
   daysOver: number
-  /** Из них — выше двух норм */
   daysHigh: number
-  /** Дней с данными */
   daysTotal: number
-  /** Худший день периода */
   worst: { day: string; value: number } | null
 }
 
-/** Среднесуточные значения одного города по дням периода; null — за день нет данных. */
 export function pointDays(
   rows: readonly DailyRow[],
   point: string,
@@ -178,7 +152,6 @@ export function pointDays(
   return days.map((day) => ({ day, value: byDay.get(day) ?? null }))
 }
 
-/** Сводка по каждому городу за период: дни выше нормы и худший день. */
 export function summarizeByPoint(
   rows: readonly DailyRow[],
   pollutant: Pollutant,
@@ -199,10 +172,6 @@ export function summarizeByPoint(
   return result
 }
 
-/**
- * Дни одного города за период по категории AQI худшего часа суток (aqi_max): «хороший весь день» — max ≤ 50.
- * counts — только встретившиеся категории.
- */
 export function aqiDayCounts(
   rows: readonly DailyRow[],
   point: string,
@@ -220,10 +189,6 @@ export function aqiDayCounts(
   return { total, counts }
 }
 
-/**
- * В каких пределах был AQI города за период: самый спокойный и самый тяжёлый из «худших часов» суток
- * (air_daily.aqi_max). Для скобки на шкале AQI в сводке; null — данных за период нет.
- */
 export function aqiRange(
   rows: readonly DailyRow[],
   point: string,
@@ -241,7 +206,6 @@ export function aqiRange(
   return days ? { min, max, days } : null
 }
 
-/** Сводка по каждому городу сразу по всем показателям — для таблицы городов. */
 export function summarizeAll(
   rows: readonly DailyRow[],
   norms: ReadonlyArray<{ key: Pollutant; norm: number }>,
@@ -262,15 +226,10 @@ export type SortDir = "asc" | "desc"
 export type TownRow = {
   id: string
   name: string
-  /** AQI сейчас; null — нет свежего значения */
   aqi: number | null
   summary: Partial<Record<Pollutant, PointSummary>>
 }
 
-/**
- * Порядок строк таблицы городов. По показателю — дни выше нормы, при равенстве худшие сутки;
- * по AQI — текущее значение (без данных — в конце); по городу — алфавит. Равные — по алфавиту.
- */
 export function sortTowns(towns: readonly TownRow[], key: TownSortKey, dir: SortDir): TownRow[] {
   const byName = (a: TownRow, b: TownRow) => a.name.localeCompare(b.name, "ru")
   const primary = (a: TownRow, b: TownRow): number => {
@@ -285,13 +244,11 @@ export function sortTowns(towns: readonly TownRow[], key: TownSortKey, dir: Sort
   }
   const sign = dir === "asc" ? 1 : -1
   return [...towns].sort((a, b) => {
-    // Без текущего AQI — всегда внизу, в какую сторону ни сортируй
     if (key === "aqi" && (a.aqi == null) !== (b.aqi == null)) return a.aqi == null ? 1 : -1
     return sign * primary(a, b) || byName(a, b)
   })
 }
 
-/** Ближайшая точка к координатам (геолокация «рядом со мной»); равнопромежуточная проекция — для области достаточно. */
 export function nearestPoint<T extends { lat: number; lon: number }>(
   points: readonly T[],
   lat: number,

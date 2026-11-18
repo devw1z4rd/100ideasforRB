@@ -1,16 +1,12 @@
-// Собирает статичные слои карты (CLAUDE.md §7, §9, §10.4) в front/public/geo/:
-//   oblast.geojson — граница Гомельской области, OpenStreetMap (ODbL), relation 59161, через Nominatim lookup;
-//   rivers.geojson — реки Natural Earth 1:10m (общественное достояние), обрезанные по рамке области.
-//   NODE_USE_ENV_PROXY=1 node back/seed/tools/build-map-geo.mjs   (переменная — только за прокси)
-// Районы карта берёт из PocketBase (districts.geometry), не отсюда.
+// Builds static map layers in front/public/geo/: oblast.geojson (OSM relation 59161 via Nominatim) and
+// rivers.geojson (Natural Earth 1:10m).
+//   NODE_USE_ENV_PROXY=1 node back/seed/tools/build-map-geo.mjs (the env var is only needed behind a proxy)
 import { mkdir, writeFile } from "node:fs/promises";
 
 const OUT = new URL("../../../front/public/geo/", import.meta.url);
 const OBLAST_RELATION = 59161;
 const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson";
-// Рамка видимой области карты: реки, как в макете, тянутся за границу области до краёв карты
 const BBOX = { minLon: 26.0, maxLon: 33.5, minLat: 50.5, maxLat: 54.2 };
-// Natural Earth name → подпись и ранг: major — крупные реки с подписью на карте, minor — тонкие без подписи
 const RIVERS = {
   Dnipro: { name: "Днепр", major: true },
   Pripyat: { name: "Припять", major: true },
@@ -37,7 +33,6 @@ async function json(url, headers = {}) {
   return res.json();
 }
 
-// Линия режется на куски, лежащие внутри рамки; кусок из одной точки отбрасывается
 function clip(line) {
   const parts = [];
   let current = [];

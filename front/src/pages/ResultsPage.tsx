@@ -21,10 +21,6 @@ const median = (xs: number[]) => {
   return s.length % 2 ? s[(s.length - 1) / 2] : Math.round((s[s.length / 2 - 1] + s[s.length / 2]) / 2)
 }
 
-/**
- * Витрина результата (/results): сколько проблем, о которых сообщили жители, уже устранено, как быстро,
- * по каким видам — и истории каждого устранённого обращения. Только опубликованные обращения.
- */
 export function ResultsPage() {
   useDocumentTitle(text.nav)
   useReportsRealtime()
@@ -141,7 +137,6 @@ function Stat({ label, value, accent = false }: { label: string; value: string; 
   )
 }
 
-/** История устранённого обращения: фото, что и где, сколько заняло, что сделано */
 function Story({ report: r }: { report: ShowcaseReport & { resolvedAt: string } }) {
   const days = daysBetween(r.created, r.resolvedAt)
   return (

@@ -1,10 +1,8 @@
 import { useEffect, useRef } from "react"
 
 /**
- * Прилипла ли sticky-панель под шапкой сайта. Следим за пустым «маячком» прямо перед панелью:
- * ушёл выше нижнего края шапки — панель прилипла. Возвращает ref для маячка и ref с флагом. Именно ref, не
- * состояние: флаг нужен только в обработчиках, а состояние перерисовывало бы весь раздел каждый раз, когда
- * панель прилипает и отлипает при прокрутке (на ноутбуке от батареи — заметный рывок).
+ * Returns refs, not state: the flag is only read in handlers, and state would re-render the whole section
+ * every time the panel sticks or unsticks while scrolling.
  */
 export function useStuck() {
   const sentinel = useRef<HTMLDivElement>(null)

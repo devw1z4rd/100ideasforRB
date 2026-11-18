@@ -45,7 +45,6 @@ describe("riverStatus", () => {
     const small = post("b", "Брагинка", "Рудня Журавлёва")
     expect(riverStatus(-20, small)).toBe("normal")
     expect(riverStatus(900, small)).toBe("normal")
-    // Есть только пойма
     expect(riverStatus(250, post("u", "Ивня-Бонда", "Будка", 0, 241))).toBe("flood")
   })
 })
@@ -94,7 +93,6 @@ describe("summarizePosts", () => {
   })
 
   it("хуже всего сверху: пойма и на малой реке, маловодье по доле от порога; затем норма — судоходные, с порогами, без порогов", () => {
-    // Птичь выше поймы; Гомель 15/70 ≈ 0,21 хуже Жлобина 49/94 ≈ 0,52; в норме Березина (судоходная), Ипуть (порог поймы), Брагинка (без порогов)
     expect(result.map((s) => s.post.id)).toEqual(["ptich", "gom", "zhl", "svt", "ipu", "small"])
   })
 

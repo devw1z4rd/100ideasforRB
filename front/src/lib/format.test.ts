@@ -5,7 +5,7 @@ describe("formatNumber", () => {
   it("разделяет разряды неразрывным пробелом и ставит запятую в дробной части", () => {
     const result = formatNumber(1316666)
     expect(result).toMatch(/^1\s316\s666$/)
-    expect(result).not.toContain(" ") // обычный пробел разорвал бы число при переносе строки
+    expect(result).not.toContain(" ")
     expect(formatNumber(40.4)).toBe("40,4")
   })
 

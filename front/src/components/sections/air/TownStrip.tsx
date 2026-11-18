@@ -21,7 +21,6 @@ type Props = {
   summaries: ReadonlyMap<string, PointSummary>
   selected: string
   onSelect: (id: string) => void
-  /** Подсвеченные сутки или неделя — общие с графиком */
   hover: Range | null
   onHover: (range: Range | null) => void
 }
@@ -30,7 +29,6 @@ const levels: readonly NormLevel[] = ["ok", "elevated", "high"]
 const ROW_H = 20
 const CELL_H = 14
 const GAP = 2
-// Дни в норме — бледным, чтобы считались и бросались в глаза дни выше нормы (как полоса в карточке города)
 const cellFill = (level: NormLevel | null) =>
   level === null
     ? "var(--muted)"
@@ -40,12 +38,6 @@ const cellFill = (level: NormLevel | null) =>
 
 type Cell = { worst: number | null; worstDay: string | null; over: number; total: number }
 
-/**
- * «Где и когда было выше нормы»: строка — город, клетка — сутки (до 92 дней) или неделя (дольше: иначе клетки
- * в 2 px и месиво), цвет — уровень худших суток клетки относительно нормы ВОЗ. Строки — от города
- * с наибольшим числом плохих дней. Клетки — одна SVG-сетка, нарисованная один раз: наведение двигает только
- * подсветку столбца, поэтому даже «с начала года» (21 × 46 недель) ничего не тормозит.
- */
 export function TownStrip({
   rows,
   days,
@@ -74,7 +66,6 @@ export function TownStrip({
     [summaries, names],
   )
 
-  // Город → клетка → худшие сутки и сколько суток выше нормы
   const cells = useMemo(() => {
     const byPoint = new Map<string, Map<string, number>>()
     for (const r of rows) {
@@ -113,7 +104,7 @@ export function TownStrip({
   const gap = cellW > 6 ? GAP : cellW > 3 ? 1 : 0
   const gridH = order.length * ROW_H
 
-  // Сетка рисуется один раз на данные и ширину; наведение её не перерисовывает
+  // The grid is drawn once per data and width; hover doesn't redraw it.
   const grid = useMemo(
     () =>
       width > 0 &&
@@ -202,7 +193,6 @@ export function TownStrip({
       </p>
 
       <div className="mt-2 grid grid-cols-[100px_48px_1fr] gap-x-2 md:grid-cols-[128px_48px_1fr]">
-        {/* Подписи месяцев над сеткой — только у длинных периодов */}
         <div className="col-span-2" />
         <div className="relative h-4 text-[11px] text-muted-foreground">
           {width > 0 &&
@@ -265,7 +255,6 @@ export function TownStrip({
         >
           {width > 0 && (
             <svg width={width} height={gridH} className="absolute inset-0">
-              {/* Строка выбранного города — тем же фоном, что подпись слева */}
               {order.indexOf(selected) >= 0 && (
                 <rect
                   x={0}
@@ -299,7 +288,6 @@ export function TownStrip({
 
 const monthFormat = new Intl.DateTimeFormat("ru-RU", { month: "short", timeZone: "UTC" })
 
-/** Где начинается каждый месяц — подписи над сеткой; для периода в пределах месяца не нужны */
 function monthMarks(cols: ReadonlyArray<{ from: string }>): Array<{ k: number; label: string }> {
   if (cols.length < 2 || cols[0].from.slice(0, 7) === cols[cols.length - 1].from.slice(0, 7)) return []
   const out: Array<{ k: number; label: string }> = []
@@ -309,6 +297,5 @@ function monthMarks(cols: ReadonlyArray<{ from: string }>): Array<{ k: number; l
     if (month !== prev) out.push({ k, label: monthFormat.format(new Date(`${c.from}T00:00:00Z`)) })
     prev = month
   })
-  // Первая подпись в середине месяца налезла бы на следующую — убираем, если до следующей меньше 3 клеток
   return out.filter((m, i) => !(i === 0 && out[1] && out[1].k - m.k < 3))
 }

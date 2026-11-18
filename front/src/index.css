@@ -5,11 +5,9 @@
 @import "@fontsource-variable/inter-tight";
 @import "./styles/tokens.css";
 
-/*
- * dark: срабатывает и на самом элементе с .dark, и внутри него.
- * Radix-порталы (Select, Popover, DropdownMenu, Tooltip) рендерятся в <body>, вне тёмного блока:
- * их Content из тёмных секций получает className="dark".
- */
+/* dark: matches the .dark element itself and its descendants. Radix portals (Select, Popover, DropdownMenu,
+   Tooltip) render into <body>, outside dark blocks, so their Content inside dark sections gets
+   className="dark". */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
@@ -31,7 +29,7 @@
     html {
       scroll-behavior: auto;
     }
-    /* 0.01ms, а не none: Radix Presence всё равно получает animationend и размонтирует слой */
+    /* 0.01ms, not none: Radix Presence still needs animationend to unmount the layer */
     *,
     ::before,
     ::after {
@@ -42,16 +40,16 @@
   }
 }
 
-/* Карта (§10.4): подсказки MapLibre в стиле сайта; карта живёт в .dark, поэтому роли — тёмные.
-   Отступы — у внутреннего блока (MapView): он ловит наведение, чтобы подсказка не закрывалась под курсором */
+/* MapLibre popups in the site style; padding lives on MapView's inner block, which keeps the tip open under
+   the cursor */
 .eco-map .maplibregl-popup-content {
   @apply rounded-lg border border-border bg-popover p-0 text-[13px] text-popover-foreground shadow-lg;
   font-family: var(--font-sans);
 }
-/* HTML-маркеры MapView: слои заданы z-index (маркеры монтируются волнами), а холст карты — свой контекст
-   наложения: эти z-index не спорят с панелями и подсказками вокруг */
-/* Телефон, обзор всей области: только города — посты, участки рек, места и обращения появляются при приближении
-   (MapView ставит data-far, пока масштаб меньше EXTRAS_FROM_ZOOM) */
+/* MapView HTML markers: layers use z-index (markers mount in waves); the map canvas is its own stacking
+   context, so these don't fight the surrounding panels */
+/* Phone overview: only towns; other markers appear when zoomed in (MapView sets data-far below
+   EXTRAS_FROM_ZOOM) */
 @media (max-width: 767px) {
   .eco-map[data-far] .map-extra {
     display: none;
@@ -60,10 +58,8 @@
 .eco-map .maplibregl-canvas-container {
   isolation: isolate;
 }
-/* Сцена старта карты (MapView, components/map/intro.ts): города «выстреливают» волной от Гомеля — маркеры
-   монтируются после пролёта, анимации стартуют с монтированием */
+/* Map intro (MapView, components/map/intro.ts) */
 .map-pop {
-  /* Перелёт кривой за 1 — пружинка: маркер чуть больше и садится на место */
   animation: map-pop 650ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 @keyframes map-pop {
@@ -72,7 +68,6 @@
     transform: translateY(8px) scale(0.3);
   }
 }
-/* Подписи (соседние области и города, реки) — спокойнее маркеров: проявляются и чуть всплывают */
 .map-fade {
   animation: map-fade 700ms ease-out both;
 }
@@ -82,7 +77,6 @@
     transform: translateY(4px);
   }
 }
-/* Кольцо вокруг точки города на старте — пинг радара цветом AQI */
 .map-ping {
   animation: map-ping 1200ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
@@ -105,8 +99,7 @@
     translate: 0 4px;
   }
 }
-/* Страница 404 (pages/NotFoundPage.tsx): дерево «растёт» — кольца по очереди от сердцевины к коре
-   расширяются из центра и проявляются, затем проступает трещина. При prefers-reduced-motion — сразу целиком */
+/* 404 page: tree rings */
 .ring-grow {
   animation: ring-grow 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -126,8 +119,7 @@
   }
 }
 
-/* Раздел «Воздух», виды «Прогноз» и «По часам»: клетки прогноза появляются волной снизу, окно для прогулки
-   проступает после них; секторы часов вырастают из центра по кругу, полосы частей суток — слева направо */
+/* Air section: forecast cells and hour petals */
 .forecast-cell {
   transform-origin: 50% 100%;
   animation: forecast-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -159,8 +151,7 @@
     transform: scaleX(0);
   }
 }
-/* Слово во всю ширину внизу футера (SiteFooter): буквы выезжают снизу волной, когда футер показался;
-   под курсором буква подпрыгивает (отдельный внутренний span — без задержки волны) */
+/* Footer wordmark */
 .wordmark-letter {
   display: inline-block;
   transform: translateY(105%);
@@ -186,8 +177,7 @@
   }
 }
 
-/* Квартальный отчёт о воде книжкой (water/report): изнанка и страницы проявляются, строки глав всплывают,
-   при смене главы через разворот пролетает лист (он без текста — содержимое уже на месте под ним) */
+/* Water report book */
 .book-fade-in {
   animation: book-fade 320ms ease-out both;
 }
@@ -200,9 +190,9 @@
 .book-open-in {
   animation: book-open-in 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-/* Текст левой страницы, пока над ней лист (оборот — 720 мс, как DURATION в Leaf.tsx): слева виден только один
-   номер главы. Вперёд текст гаснет, пока лист поднимается справа (край листа переходит налево к трети оборота — текст гаснет раньше, к 18 %),
-   и не появляется, пока лист не ляжет с новым. Назад — новый текст проявляется, когда лист ушёл направо */
+/* Left page text while a leaf is over it — keep in sync with DURATION (720 ms) in Leaf.tsx: forward, the text
+   fades by 18 % of the turn, before the leaf edge crosses over; backward, the new text fades in once the leaf
+   has moved right */
 .book-left-out {
   animation: book-left-out 720ms linear both;
 }
@@ -228,7 +218,7 @@
     opacity: 1;
   }
 }
-/* Отпечаток страницы на листе и страницы, открытые листанием: они уже «напечатаны» — без анимаций появления */
+/* Static prints and pages opened by turning are already "printed": no entry animations */
 .book-static,
 .book-static * {
   animation: none !important;
@@ -291,17 +281,15 @@
   }
 }
 
-/* Анимации появления ждут, пока блок покажется на экране (components/PlayInView.tsx): до этого стоят на первом
-   кадре — у всех анимаций появления fill-mode both, поэтому элементы ещё скрыты, — затем играют с начала */
+/* Entry animations wait until the block is on screen (components/PlayInView.tsx): paused on the first frame
+   (all use fill-mode both), then played from the start */
 [data-play="wait"] *,
 [data-play="wait"] *::before,
 [data-play="wait"] *::after {
   animation-play-state: paused !important;
 }
 
-/* Переход к элементу ниже по странице (lib/focusTarget.ts, например с карты к посту в «Воде»): мягкое свечение
-   цвета фокуса вокруг — без жёсткой линии — проявляется, пока страница докручивает, держится и гаснет.
-   При reduced motion — то же свечение без анимации на время подсветки */
+/* Scroll-to-element highlight (lib/focusTarget.ts) */
 [data-flash] {
   animation: flash-ring 2600ms ease-out;
 }
@@ -323,7 +311,6 @@
   }
 }
 
-/* Полосы состава дней в сводке города (AirSummary): проявляются слева направо */
 .summary-bar {
   animation: summary-reveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1) 150ms both;
 }
@@ -336,9 +323,7 @@
   }
 }
 
-/* Живой график воздуха (sections/air/AirChart.tsx; имена — от прежнего графика уровня воды): заливка поднимается
-   снизу, линия прорисовывается, точка «вчера» пульсирует. При prefers-reduced-motion общее правило выше сводит
-   анимации к мгновенным */
+/* Air chart (sections/air/AirChart.tsx); class names come from the former river chart */
 .river-rise {
   transform-box: fill-box;
   transform-origin: 50% 100%;
@@ -390,15 +375,15 @@
   text-align: center;
   text-wrap: balance;
 }
-/* С lg панели MapSection лежат поверх карты: слева 16 + 280 px, справа 16 + 340 px (+ 16 зазор).
-   Подсказку центрируем в свободной полосе между ними, иначе на узком десктопе она уходит под карточку города */
+/* From lg the MapSection panels overlay the map: left 16 + 280 px, right 16 + 340 px (+ 16 gap). Center the
+   tip in the free strip between them */
 @media (width >= 64rem) {
   .eco-map .maplibregl-cooperative-gesture-screen {
     padding-inline: 312px 372px;
   }
 }
 
-/* Текст новостей и статей из админки (RichText): редакционная типографика без плагина typography */
+/* Rich text from the admin editor (RichText), without the typography plugin */
 .rich-text {
   @apply text-[16px] leading-[1.65] text-foreground;
   overflow-wrap: anywhere;

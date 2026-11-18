@@ -9,10 +9,6 @@ import { WaterShelf } from "./report/WaterShelf"
 
 type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "variant">
 
-/**
- * «Состояние поверхностных вод» (CLAUDE.md §10.8): уровни воды на постах Белгидромета сегодня, затем последний
- * квартальный обзор качества — книжкой (report/WaterReport): закрыта — обложка и «что внутри», открыта — главы.
- */
 export function WaterSection(section: Props) {
   const readings = useWaterReadings()
   const rows = readings.data

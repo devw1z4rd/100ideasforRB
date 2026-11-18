@@ -20,18 +20,12 @@ const categories = Object.keys(categoryLabels) as ReportsCategoryOptions[]
 
 type Locating = "idle" | "busy" | "failed"
 
-/**
- * «Сообщить о проблеме» (CLAUDE.md §4 M3, §10.15) — для человека на улице с телефоном в руке, без регистрации:
- * фото → место (само, по геолокации; карта — уточнить) → что случилось → пара слов (необязательно).
- * Кнопка отправки прилипает к низу экрана и говорит, чего не хватает.
- */
 export function ReportNewPage() {
   useDocumentTitle(text.title)
   const { user } = useAuth()
   const navigate = useNavigate()
   const create = useCreateReport()
 
-  // Черновик: после перезагрузки страницы введённое возвращается (lib/reportDraft.ts)
   const [draft] = useState(loadDraft)
   const [photos, setPhotos] = useState<File[]>([])
   const [photoError, setPhotoError] = useState<string | null>(null)
@@ -41,7 +35,7 @@ export function ReportNewPage() {
   const [category, setCategory] = useState<ReportsCategoryOptions | null>(draft.category)
   const [description, setDescription] = useState(draft.description)
   useEffect(() => saveDraft({ point, category, description }), [point, category, description])
-  // Фото из черновика — асинхронно; сохранять начинаем только после загрузки, иначе затёрли бы их пустым списком
+  // Draft photos load asynchronously; start saving only after that, or an empty list would overwrite them.
   const photosLoaded = useRef(false)
   useEffect(() => {
     void loadPhotos().then((saved) => {
@@ -72,7 +66,7 @@ export function ReportNewPage() {
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
     )
   }
-  // Место — само, если доступ к геолокации уже дан (без внезапного запроса разрешения при открытии страницы)
+  // Auto-locate only if geolocation is already granted (no surprise permission prompt on open).
   useEffect(() => {
     navigator.permissions
       ?.query({ name: "geolocation" })
@@ -90,7 +84,6 @@ export function ReportNewPage() {
       big ? text.photoTooBig(big.name) : photos.length + fit.length > MAX_PHOTOS ? text.photosTooMany : null,
     )
     setPhotos([...photos, ...fit].slice(0, MAX_PHOTOS))
-    // Сфотографировали — значит, человек на месте: заодно определяем, где он
     if (!point && locating === "idle") locate()
   }
 
@@ -127,7 +120,6 @@ export function ReportNewPage() {
       <p className="mt-3 text-fg-secondary">{text.lead}</p>
 
       <form onSubmit={submit} noValidate className="mt-8 flex flex-col gap-9">
-        {/* 1. Фото */}
         <Step n={1} title={text.photos} hint={text.photosHint}>
           {photos.length === 0 ? (
             <label className="flex h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-input text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring">
@@ -162,7 +154,6 @@ export function ReportNewPage() {
           {photoError && <p className="mt-2 text-[13px] text-destructive">{photoError}</p>}
         </Step>
 
-        {/* 2. Место */}
         <Step n={2} title={text.point} done={Boolean(point)}>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <Button
@@ -194,7 +185,6 @@ export function ReportNewPage() {
           {serverPointError && <p className="mt-2 text-[13px] text-destructive">{text.outside}</p>}
         </Step>
 
-        {/* 3. Что случилось */}
         <Step n={3} title={text.category} done={Boolean(category)}>
           <div role="radiogroup" aria-label={text.category} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {categories.map((c) => (
@@ -223,7 +213,6 @@ export function ReportNewPage() {
           </div>
         </Step>
 
-        {/* 4. Пара слов */}
         <Step n={4} title={text.description} hint={text.optional}>
           <textarea
             value={description}
@@ -253,7 +242,6 @@ export function ReportNewPage() {
           )}
         </p>
 
-        {/* Отправка — прилипает к низу экрана: на телефоне всегда под пальцем */}
         <div className="sticky bottom-0 z-10 -mx-4 border-t border-border bg-background px-4 py-3 md:mx-0 md:rounded-t-2xl md:px-0">
           {submitError && (
             <p role="alert" className="mb-2 text-[13px] text-destructive">
@@ -274,7 +262,6 @@ export function ReportNewPage() {
   )
 }
 
-/** Шаг формы: номер (галочка, когда готов), заголовок, подсказка */
 function Step({
   n,
   title,
@@ -308,7 +295,6 @@ function Step({
   )
 }
 
-/** Выбор фото: на телефоне система сама предложит камеру или галерею */
 function PhotoInput({ onFiles }: { onFiles: (files: FileList | null) => void }) {
   return (
     <input

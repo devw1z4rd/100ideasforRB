@@ -5,11 +5,7 @@ import { takeHome } from "./home"
 import { pb } from "./pb"
 import type { RiverLevelsResponse } from "./pocketbase-types"
 
-// Уровни воды (CLAUDE.md §8, §9): посты области и ежедневные наблюдения Белгидромета на 8:00.
-// Пишет cron river_fetch дважды в сутки; на фронте — последние 30 дней.
-
 const DAYS = 30
-// Данные меняются раз в сутки: держим час и не перезапрашиваем на каждый фокус окна
 const STALE = 60 * 60_000
 
 export const riverPostsQuery = () =>
@@ -37,7 +33,7 @@ export const riverLevelsQuery = () =>
           fields: "post,date,level,change,ice",
           sort: "date",
         }))
-      // 8:00 по Минску — 05:00 UTC того же дня
+      // 8:00 Minsk time = 05:00 UTC the same day.
       return rows.map((r) => ({
         post: r.post,
         day: pbDay(r.date),

@@ -9,10 +9,8 @@ import { useDocumentTitle } from "@/lib/useDocumentTitle"
 type SectionComponent = ComponentType<Pick<HomeSection, "id" | "eyebrow" | "title" | "variant">>
 type RestSections = Partial<Record<SectionId, SectionComponent>>
 
-// Разделы ниже первого экрана — отдельными чанками (вместе с их графиками, d3 и Radix Select): на медленной
-// сети главный чанк вдвое легче, а код и данные этих разделов не отбирают канал у карты.
-// Загруженные модули живут до конца сессии: при возврате на главную разделы рисуются сразу,
-// и ScrollRestoration попадает в прежнее место
+// Below-the-fold sections are separate chunks. Loaded modules are cached for the session, so returning home
+// renders them at once and ScrollRestoration lands correctly.
 let rest: RestSections | null = null
 let restLoading: Promise<RestSections> | null = null
 const loadRest = () =>
@@ -28,7 +26,6 @@ const loadRest = () =>
         enterprises: enterprises.EnterprisesSection,
       }),
     (error: unknown) => {
-      // Сеть оборвалась — следующая попытка (прокрутка, переход к якорю) загрузит заново
       restLoading = null
       throw error
     },
@@ -39,8 +36,6 @@ export function HomePage() {
   const { hash, key } = useLocation()
   const [sections, setSections] = useState(rest)
 
-  // Когда грузить разделы ниже карты: сразу — если пришли по якорю; иначе после кода карты (она первая на
-  // экране и ей нужнее канал) или как только страницу начали прокручивать
   useEffect(() => {
     if (sections) return
     let alive = true
@@ -59,8 +54,8 @@ export function HomePage() {
     }
   }, [sections, hash])
 
-  // Прокрутка к якорю после навигации: /#air с другой страницы, пункты MobileNav, повторный клик по якорю.
-  // И ещё раз, когда разделы догрузились: они выше своих заглушек, и якорь уезжает
+  // Scroll to the anchor after navigation, and again once sections load: they're taller than their
+  // placeholders, so the anchor moves.
   useEffect(() => {
     if (!hash) return
     let id: string

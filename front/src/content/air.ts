@@ -2,8 +2,6 @@ import type { Period, Pollutant } from "@/lib/airStats"
 import { formatNumber } from "@/lib/format"
 import type { FactSource } from "./hero"
 
-// Секция «Воздух» на главной (CLAUDE.md §10.6) и её методика на странице «Данные и методика».
-
 const who: FactSource = {
   label: "Нормы ВОЗ",
   title:
@@ -24,9 +22,7 @@ const openMeteo: FactSource = {
 export type PollutantInfo = {
   key: Pollutant
   label: string
-  /** Что это простыми словами */
   hint: string
-  /** Суточная рекомендация ВОЗ 2021, мкг/м³ (среднее за 24 часа) */
   norm: number
 }
 
@@ -57,21 +53,16 @@ export const air = {
   periodLabel: "Период",
   nearMe: "Рядом со мной",
   nearMeError: "Не удалось определить местоположение",
-  /** Подсказка к кнопке «Рядом со мной» на десктопе */
   nearMeHint: "Ближайший город по геолокации. Координаты остаются в браузере.",
-  /** Подпись справа в списке городов: AQI сейчас */
   townAqi: "AQI сейчас",
-  /** Сводка города в виде «По городу»: AQI и четыре показателя одной панелью */
   summary: {
     at: (hour: string) => `сейчас · ${hour}:00`,
     noNow: "нет данных за последний час",
-    /** Скобка на шкале AQI: пределы за период по худшему часу суток */
     spread: (days: number) => `за ${days} дн. —`,
     spreadValues: (min: number, max: number) => `от ${min} до ${max}`,
     aqiVsWho:
       "AQI — американская шкала: она строже нормы ВОЗ и берёт худший час суток. Поэтому «умеренный» AQI бывает и в дни, когда среднее за сутки в пределах нормы ВОЗ.",
     pollutantsLabel: "Показатель для графика",
-    /** Заголовки над плашкой AQI и над карточками показателей — на одной линии */
     aqiTitle: "Индекс качества воздуха",
     pickTitle: "Дни выше суточной нормы ВОЗ",
     norm: (n: number) => `норма ${n}`,
@@ -82,7 +73,6 @@ export const air = {
   },
   daysOver: (over: number, total: number) => `${over} из ${total}`,
   daysOverCaption: "дней выше нормы ВОЗ",
-  /** Насколько выше нормы — как говорят люди: «на 12% выше нормы», «в 2,1 раза выше нормы» */
   aboveNorm: (value: number, norm: number) => {
     const ratio = value / norm
     return ratio < 2
@@ -94,7 +84,7 @@ export const air = {
     band: "разброс по всем городам области",
     norm: "суточная норма ВОЗ",
     unit: "мкг/м³",
-    // Без глаголов прошедшего времени: у названий городов разный род (Гомель, Ветка, Хойники, Буда-Кошелёво)
+    // No past-tense verbs: town names have different grammatical genders.
     rank: (town: string, worst: number, best: number, total: number) =>
       worst > 0
         ? `${town} — самый загрязнённый город области в ${worst} из ${total} дней${best > 0 ? `, самый чистый — в ${best}` : ""}.`
@@ -107,9 +97,7 @@ export const air = {
     twoNorms: "2 нормы",
     max: (value: string, day: string) => `макс. ${value} · ${day}`,
     noData: (town: string) => `${town}: нет данных`,
-    /** Данные начинаются позже начала периода (история ещё не загружена) */
     dataFrom: (day: string) => `данные с ${day}`,
-    /** Незавершённая точка «сегодня»: среднее за прошедшие часы, в подсчёт дней не входит */
     today: "сегодня — сутки ещё идут",
     todayTip: (hours: number) => `Сегодня, за ${hours} ч из 24`,
     todayNote: "Сутки не закончились: значение изменится, в подсчёт дней не входит",
@@ -121,7 +109,6 @@ export const air = {
     forecast: "Прогноз",
     hours: "По часам",
   },
-  /** Вид «Прогноз»: почасовой прогноз AQI на ~5 дней и лучшее время для прогулки */
   forecast: {
     eyebrow: (town: string) => `Лучшее время для прогулки · ${town}`,
     today: "Сегодня",
@@ -142,7 +129,6 @@ export const air = {
     empty: "Прогноза для этого города пока нет — cron загрузит его в течение часа.",
     note: "Прогноз модели CAMS / Open-Meteo для центра города, пересчитывается каждый час; чем дальше день, тем ниже точность. Прошедшие часы сегодня — фактические модельные значения (бледнее). Окно для прогулки — три часа подряд между 8:00 и 22:00 с самым низким AQI.",
   },
-  /** Вид «По часам»: средний профиль суток по выбранному показателю */
   hours: {
     title: (town: string, pollutant: string) => `Время суток: ${town} · ${pollutant}`,
     filters: { all: "Все дни", weekdays: "Будни", weekends: "Выходные" },
@@ -161,7 +147,6 @@ export const air = {
     centerDay: "в среднем за сутки",
     centerOver: (share: number) => `выше нормы в ${share}% дней`,
     normRing: "норма ВОЗ",
-    /** Норма намного выше всех часов — кольцо нормы не рисуется, масштаб по данным */
     normFar: (norm: number) => `все часы намного ниже нормы ВОЗ (${norm} мкг/м³)`,
     now: "сейчас",
     capped: "Почасовые данные хранятся 90 дней — показаны последние 90.",
@@ -177,7 +162,6 @@ export const air = {
     aqiShort: "AQI",
     norm: (n: number) => `норма ${n}`,
     max: (value: string) => `макс. ${value}`,
-    /** Подсказка к клетке: сколько дней и худшие сутки */
     cell: (over: number, total: number, day: string, value: string) =>
       `${over} из ${total} дн. выше нормы; худшие сутки — ${day}: ${value} мкг/м³`,
     open: (town: string) => `Открыть ${town} на графике`,
@@ -194,7 +178,6 @@ export const air = {
     days: (n: number) => `${n} дн.`,
     hint: (label: string, norm: number) => `${label}, норма ВОЗ ${norm} мкг/м³ в сутки`,
     week: (from: string, to: string) => `Неделя ${from} — ${to}`,
-    /** День: «выше нормы в 6 из 21 городов»; неделя: «хотя бы одни сутки выше нормы в 6 из 21 городов» */
     overTowns: (n: number, total: number, week: boolean) =>
       `${week ? "хотя бы одни сутки выше нормы" : "выше нормы"} в ${n} из ${total} городов`,
     townDay: (town: string, value: string) => `${town} — ${value} мкг/м³`,

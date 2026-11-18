@@ -1,6 +1,5 @@
-// PROTOTYPE — выбросить после выбора. Четыре варианта «детского» представления данных о воздухе на одной странице,
-// переключение — `?variant=A…D` и плавающая панель внизу (← → на клавиатуре). Маршрут есть только в dev-сборке,
-// данные — мок (mock.ts), не настоящие.
+// PROTOTYPE — throw away once a variant is chosen. Four "kids" views of air data, switched with
+// `?variant=A…D`. Dev-only route; the data is mock (mock.ts), not real.
 import { Container } from "@/components/layout/Container"
 import {
   PrototypeSwitcher,
@@ -29,7 +28,6 @@ export function AirKidsPrototypePage() {
 
   return (
     <Container className="pt-10 pb-32">
-      {/* Пылинки в банке плавают — анимация только для прототипа */}
       <style>{`
         @keyframes proto-drift { from { transform: translate(0, 0) } to { transform: translate(var(--dx), var(--dy)) } }
         .proto-drift { animation-name: proto-drift; animation-timing-function: ease-in-out;
@@ -47,7 +45,6 @@ export function AirKidsPrototypePage() {
         Вариант {variant.key}: {variant.name}. Переключайте внизу или стрелками ← → на клавиатуре.
       </p>
 
-      {/* key: при смене варианта состояние предыдущего сбрасывается */}
       <View key={variant.key} />
 
       <PrototypeSwitcher variants={variants} />

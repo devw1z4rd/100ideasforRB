@@ -10,7 +10,6 @@ const options: ReadonlyArray<{ value: ThemePref; icon: typeof Sun }> = [
   { value: "system", icon: Monitor },
 ]
 
-/** Переключатель темы в футере: та же «капсула», что у навигации в шапке, — значки с подписью во всплывашке. */
 export function ThemeSwitch({ className }: { className?: string }) {
   const [pref, choose] = useTheme()
   const text = footer.theme

@@ -1,9 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Качество воздуха (CLAUDE.md §4 M2, §8): Open-Meteo → air_readings → air_daily.
-// Расписание cron в PocketBase — UTC. Запустить вручную: админка → Settings → Crons.
+// PocketBase cron schedules are in UTC.
 
-// Каждый час в :05 — сутки назад (уточнённые модельные значения) и прогноз на 5 дней; после простоя сервера —
-// история с последнего фактического часа
 cronAdd("air_fetch", "5 * * * *", () => {
   const air = require(`${__hooks}/lib/air.js`);
   const r = air.fetchLatest($app);
@@ -22,7 +19,6 @@ cronAdd("air_fetch", "5 * * * *", () => {
     );
 });
 
-// 00:20 по Минску: свернуть вчера и позавчера в air_daily, удалить почасовые старше 90 дней
 cronAdd("air_daily", "20 21 * * *", () => {
   const air = require(`${__hooks}/lib/air.js`);
   const r = air.rollupDaily($app, air.minskDay(-2), air.minskDay(0));
@@ -32,8 +28,6 @@ cronAdd("air_daily", "20 21 * * *", () => {
     .info("air_daily", "days", r.days, "rows", r.rows, "pruned", pruned);
 });
 
-// Первичное наполнение после деплоя: `pocketbase air-backfill [YYYY-MM-DD]` — история с даты (по умолчанию 90 дней),
-// прогноз и air_daily за период. Для «с начала года» на главной: `pocketbase air-backfill 2026-01-01`.
 $app.rootCmd.addCommand(
   new Command({
     use: "air-backfill [since]",

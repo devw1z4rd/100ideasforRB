@@ -6,19 +6,15 @@ import { kt, pct } from "./format"
 
 const t = text.flow
 
-// Геометрия потока, единицы viewBox: по высоте — пиксели (высота фиксирована), по ширине SVG растягивается
-// (preserveAspectRatio="none") — полосы потока при этом остаются ровными
+// viewBox units: height in px (fixed), width stretched with preserveAspectRatio="none" — the bands stay
+// straight.
 const W = 1000
-/** Толщина потока слева — всё образовавшееся, 100 % */
 const T = 112
-/** Расхождение потоков справа: в воздух уходит вверх, задержанное — вниз */
 const GAP = 44
 const H = T + GAP
 const NODE = 8
-/** Тоньше этого поток «в воздух» не рисуем — иначе его не видно */
 const MIN = 3
 
-/** Полоса потока: левый край (y0..y1) плавно переходит в правый (z0..z1) */
 const band = (y0: number, y1: number, z0: number, z1: number) => {
   const a = NODE
   const b = W - NODE
@@ -26,12 +22,6 @@ const band = (y0: number, y1: number, z0: number, z1: number) => {
   return `M ${a} ${y0} C ${mid} ${y0} ${mid} ${z0} ${b} ${z0} L ${b} ${z1} C ${mid} ${z1} ${mid} ${y1} ${a} ${y1} Z`
 }
 
-/**
- * Путь загрязняющих веществ (§10.7) потоком: слева всё, что образуется на предприятиях (100 %), справа оно
- * расходится — меньшая часть вверх, «в воздух», большая вниз, «задерживают очистные». Толщина — доля, поэтому
- * видно, что две части складываются в целое. Подписи — HTML, на высоте своих полос. При смене года полосы
- * плавно перетекают (motion), при появлении секции поток проявляется слева направо.
- */
 export function PollutionFlow({
   home,
   grown,
@@ -64,7 +54,6 @@ export function PollutionFlow({
         pct(emittedShare),
       )}
     >
-      {/* Слева — целое, по центру высоты потока (156 = H); на телефоне — строкой над потоком */}
       <div className="col-span-2 flex flex-col justify-center sm:col-span-1 sm:min-h-[156px]">
         <span className="text-[13px] leading-[18px] text-muted-foreground">{t.generated}</span>
         <span className="mt-0.5 font-heading text-[28px] leading-8 font-semibold tracking-[-0.02em]">
@@ -81,7 +70,6 @@ export function PollutionFlow({
         className="w-full overflow-visible transition-[clip-path] duration-1000 ease-out"
         style={{ height: H, clipPath: grown ? "inset(0 0 0 0)" : "inset(0 100% 0 0)" }}
       >
-        {/* Целое — столбик слева */}
         <rect x={0} y={top} width={NODE} height={T} rx={2} fill="var(--bar)" />
         <m.path
           initial={false}
@@ -97,7 +85,6 @@ export function PollutionFlow({
           fill="var(--destructive)"
           fillOpacity={0.45}
         />
-        {/* Концы потоков — сплошным цветом */}
         <m.rect
           initial={false}
           animate={{ y: he + GAP, height: T - he }}
@@ -119,7 +106,6 @@ export function PollutionFlow({
         />
       </svg>
 
-      {/* Справа — две части: с sm каждая на высоте своей полосы, на телефоне — сверху и снизу колонки */}
       <div className="flex flex-col justify-between sm:relative sm:block" style={{ height: H }}>
         <Part
           label={t.emitted}
@@ -152,7 +138,6 @@ function Part({
   style,
 }: {
   label: string
-  /** Подпись на телефоне, где колонка узкая */
   short?: string
   value: string
   share: string
@@ -181,7 +166,6 @@ function Part({
           <span className="whitespace-nowrap">
             {value} <span className="font-medium text-muted-foreground">{text.unit}</span>
           </span>
-          {/* На телефоне доля — своей строкой: колонка узкая */}
           <span className="block font-medium whitespace-nowrap text-muted-foreground sm:inline">
             <span className="max-sm:hidden"> · </span>
             {share}

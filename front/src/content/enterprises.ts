@@ -1,7 +1,5 @@
 import type { FactSource } from "./hero"
 
-// Секция «Предприятия» (CLAUDE.md §10.7). Цифры — из PocketBase (emission_stats, Белстат), здесь только тексты.
-
 const portal: FactSource = {
   label: "Выбросы предприятий по областям",
   title: "Открытые данные Белстата: отходящие и уловленные загрязняющие вещества, выбросы по веществам",
@@ -28,7 +26,6 @@ const strategy: FactSource = {
 
 export const HOME_REGION = "Гомельская область"
 
-/** Короткие подписи областей для таблицы */
 export const regionShort: Record<string, string> = {
   "Брестская область": "Брестская",
   "Витебская область": "Витебская",
@@ -39,7 +36,6 @@ export const regionShort: Record<string, string> = {
   "Могилевская область": "Могилёвская",
 }
 
-/** Названия веществ Белстата → коротко для подписи */
 export const pollutantShort: Record<string, string> = {
   метан: "Метан",
   "оксид углерода": "Угарный газ (CO)",
@@ -50,7 +46,6 @@ export const pollutantShort: Record<string, string> = {
   "оксид азота": "Оксид азота (NO)",
 }
 
-/** Что это за вещество — одной строкой, простыми словами */
 export const pollutantWhat: Record<string, string> = {
   метан: "парниковый газ без цвета и запаха, ускоряет потепление",
   "оксид углерода": "образуется при неполном сгорании топлива, ядовит",
@@ -75,7 +70,6 @@ export const enterprises = {
     vsPrev: (pct: string, year: number) => `${pct} к ${year}`,
     place: (rank: number, total: number) => `${rank}-е место из ${total} регионов`,
   },
-  /** Путь веществ: всё образовавшееся (100 %) делится на задержанное очистными и ушедшее в воздух */
   flow: {
     title: "Путь загрязняющих веществ",
     caption:

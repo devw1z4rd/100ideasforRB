@@ -11,7 +11,6 @@ import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
 const link = "font-medium text-link transition-colors hover:text-link-hover"
 
-/** Статья базы знаний (§11 /kb/:slug): текст через DOMPurify, справа — другие статьи той же рубрики. */
 export function KbArticlePage() {
   const { slug = "" } = useParams()
   const item = useArticle(slug)

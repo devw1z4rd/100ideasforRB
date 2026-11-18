@@ -30,23 +30,16 @@ import { cn } from "@/lib/utils"
 
 type Town = { id: string; name: string; lat: number; lon: number }
 
-// Фильтры раздела (город, период) — тихие «чипы» без рамки: не спорят с вкладками видов
 const chip =
   "h-9 rounded-full bg-muted text-sm font-medium transition-colors hover:bg-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 
 type ChipOption = {
   value: string
   label: string
-  /** Цветная точка слева в своём списке (десктоп) */
   dot?: string
-  /** Тихая подпись справа в своём списке (десктоп) */
   aside?: string
 }
 
-/**
- * Фильтр-чип: значок слева, стрелка справа. На десктопе — свой выпадающий список (Radix Select: клавиатура,
- * поиск по первым буквам, точка и подпись у пунктов), на телефоне — нативный select с системным списком.
- */
 function ChipSelect({
   id,
   label,
@@ -63,7 +56,6 @@ function ChipSelect({
   value: string
   onChange: (value: string) => void
   options: readonly ChipOption[]
-  /** Подпись над пунктами своего списка */
   header?: { left: string; right?: string }
   className?: string
 }) {
@@ -147,7 +139,6 @@ function ChipSelect({
   )
 }
 
-/** Выбор города: список + «Рядом со мной» (координаты остаются в браузере, на сервер не уходят). */
 export function TownPicker({
   points,
   value,
@@ -162,7 +153,6 @@ export function TownPicker({
   const [locating, setLocating] = useState(false)
   const [geoError, setGeoError] = useState(false)
   const canLocate = typeof navigator !== "undefined" && "geolocation" in navigator
-  // В своём списке у города — точка категории и AQI сейчас: видно, куда переключиться
   const { data: latest } = useLatestAir()
   const options = [...points]
     .sort((a, b) => a.name.localeCompare(b.name, "ru"))
@@ -178,7 +168,7 @@ export function TownPicker({
     })
 
   const locate = () => {
-    // aria-disabled вместо disabled: выключенная кнопка не получает наведение и подсказка бы не открылась
+    // aria-disabled instead of disabled: a disabled button gets no hover, so the tooltip wouldn't open.
     if (locating) return
     setLocating(true)
     setGeoError(false)
@@ -254,7 +244,6 @@ export function TownPicker({
   )
 }
 
-/** Период раздела «Воздух» — чип-список «За 30 дней»: второстепенный фильтр рядом с городом. */
 export function PeriodSelect({
   value,
   onChange,
@@ -277,7 +266,6 @@ export function PeriodSelect({
   )
 }
 
-/** Сегмент периода (сравнение районов): активный — чёрный. options — подмножество периодов (сравнение районов — без 7 дней). */
 export function PeriodSwitch({
   value,
   onChange,
@@ -288,7 +276,6 @@ export function PeriodSwitch({
   value: Period
   onChange: (p: Period) => void
   options?: readonly Period[]
-  /** На мобиле — во всю ширину, сегменты поровну */
   stretch?: boolean
   className?: string
 }) {
@@ -335,10 +322,6 @@ const viewOptions: ReadonlyArray<{ key: AirView; label: string; Icon: typeof Tab
   { key: "hours", label: air.views.hours, Icon: Clock3 },
 ]
 
-/**
- * Вкладки вида раздела «Воздух»: город на графике, все города таблицей, прогноз, время суток.
- * Подчёркивание переезжает к выбранной (useIndicator); стрелки ← → / Home / End переключают вкладки.
- */
 export function ViewTabs({
   value,
   onChange,
@@ -347,7 +330,6 @@ export function ViewTabs({
 }: {
   value: AirView
   onChange: (view: AirView) => void
-  /** id области с содержимым вида */
   controls: string
   className?: string
 }) {

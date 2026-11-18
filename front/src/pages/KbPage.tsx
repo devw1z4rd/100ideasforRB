@@ -7,7 +7,6 @@ import { kb as text } from "@/content/kb"
 import { groupByCategory } from "@/lib/kb"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
-/** «База знаний» (§11): статьи из PocketBase по рубрикам, порядок — поле order. */
 export function KbPage() {
   useDocumentTitle(text.title)
   const articles = useArticles()

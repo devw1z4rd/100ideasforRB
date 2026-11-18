@@ -2,10 +2,6 @@ import { animate, useMotionValue, useReducedMotion, useTransform } from "motion/
 import * as m from "motion/react-m"
 import { useEffect, useRef } from "react"
 
-/**
- * Число, которое отсчитывается от нуля до value, когда play стало true (один раз; дальше — сразу новое значение).
- * Для сцены старта карты: «21 из 21» набирается, пока панель заезжает. При reduced motion — сразу значение.
- */
 export function CountUp({
   value,
   play,

@@ -1,4 +1,4 @@
-// PROTOTYPE — вариант D «Часы воздуха»: циферблат на 24 часа, сектор — каким обычно бывает воздух в этот час.
+// PROTOTYPE — variant D "Air clock".
 import { Car, Flame, Moon, School, Sun } from "lucide-react"
 import { useState } from "react"
 import { aqiCategory } from "@/lib/aqi"
@@ -22,7 +22,6 @@ function sector(h: number) {
   return `M${x1} ${y1} A${R_OUT} ${R_OUT} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${R_IN} ${R_IN} 0 0 0 ${x4} ${y4} Z`
 }
 
-/** Самый длинный отрезок «хороших» часов днём (8–21); если таких нет — часы с наименьшим AQI */
 function bestWindow(aqi: number[]): [number, number] {
   let best: [number, number] = [12, 13]
   let len = 0
@@ -78,7 +77,6 @@ export function VariantClock() {
               opacity={h >= from && h < to ? 1 : 0.8}
             />
           ))}
-          {/* лучшее время — обводка */}
           {Array.from({ length: to - from }, (_, i) => (
             <path key={i} d={sector(from + i)} fill="none" stroke="var(--foreground)" strokeWidth="3" />
           ))}
@@ -112,7 +110,6 @@ export function VariantClock() {
               />
             )
           })}
-          {/* стрелка — сейчас */}
           <line
             x1={C}
             y1={C}

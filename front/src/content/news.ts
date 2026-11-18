@@ -1,7 +1,5 @@
 import type { FactSource } from "./hero"
 
-// Страницы «Новости» (CLAUDE.md §11, §4 S4). Новости — из PocketBase, здесь только тексты.
-
 const hydroReviews: FactSource = {
   label: "Обзоры гидрологической обстановки",
   title: "Белгидромет: обзоры гидрологической обстановки («Информация гидролога»)",

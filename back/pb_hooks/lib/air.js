@@ -1,11 +1,6 @@
-// Сбор качества воздуха из Open-Meteo (CLAUDE.md §4 M2, §9) и суточные агрегаты для air_daily.
-// Подключать внутри обработчика: require(`${__hooks}/lib/air.js`).
-
-// AIR_API_URL — подмена адреса для тестов и локального прокси
 const API_URL =
   $os.getenv("AIR_API_URL") ||
   "https://air-quality-api.open-meteo.com/v1/air-quality";
-// Поле air_readings → переменная Open-Meteo (все в мкг/м³, кроме us_aqi)
 const VARS = {
   pm2_5: "pm2_5",
   pm10: "pm10",
@@ -16,19 +11,15 @@ const VARS = {
   us_aqi: "us_aqi",
 };
 const POLLUTANTS = ["pm2_5", "pm10", "no2", "so2", "o3", "co"];
-// Минск круглый год UTC+3: сутки для air_daily считаются по местному времени
+// Minsk is UTC+3 all year round.
 const MINSK_OFFSET_MS = 3 * 3600 * 1000;
-// Сутки попадают в air_daily, только если есть почти все часы — неполный день исказил бы средние
 const MIN_HOURS_PER_DAY = 18;
 const KEEP_HOURLY_DAYS = 90;
 
-// Дата в формате, в котором PocketBase хранит date-поля: "2026-10-29 12:00:00.000Z"
 const pbDate = (ms) => new Date(ms).toISOString().replace("T", " ");
 
-// Забирает почасовые значения по всем активным точкам и обновляет air_readings (upsert по point + ts).
-// range — параметры периода Open-Meteo: "past_days=1&forecast_days=5" или "start_date=…&end_date=…".
-// Час, где Open-Meteo вернул null хоть по одной переменной, пропускается: number-поле PocketBase
-// не хранит null, а 0 выглядел бы как чистый воздух.
+// Hours where any variable is null are skipped: PocketBase number fields can't store null, and 0 would look
+// like clean air.
 function fetchReadings(app, range) {
   const points = app.findRecordsByFilter(
     "air_points",
@@ -102,12 +93,11 @@ function fetchReadings(app, range) {
   return { points: points.length, saved, skipped };
 }
 
-// Пересчитывает air_daily за местные сутки [fromDay, toDay) — строки "YYYY-MM-DD" — только по фактическим часам
 function rollupDaily(app, fromDay, toDay) {
   const cols = POLLUTANTS.map(
     (p) => `AVG(${p}) AS ${p}_avg, MAX(${p}) AS ${p}_max`,
   ).join(", ");
-  // В DynamicModel 0 — целое, -0 — float64
+  // DynamicModel infers types from the template: 0 is int, -0 is float64.
   const model = { point: "", hours: 0, aqi_max: -0 };
   for (const p of POLLUTANTS) model[p + "_avg"] = model[p + "_max"] = -0;
   const collection = app.findCollectionByNameOrId("air_daily");
@@ -161,7 +151,6 @@ function rollupDaily(app, fromDay, toDay) {
   return { days, rows };
 }
 
-// Почасовые старше 90 дней удаляются: к этому времени они уже свёрнуты в air_daily (CLAUDE.md §8)
 function pruneHourly(app) {
   const cut = pbDate(Date.now() - KEEP_HOURLY_DAYS * 86400000);
   return app
@@ -172,9 +161,7 @@ function pruneHourly(app) {
     .rowsAffected();
 }
 
-// История с даты since ("YYYY-MM-DD") по сегодня: почасовые кусками по месяцу (Open-Meteo считает длинные
-// запросы как несколько), затем air_daily за весь период и чистка почасовых старше 90 дней.
-// Так история проходит ту же агрегацию, что и ежедневный cron.
+// Fetched in month-long chunks: Open-Meteo bills long requests as several.
 function backfill(app, since) {
   const today = minskDay(0);
   let saved = 0;
@@ -185,7 +172,7 @@ function backfill(app, since) {
       Date.parse(today + "T00:00:00Z"),
     );
     const end = new Date(endMs).toISOString().slice(0, 10);
-    // Местные сутки начинаются в 21:00 UTC накануне — захватить день раньше
+    // The local day starts at 21:00 UTC the day before — fetch one extra day.
     const from = new Date(Date.parse(start + "T00:00:00Z") - 86400000)
       .toISOString()
       .slice(0, 10);
@@ -206,11 +193,8 @@ function backfill(app, since) {
   };
 }
 
-// air_daily за вчера и позавчера, если их нет хотя бы у одной активной точки. Cron air_daily (00:20 по Минску)
-// пропускается, когда сервер в это время стоит или машина спит, — тогда вчерашний день выпадал из графиков
-// до ручного пересчёта. Вызывается из каждого часового сбора и догона после старта, так что дыра закрывается
-// в течение часа. Сутки, где у точки меньше MIN_HOURS_PER_DAY часов, не пишутся (как в rollupDaily) —
-// их проверка повторится, это недорого.
+// The 00:20 air_daily cron is skipped while the server is down or asleep, so this runs on every hourly fetch
+// and fills a missing yesterday within an hour.
 function rollupMissing(app) {
   const points = app.countRecords("air_points", $dbx.hashExp({ active: true }));
   const filled = [];
@@ -225,10 +209,8 @@ function rollupMissing(app) {
   return filled;
 }
 
-// Часовой сбор с догоном: cron не запускает пропущенное, а past_days=1 отдаёт часы с полуночи UTC вчера.
-// Если сервер стоял дольше (последний фактический час старше 20 ч), история догружается через backfill
-// с минских суток этого часа — вместе с air_daily за пропущенные дни. В обычном случае — досчёт air_daily
-// за вчера и позавчера, если cron 00:20 был пропущен (rollupMissing).
+// Cron doesn't re-run missed jobs, and past_days=1 only reaches back to yesterday 00:00 UTC. If the last
+// actual hour is older than 20 h, backfill from it instead.
 function fetchLatest(app) {
   const [last] = app.findRecordsByFilter(
     "air_readings",
@@ -248,7 +230,6 @@ function fetchLatest(app) {
   return Object.assign(backfill(app, since), { since });
 }
 
-// "YYYY-MM-DD" местной (минской) даты со сдвигом на shiftDays
 function minskDay(shiftDays) {
   return new Date(Date.now() + MINSK_OFFSET_MS + shiftDays * 86400000)
     .toISOString()

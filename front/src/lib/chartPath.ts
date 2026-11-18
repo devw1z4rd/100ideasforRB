@@ -1,18 +1,11 @@
-// Геометрия для SVG-графиков: плавная кривая и «круглые» деления оси.
-
 type Point = readonly [x: number, y: number]
 
-/**
- * SVG-путь через точки монотонной кубической кривой (Фриц — Карлсон): гладко, но без выбросов
- * между соседними точками — кривая не уходит выше максимума и ниже минимума данных.
- */
 export function monotonePath(points: readonly Point[]): string {
   const n = points.length
   if (n === 0) return ""
   if (n === 1) return `M${points[0][0]},${points[0][1]}`
   const dx = points.slice(1).map((p, i) => p[0] - points[i][0])
   const slope = points.slice(1).map((p, i) => (p[1] - points[i][1]) / (dx[i] || 1))
-  // Касательные в точках: среднее соседних наклонов, ноль на экстремумах
   const t = points.map((_, i) => {
     if (i === 0) return slope[0]
     if (i === n - 1) return slope[n - 2]
@@ -20,7 +13,7 @@ export function monotonePath(points: readonly Point[]): string {
     const b = slope[i]
     return a * b <= 0 ? 0 : (a + b) / 2
   })
-  // Ограничение Фриц — Карлсона: касательные не длиннее трёх наклонов — иначе кривая перехлёстывает
+  // Fritsch–Carlson limit: tangents at most 3× the slope, otherwise the curve overshoots.
   for (let i = 0; i < n - 1; i++) {
     if (slope[i] === 0) {
       t[i] = 0
@@ -46,16 +39,14 @@ export function monotonePath(points: readonly Point[]): string {
   return d
 }
 
-/** Деления оси с «круглым» шагом (1, 2, 5 × 10ⁿ), около count штук внутри [lo, hi] */
 export function niceTicks(lo: number, hi: number, count = 4): number[] {
   if (!(hi > lo)) return [lo]
   const raw = (hi - lo) / count
   const pow = 10 ** Math.floor(Math.log10(raw))
-  // Как в d3: множитель, при котором число делений ближе всего к count (пороги — √50, √10, √2)
   const err = raw / pow
   const step = (err >= 7.07 ? 10 : err >= 3.16 ? 5 : err >= 1.41 ? 2 : 1) * pow
   const ticks: number[] = []
   for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step)
-    ticks.push(Math.round(v * 1e6) / 1e6 + 0) // + 0: -0 → 0, иначе на оси «-0»
+    ticks.push(Math.round(v * 1e6) / 1e6 + 0) // + 0 turns -0 into 0, otherwise the axis shows "-0".
   return ticks
 }

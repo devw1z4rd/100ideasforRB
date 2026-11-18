@@ -5,7 +5,6 @@ import type { HomeSection } from "@/content/home"
 
 type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "variant" | "minHeight">
 
-/** Секция-якорь главной, пока её код не загружен (HomePage): скелетон зарезервированной высоты в общей оболочке. */
 export function SectionPlaceholder({ minHeight, ...section }: Props) {
   return (
     <HomeSectionShell {...section}>

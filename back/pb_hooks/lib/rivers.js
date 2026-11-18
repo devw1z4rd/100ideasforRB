@@ -1,17 +1,10 @@
-// Уровни воды в реках (CLAUDE.md §8, §9): ежедневные наблюдения Белгидромета с pogoda.by → river_posts, river_levels.
-// Подключать внутри обработчика: require(`${__hooks}/lib/rivers.js`).
-//
-// API pogoda.by не документирован — им пользуется карта «Гидро» на сайте Белгидромета:
-//   hydro-markers          — все посты страны: последний уровень в 8:00, пороги, состояние реки;
-//   graph/<код>            — тот же пост за последние 30 дней.
-// Уровень — см над нулём графика поста: сравнивать можно только с порогами того же поста.
+// The pogoda.by API is undocumented (it backs the Hydro map on the Belhydromet site). Levels are cm above
+// each post's own gauge zero — compare them only with that post's thresholds.
 
-// RIVER_API_URL — подмена адреса для тестов и локального прокси
 const API_URL =
   $os.getenv("RIVER_API_URL") || "https://pogoda.by/api/v2/hydrology";
 const SOURCE_TITLE =
   "Белгидромет: ежедневные гидрологические наблюдения (pogoda.by)";
-// pogoda.by иногда рвёт соединение — повторяем с паузой
 const ATTEMPTS = 4;
 
 const pbDate = (iso) => new Date(iso).toISOString().replace("T", " ");
@@ -32,7 +25,6 @@ function getJson(path) {
       error = new Error(
         `pogoda.by ${path}: ${res.statusCode} ${toString(res.body, 300)}`,
       );
-      // 4xx не исправится повтором (кроме 429)
       if (
         res.statusCode >= 400 &&
         res.statusCode < 500 &&
@@ -47,7 +39,6 @@ function getJson(path) {
   throw error;
 }
 
-// id района, в который попадает точка, или "" — пост вне области. Полигоны читаются один раз на весь сбор.
 function districtFinder(app) {
   const { inGeometry } = require(`${__hooks}/lib/geo.js`);
   const districts = app
@@ -57,7 +48,8 @@ function districtFinder(app) {
     .map((d) => ({ id: d.id, geometry: JSON.parse(d.raw) }));
   const at = (lat, lon) =>
     districts.find((d) => inGeometry(lon, lat, d.geometry))?.id || "";
-  // Посты на пограничном Днепре стоят у самой границы (Лоев — в 0,5 км за полигоном OSM): ищем район в радиусе до 1 км
+  // Posts on the border Dnieper sit just outside the OSM polygon (Loyew is 0.5 km out), so search within 1
+  // km.
   return (lat, lon) => {
     let id = at(lat, lon);
     for (const km of [0.5, 1]) {
@@ -73,17 +65,13 @@ function districtFinder(app) {
   };
 }
 
-// Посты области из hydro-markers → river_posts (upsert по коду поста: пороги и названия могут меняться).
-// Возвращает записи постов и последние наблюдения по коду — на случай, если graph поста не ответит.
 function syncPosts(app) {
   const markers = getJson("hydro-markers");
   const districtAt = districtFinder(app);
   let source = "";
   try {
     source = app.findFirstRecordByData("sources", "title", SOURCE_TITLE).id;
-  } catch {
-    // источник появится после `pocketbase seed`
-  }
+  } catch {}
 
   const collection = app.findCollectionByNameOrId("river_posts");
   const posts = [];
@@ -102,7 +90,8 @@ function syncPosts(app) {
     } catch {
       record = new Record(collection);
     }
-    // Порога у поста может не быть (null) — number-поле хранит 0, на фронте 0 значит «порога нет»
+    // A missing threshold is stored as 0 (number fields can't hold null); the frontend reads 0 as "no
+    // threshold".
     record.load({
       code,
       name: m.punkt,
@@ -122,8 +111,7 @@ function syncPosts(app) {
   return { posts, latest, total: markers.length };
 }
 
-// Наблюдения за 30 дней по каждому посту → river_levels (upsert по post + date, без изменений не пересохраняется).
-// Каждый запуск заново проходит месяц, поэтому пропущенные дни (упал cron, не ответил сайт) догружаются сами.
+// Each run re-walks the whole month, so missed days backfill themselves.
 function fetchLevels(app) {
   const { posts, latest, total } = syncPosts(app);
   const collection = app.findCollectionByNameOrId("river_levels");
@@ -185,7 +173,6 @@ function fetchLevels(app) {
   return { markers: total, posts: posts.length, saved, failed };
 }
 
-// Есть ли уже последний доступный уровень: на 8:00 сегодняшнего дня, а до утреннего cron (6:40 UTC) — вчерашнего
 function hasLatest(app) {
   const now = new Date();
   const day = new Date(

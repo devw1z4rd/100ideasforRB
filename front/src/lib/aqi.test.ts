@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 import { AQI_SCALE, aqiCategory, type AqiLevel } from "./aqi"
 
 describe("aqiCategory", () => {
-  // Границы категорий US EPA включительно
   const cases: ReadonlyArray<[number, AqiLevel]> = [
     [0, "good"],
     [50, "good"],

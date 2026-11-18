@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils"
 
 const h1 = "font-heading text-[clamp(32px,4vw,48px)] leading-[1.05] font-semibold tracking-[-0.03em]"
 
-/** /reports — опубликованные обращения всех жителей и свои (любой статус) */
 export function ReportsPage() {
   useDocumentTitle(reportsPage.title)
   useReportsRealtime()
@@ -21,7 +20,6 @@ export function ReportsPage() {
   const [tab, setTab] = useState<"all" | "mine">("all")
   const all = useReports({ status: publicStatuses })
   const mine = useReports({ author: user?.id ?? "-" })
-  // Без входа «Мои» — обращения, отправленные с этого устройства (по их личным ключам)
   const hasDevice = deviceReports().length > 0
   const device = useDeviceReports(!user && hasDevice)
   const list = tab === "mine" ? (user ? mine : device) : all
@@ -65,7 +63,6 @@ export function ReportsPage() {
   )
 }
 
-/** /moderation — очередь новых обращений и обращения в работе (только модератор и админ) */
 export function ModerationPage() {
   useDocumentTitle(moderationPage.title)
   useReportsRealtime()
@@ -112,7 +109,6 @@ function Queue({ reports }: { reports: Parameters<typeof QueueItem>[0]["report"]
   )
 }
 
-/** /me — профиль: кто вошёл, свои обращения, выход */
 export function MePage() {
   useDocumentTitle(mePage.title)
   useReportsRealtime()

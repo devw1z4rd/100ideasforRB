@@ -1,20 +1,16 @@
-// Собирает front/public/geo/borders.geojson — границы стран и областей вокруг Гомельской (CLAUDE.md §9, §10.4):
-// Natural Earth 1:10m (общественное достояние): admin_0_boundary_lines_land (kind: "country") и
-// admin_1_states_provinces_lines (kind: "region"), обрезанные по рамке карты, и контур Беларуси из
-// admin_0_countries (kind: "belarus") — им карта отделяет остальную страну от соседних государств.
-//   NODE_USE_ENV_PROXY=1 node back/seed/tools/build-map-borders.mjs   (переменная — только за прокси)
-// Свою границу карта рисует точнее, по OSM (oblast.geojson): линии Natural Earth вдоль неё выбрасываются,
-// иначе рядом с контуром области шла бы вторая, чуть смещённая линия.
+// Builds front/public/geo/borders.geojson from Natural Earth 1:10m.
+//   NODE_USE_ENV_PROXY=1 node back/seed/tools/build-map-borders.mjs (the env var is only needed behind a
+//   proxy)
+// Lines along the oblast outline are dropped: the map draws that border from OSM, so Natural Earth would add
+// a second, slightly offset line.
 import { readFile, writeFile } from "node:fs/promises";
 
 const OUT = new URL("../../../front/public/geo/", import.meta.url);
 const NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson";
-// Рамка, дальше которой карту не утащить (content/map.ts maxBounds), с запасом
 const BBOX = { minLon: 25.5, maxLon: 34.0, minLat: 50.2, maxLat: 54.5 };
-// Границы областей Беларуси и её государственная граница — по всей стране: сцена старта карты показывает всю
-// Беларусь (front/src/components/map/intro.ts), и обрезанные рамкой области линии на севере пропадали
+// Belarus region lines and the national border are kept for the whole country: the map intro shows all of
+// Belarus.
 const BELARUS_BOX = { minLon: 23.0, maxLon: 33.0, minLat: 51.1, maxLat: 56.3 };
-// Ближе этого к контуру области (градусы, ~2 км) линия Natural Earth считается его дублем
 const NEAR_OBLAST = 0.02;
 
 const round = (v) => Math.round(v * 1e4) / 1e4;
@@ -33,7 +29,6 @@ const rings = oblast.features.flatMap((f) =>
 );
 const segments = rings.flatMap((ring) => ring.slice(1).map((b, i) => [ring[i], b]));
 
-// Расстояние от точки до отрезка в градусах, долгота сжата на cos(широты) — для порога в пару километров хватает
 const k = Math.cos((52.4 * Math.PI) / 180);
 function distToSegment([x, y], [[ax, ay], [bx, by]]) {
   const px = x * k, qx = ax * k, rx = bx * k;
@@ -43,7 +38,6 @@ function distToSegment([x, y], [[ax, ay], [bx, by]]) {
 }
 const nearOblast = (p) => segments.some((s) => distToSegment(p, s) < NEAR_OBLAST);
 
-// Линия режется на куски внутри рамки и вдали от контура области; кусок из одной точки отбрасывается
 function cut(line, box = BBOX) {
   const parts = [];
   let current = [];
@@ -69,8 +63,6 @@ for (const [file, kind] of [
     const p = f.properties;
     const belarus = p.ADM0_A3 === "BLR" || p.ADM0_A3_L === "BLR" || p.ADM0_A3_R === "BLR";
     const parts = lines.flatMap((line) => cut(line, belarus ? BELARUS_BOX : BBOX));
-    // blr — линия Беларуси (её граница или граница её областей): на старте карты видна только она, линии
-    // соседних стран проявляются к посадке (front/src/components/map/intro.ts)
     if (parts.length)
       features.push({
         type: "Feature",

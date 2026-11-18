@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils"
 
-/** Метка черновика: неопубликованное видит только админ (API rules news/articles) */
 export function DraftBadge({ label, className }: { label: string; className?: string }) {
   return (
     <span

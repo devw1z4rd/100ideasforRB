@@ -1,19 +1,13 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Справочники из back/seed (CLAUDE.md §7): `pocketbase seed` (или `pocketbase.exe seed`) из папки back/.
-// Идемпотентно: записи ищутся по естественному ключу и обновляются, лишние не удаляются.
-//   sources.json      → sources      (ключ title)
-//   districts.geojson → districts    (ключ name; center и geometry из GeoJSON)
-//   air_points.json   → air_points   (ключ name; district — по названию района)
-//   emission_stats.json → emission_stats (ключ территория + год + показатель + вещество; source — по названию источника)
-//   water_readings.json → sources + water_readings (ключ квартал + река + пункт + показатель + месяц)
-//   articles.json     → articles     (стартовые статьи базы знаний; только новые по slug — правки в админке не затираются)
+// `pocketbase seed` from back/. Idempotent: records are matched by natural key and updated; extra records are
+// not deleted.
 
 $app.rootCmd.addCommand(
   new Command({
     use: "seed",
     short: "Загрузить справочники из back/seed",
     run: () => {
-      // Свои команды не применяют миграции из pb_migrations — это делают serve и migrate up
+      // Custom commands don't apply pb_migrations — run `pocketbase migrate up` first.
       try {
         $app.findCollectionByNameOrId("emission_stats")
       } catch {
@@ -102,9 +96,7 @@ $app.rootCmd.addCommand(
           try {
             txApp.findFirstRecordByData("articles", "slug", a.slug)
             continue
-          } catch {
-            // новой статьи ещё нет
-          }
+          } catch {}
           const record = new Record(articlesCollection)
           record.load({ ...a, is_published: true })
           txApp.save(record)

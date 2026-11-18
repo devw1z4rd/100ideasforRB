@@ -1,7 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Догон после простоя (CLAUDE.md §6): cron PocketBase не запускает пропущенные задачи, поэтому после выключенного
-// сервера воздух, реки и новости стояли бы до следующего запуска по расписанию (новости — до 9:15 или 15:15 UTC).
-// На первом тике после старта serve (до минуты) задача снимает себя с расписания и один раз проходит всё.
+// PocketBase cron doesn't re-run missed jobs. On the first tick after `serve` starts, this job unschedules
+// itself and catches up air, rivers and news once.
 
 cronAdd("catch_up", "* * * * *", () => {
   $app.cron().remove("catch_up");

@@ -1,4 +1,4 @@
-// PROTOTYPE — общие кусочки вариантов: выбор города, ползунок по дням, значок-лицо вывода.
+// PROTOTYPE — shared bits of the variants.
 import { Frown, Meh, Pause, Play, Smile } from "lucide-react"
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
@@ -28,7 +28,6 @@ export function TownChips({ value, onChange }: { value: string; onChange: (id: s
   )
 }
 
-/** Ползунок по 30 дням + «проиграть» (листает дни сам) */
 export function DaySlider({
   town,
   index,

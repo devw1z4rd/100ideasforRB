@@ -1,13 +1,8 @@
-// Обзоры гидрологической обстановки Белгидромета → news (CLAUDE.md §8, §9): официальный текст как есть,
-// карта уровенного режима — обложкой, ссылка на обзор — source_url. Белгидромет публикует обзор 1–2 раза в неделю.
-// Подключать внутри обработчика: require(`${__hooks}/lib/hydroNews.js`).
-
-// BELGIDROMET_URL — подмена адреса для тестов и локального прокси; в source_url всегда настоящий адрес
+// BELGIDROMET_URL overrides the host for tests; source_url always keeps the real host.
 const BASE = $os.getenv("BELGIDROMET_URL") || "https://belgidromet.by"
 const PUBLIC = "https://belgidromet.by"
 const LIST = "/ru/gidrolog-ru/"
 const TAG = "Реки"
-// belgidromet.by иногда рвёт соединение — повторяем с паузой
 const ATTEMPTS = 4
 
 const ENTITIES = {
@@ -49,7 +44,6 @@ function get(path) {
   throw error
 }
 
-// Пути обзоров со страницы «Информация гидролога» — на ней последние три
 function listReviews() {
   const html = get(LIST)
   const paths = []
@@ -59,7 +53,6 @@ function listReviews() {
   return paths
 }
 
-// Страница обзора: дата (inner-date), заголовок (h2), текст до «При использовании информации…», карта из /uploads/
 function parseReview(html) {
   const date = html.match(/class="inner-date">\s*(\d{2})\.(\d{2})\.(\d{4})/)
   const title = html.match(/<h2>([\s\S]*?)<\/h2>/)
@@ -84,8 +77,7 @@ function parseReview(html) {
   }
 }
 
-// Импорт обзоров по путям (по умолчанию — с главной страницы раздела). Уже загруженные (по source_url) пропускаются,
-// поэтому правки в админке не затираются. Возвращает число новых и упавших.
+// Already imported reviews (matched by source_url) are skipped, so admin edits aren't overwritten.
 function importReviews(app, paths) {
   const list = paths && paths.length ? paths : listReviews()
   const collection = app.findCollectionByNameOrId("news")
@@ -96,9 +88,7 @@ function importReviews(app, paths) {
     try {
       app.findFirstRecordByData("news", "source_url", sourceUrl)
       continue
-    } catch {
-      // ещё не загружен
-    }
+    } catch {}
     try {
       const r = parseReview(get(path))
       const record = new Record(collection)
@@ -107,7 +97,6 @@ function importReviews(app, paths) {
         slug: `hydro-${r.day}`,
         body: r.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join(""),
         tag: TAG,
-        // Время публикации в обзоре не указано — только день
         published_at: `${r.day} 00:00:00.000Z`,
         source_url: sourceUrl,
         is_published: true,

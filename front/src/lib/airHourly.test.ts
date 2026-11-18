@@ -64,11 +64,11 @@ describe("bestWindow", () => {
 })
 
 describe("hourProfile and extremes", () => {
-  // 15 ноября 2026 — воскресенье, 16 — понедельник
+  // 2026-11-15 is a Sunday, the 16th a Monday
   const rows = [
-    row("2026-11-15 16:00:00.000Z", 0, 30), // вс 19:00
-    row("2026-11-16 16:00:00.000Z", 0, 10), // пн 19:00
-    row("2026-11-16 10:00:00.000Z", 0, 4), // пн 13:00
+    row("2026-11-15 16:00:00.000Z", 0, 30), // Sun 19:00
+    row("2026-11-16 16:00:00.000Z", 0, 10), // Mon 19:00
+    row("2026-11-16 10:00:00.000Z", 0, 4), // Mon 13:00
   ]
 
   it("averages by Minsk hour and counts days above the norm", () => {

@@ -8,7 +8,6 @@ import {
   type PolygonGeometry,
 } from "./geo"
 
-// Квадрат 30–31° в. д. × 52–53° с. ш. с «дыркой» в середине — как Гомельский район вокруг г. Гомеля
 const district: PolygonGeometry = {
   type: "Polygon",
   coordinates: [
@@ -63,7 +62,6 @@ describe("fitProjection", () => {
     const [x, y] = p.project(31, 52)
     expect(x).toBeCloseTo(100)
     expect(y).toBeCloseTo(p.height, 0)
-    // Градус долготы на широте 52,5° короче градуса широты: высота больше ширины
     expect(p.height).toBeGreaterThan(100)
   })
 })

@@ -8,7 +8,6 @@ import { map } from "@/content/map"
 import { news } from "@/content/news"
 import { water } from "@/content/water"
 import { Tooltip } from "@/components/ui/tooltip"
-// import { hero } from "@/content/hero" — вводный абзац на главной скрыт, его источники тоже не выводим
 import { AQI_SCALE, type AqiCategory } from "@/lib/aqi"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
@@ -28,7 +27,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
   )
 }
 
-/** «Данные и методика» (M7): источники чисел на сайте, шкала AQI, принципы работы с данными. */
 export function DataPage() {
   useDocumentTitle(dataPage.title)
   const { aqi } = dataPage
@@ -43,7 +41,6 @@ export function DataPage() {
       <Section id="data-sources" title={dataPage.sources.title}>
         <ul className="mt-6 divide-y divide-border border-y border-border">
           {[
-            // ...hero.factsSources.map((source) => ({ source, usedOn: dataPage.sources.usedOn })),
             ...air.sources.map((source) => ({ source, usedOn: dataPage.sources.airUsedOn })),
             ...enterprises.sourcesList.map((source) => ({
               source,

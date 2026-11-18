@@ -20,15 +20,7 @@ import { levelPosition } from "./levelText"
 import { LevelSparkline } from "./LevelSparkline"
 
 const text = water.levels
-/** Телефон: столько постов видно сразу (хуже всего — первыми), остальные — по кнопке */
 const MOBILE_FIRST = 6
-/**
- * Уровень воды (§10.8): все посты Белгидромета в области карточками, хуже всего — первыми. В карточке — уровень,
- * изменение за сутки, статус к порогам поста и мини-график за 30 дней с зонами порогов; щелчок открывает окно поста
- * (то же, что на карте): график, пороги, другие посты реки и качество воды. Сантиметры сравниваются только
- * с порогами своего поста. На телефоне — компактный список строк (карусель из двух десятков карточек
- * приходилось листать по одной): пост, уровень, изменение и статус; касание открывает то же окно.
- */
 export function RiverLevels() {
   const reduceMotion = useReducedMotion()
   const posts = useRiverPosts()
@@ -80,7 +72,6 @@ export function RiverLevels() {
       ) : (
         <ul className="grid grid-cols-2 gap-4 xl:grid-cols-4">
           {summaries.map((s, i) => (
-            // Карточки появляются волной, когда до них докрутили: по строке — слева направо
             <m.li
               key={s.post.id}
               initial={reduceMotion ? false : { opacity: 0, y: 14 }}
@@ -111,7 +102,6 @@ function PostCard({ summary: s, day, onOpen }: { summary: PostSummary; day: stri
   const { post, latest } = s
   return (
     <button
-      // Сюда ведёт «Подробнее» с карты: прокрутка к карточке и подсветка (lib/focusTarget.ts)
       id={riverPostAnchor(post.code)}
       type="button"
       aria-haspopup="dialog"
@@ -162,7 +152,6 @@ function PostCard({ summary: s, day, onOpen }: { summary: PostSummary; day: stri
   )
 }
 
-/** Телефон: пост одной строкой — название и река, статус; справа уровень и изменение за сутки */
 function PostRow({ summary: s, onOpen }: { summary: PostSummary; onOpen: () => void }) {
   const { post, latest } = s
   return (
@@ -218,7 +207,6 @@ function StatusLabel({ status, className }: { status: PostSummary["status"]; cla
   )
 }
 
-/** Строка под графиком: где уровень относительно порогов, у поста без порогов — разброс за месяц */
 function note(s: PostSummary): string {
   if (hasThresholds(s.post)) return levelPosition(s)
   const values = s.series.map((l) => l.level)

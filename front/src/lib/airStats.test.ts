@@ -204,7 +204,7 @@ describe("buckets", () => {
   })
 
   it("groups long periods into Monday-based weeks", () => {
-    // 2026-01-01 — четверг: первая неделя неполная (чт–вс), дальше с понедельника
+    // 2026-01-01 is a Thursday: the first week is partial (Thu–Sun), then weeks start on Monday
     const weeks = buckets(daysBetween("2026-01-01", "2026-04-30"))
     expect(weeks[0]).toMatchObject({ from: "2026-01-01", to: "2026-01-04" })
     expect(weeks[1]).toMatchObject({ from: "2026-01-05", to: "2026-01-11" })

@@ -10,15 +10,9 @@ const t = text.table
 const TOP = 3
 const name = (r: RegionYear) => regionShort[r.territory] ?? r.territory
 
-// Колонки: на телефоне бар — второй строкой под названием, с sm — в одной строке между названием и цифрами
 const row =
   "grid grid-cols-[1.25rem_minmax(0,1fr)_auto_2.75rem] items-center gap-x-3 sm:grid-cols-[1.25rem_7.5rem_minmax(0,1fr)_3.5rem_2.75rem]"
 
-/**
- * Регионы по выбросам предприятий за год (§10.7): один бар на регион (тыс. т в воздух, от большего к меньшему)
- * и доля в выбросах страны. Гомельская область выделена. Подробности — сколько образовалось и сколько задержали
- * очистные — в подсказке строки; под списком — сколько дают первые три региона.
- */
 export function RegionsTable({
   year,
   regions,
@@ -54,7 +48,7 @@ export function RegionsTable({
                   key={r.territory}
                   content={t.tip(kt(r.generated), pct(r.capturedShare), formatNumber(r.emitted, 1))}
                 >
-                  {/* Колонки заданы явно: элементы с одной лишь строкой grid расставляет раньше остальных */}
+                  {/* Explicit columns: grid places single-row items before the others. */}
                   <li
                     className={cn(
                       row,

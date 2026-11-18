@@ -1,4 +1,3 @@
-/** Знак логотипа: квадрат с тремя волнами (из макета, CLAUDE.md §10.2). */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" className={className}>

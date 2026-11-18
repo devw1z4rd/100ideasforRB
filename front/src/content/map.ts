@@ -1,11 +1,7 @@
-// Карта экологической обстановки (CLAUDE.md §10.4): подписи, слои, ориентиры.
-// Координаты здесь — места подписей и ориентиров, не данные: данные карта берёт из PocketBase.
-
 import type { FactSource } from "./hero"
 
 export type LngLat = { lon: number; lat: number }
 
-/** Источники подложки карты — для страницы «Данные и методика» */
 const mapSources: readonly FactSource[] = [
   {
     label: "Граница области, районы",
@@ -43,7 +39,6 @@ export const map = {
   overview: {
     title: "Воздух сейчас",
     good: (n: number, total: number) => `${n} из ${total}`,
-    /** «из 21» — после отсчитываемого числа на старте карты */
     of: (total: number) => `из ${total}`,
     goodCaption: "городов с хорошим воздухом",
     scaleCaption: "каждая отметка — город, шкала AQI",
@@ -56,12 +51,9 @@ export const map = {
   card: {
     district: (name: string) => `${name} район`,
     now: "Сейчас, мкг/м³",
-    /** Подпись засечки на мини-шкалах показателей */
     normMark: "суточная норма ВОЗ",
-    /** Вторая строка подсказки плитки: «сейчас 4,1 · норма ВОЗ 15 мкг/м³» */
     nowVsNorm: (value: string, norm: number) => `сейчас ${value} · норма ВОЗ ${norm} мкг/м³`,
     daysTitle: "Дни с PM2.5 выше суточной нормы ВОЗ",
-    /** После крупного числа дней: «12 из 30» */
     daysOf: (total: number) => `из ${total}`,
     worstDay: "Худший день",
     noDayData: "нет данных",
@@ -76,7 +68,6 @@ export const map = {
     level: "Пост на реке: уровень растёт / падает, цвет — к порогам поста",
     water: "Участок реки, цвет — худший показатель качества",
   },
-  /** Окно поста уровня воды (components/map/RiverPostDialog.tsx) */
   riverDialog: {
     eyebrow: (date: string) => `Уровень воды · Белгидромет, на 8:00 ${date}`,
     description: (river: string, post: string) =>
@@ -91,7 +82,6 @@ export const map = {
     noThreshold: "нет",
     noThresholds:
       "У поста нет порогов судоходства, поймы и опасного уровня — уровень можно сравнивать только с его же прошлыми значениями.",
-    /** Где уровень относительно порога; diff — уровень минус порог, см */
     relation: (kind: "low" | "flood" | "danger", diff: number) => {
       if (diff === 0) return "ровно на пороге"
       if (kind === "low") return diff < 0 ? `на ${-diff} см ниже` : `на ${diff} см выше`
@@ -103,7 +93,6 @@ export const map = {
     toSection: "Раздел «Вода»",
     chart: { max: "макс.", min: "мин.", changeCaption: "столбики — изменение за сутки" },
   },
-  /** Подсказки у маркеров на карте (components/map/MapTipContent.tsx) */
   tip: {
     level: "Уровень воды",
     water: "Качество воды",
@@ -124,7 +113,6 @@ export const map = {
       return `${n} ${word}`
     },
     clean: "в норме",
-    /** Пояснение к «×N» на примере худшего значения участка */
     ratioHint: (ratio: string) => `×${ratio} — в ${ratio} раза хуже норматива`,
     more: "Подробнее",
   },
@@ -139,7 +127,6 @@ export const map = {
   controls: {
     oblast: "Вся область",
     zoomIn: "Увеличить масштаб",
-    /** Подсказки к кнопкам масштаба: быстрее — двойным щелчком */
     dblClick: "Двойной щелчок по карте — приблизить к этой точке, с Shift — отдалить",
     dblClickTown: "Щелчок — выбрать город, двойной — приблизить к нему",
     zoomOut: "Уменьшить масштаб",
@@ -149,25 +136,18 @@ export const map = {
     "CooperativeGesturesHandler.MacHelpText": "Чтобы приблизить карту, прокручивайте с ⌘",
     "CooperativeGesturesHandler.MobileHelpText": "Двигайте карту двумя пальцами",
   },
-  /** Пока качается код карты (медленная сеть): подпись на тёмной панели */
-  /** Телефон: на обзоре видны только города */
   zoomHint: "Приблизьте карту двумя пальцами — появятся посты на реках и обращения жителей.",
   loading: "Загружаем карту…",
   attribution:
     "© OpenStreetMap contributors · OpenFreeMap © OpenMapTiles · реки и границы стран Natural Earth · воздух CAMS / Open-Meteo",
-  /** Рамка области (OSM relation 59161) — «Вся область»: запад, юг, восток, север */
   bounds: [27.25, 51.26, 31.8, 53.36] as [number, number, number, number],
-  /** Дальше этой рамки карту не утащить */
   maxBounds: [25.8, 50.4, 33.6, 54.3] as [number, number, number, number],
-  /** Подписи соседей — в видимой части карты, не под панелями */
   neighbours: [
     { label: "Могилёвская обл.", lon: 29.0, lat: 53.26 },
     { label: "Минская обл.", lon: 28.05, lat: 52.98 },
-    // Украина — к востоку от Днепра ниже Лоева, Россия — у Красной Горы: обе подписи не под панелями и атрибуцией
     { label: "Украина", lon: 31.25, lat: 51.78 },
     { label: "Россия", lon: 31.62, lat: 53.12 },
   ],
-  /** Города соседей — серые ориентиры за границей области (координаты GeoNames) */
   neighbourTowns: [
     { name: "Могилёв", lon: 30.3449, lat: 53.9168 },
     { name: "Бобруйск", lon: 29.2214, lat: 53.1384 },
@@ -177,16 +157,11 @@ export const map = {
     { name: "Новозыбков", lon: 31.936, lat: 52.537 },
     { name: "Клинцы", lon: 32.2361, lat: 52.7529 },
   ],
-  /**
-   * Где подписать крупные реки: подпись «примагничивается» к ближайшей точке русла,
-   * side — с какой стороны от точки (чтобы не наезжать на города)
-   */
   riverLabels: [
     { name: "Березина", lon: 29.45, lat: 52.85, side: "right" },
     { name: "Припять", lon: 28.75, lat: 52.0, side: "below" },
     { name: "Сож", lon: 31.05, lat: 53.3, side: "right" },
     { name: "Днепр", lon: 30.7, lat: 51.7, side: "right" },
   ] as ReadonlyArray<{ name: string; lon: number; lat: number; side: "left" | "right" | "below" }>,
-  /** Города с подписью слева от точки — справа тесно (у Гомеля справа Добруш) */
   labelsLeft: ["Гомель"] as readonly string[],
 } as const

@@ -4,10 +4,6 @@ import { air } from "@/content/air"
 
 type Town = { id: string; name: string }
 
-/**
- * Выбранный город главной — общий для карты и раздела «Воздух»: живёт в адресе (`?town=Мозырь`),
- * поэтому выбор на карте переключает график, а ссылкой можно поделиться. По умолчанию — Гомель.
- */
 export function useSelectedTown(towns: readonly Town[] | undefined): [string | null, (id: string) => void] {
   const [params, setParams] = useSearchParams()
   const name = params.get("town")
@@ -24,7 +20,6 @@ export function useSelectedTown(towns: readonly Town[] | undefined): [string | n
           next.set("town", town.name)
           return next
         },
-        // Смена города — не новая страница: без записи в историю и без прокрутки
         { replace: true, preventScrollReset: true },
       )
     },

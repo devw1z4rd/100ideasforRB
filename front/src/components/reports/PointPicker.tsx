@@ -10,16 +10,11 @@ import { map as mapText } from "@/content/map"
 
 setWorkerUrl(workerUrl)
 
-// Подложка — OpenFreeMap (улицы и дома нужны, чтобы попасть в место), в цвет темы сайта
 const STYLE_LIGHT = "https://tiles.openfreemap.org/styles/positron"
 const STYLE_DARK = "https://tiles.openfreemap.org/styles/dark"
 
 const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
-/**
- * Точка обращения на карте: щелчок ставит метку, метку можно перетащить. readOnly — только показать точку.
- * Граница области — пунктиром: обращения вне её сервер не примет.
- */
 export function PointPicker({
   value,
   onChange,
@@ -30,7 +25,6 @@ export function PointPicker({
   value: GeoPoint | null
   onChange?: (point: GeoPoint) => void
   readOnly?: boolean
-  /** Точка, к которой плавно приблизиться (например, после «Я здесь») */
   focus?: GeoPoint | null
   className?: string
 }) {
@@ -43,7 +37,7 @@ export function PointPicker({
   const dark = document.documentElement.classList.contains("dark")
 
   return (
-    // isolate: слои MapLibre (атрибуция, кнопки) не вылезают поверх липкой кнопки «Отправить» и шапки
+    // isolate: keeps MapLibre controls below the sticky Submit button and the header.
     <div className={cn("isolate", className)}>
       <MapGL
         ref={mapRef}

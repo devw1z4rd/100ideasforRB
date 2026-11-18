@@ -2,8 +2,6 @@ import type { CompareState, RankMetric } from "@/lib/compare"
 import type { Period } from "@/lib/airStats"
 import type { FactSource } from "./hero"
 
-// Страница «Сравнение районов» (CLAUDE.md §4 S3, §10.14). Значения — из PocketBase, здесь только тексты.
-
 const osm: FactSource = {
   label: "Границы районов",
   title: "OpenStreetMap: границы районов Гомельской области и г. Гомеля",
@@ -12,7 +10,6 @@ const osm: FactSource = {
   year: 2026,
 }
 
-/** «Мозырский» → «Мозырский район»; «г. Гомель» — как есть */
 export const districtLabel = (name: string) => (name.startsWith("г. ") ? name : `${name} район`)
 
 export type MetricInfo = { key: RankMetric; label: string; caption: string }
@@ -25,7 +22,6 @@ export const metrics: readonly MetricInfo[] = [
   { key: "reports", label: "Обращения жителей", caption: "опубликованных обращений" },
 ]
 
-/** Без 7 дней: за неделю почти у всех районов 0–1 день, порядок случаен */
 export const comparePeriods: readonly Period[] = ["30d", "90d", "ytd"]
 
 export const compare = {
@@ -35,7 +31,6 @@ export const compare = {
   ranking: {
     title: "Районы по одному показателю",
     metricLabel: "Показатель",
-    /** Заголовок над картой: у кого больше всего и у кого меньше */
     most: (metric: MetricInfo) =>
       metric.key === "reports" ? "Больше всего обращений" : `Чаще всего ${metric.label} выше нормы ВОЗ`,
     least: "Реже всего",

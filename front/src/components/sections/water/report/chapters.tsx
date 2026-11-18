@@ -6,29 +6,21 @@ import { cn } from "@/lib/utils"
 import type { Exceedance, Reading, Section } from "@/lib/water"
 import { RiversArt } from "./RiversArt"
 
-// Страницы глав квартального отчёта (правая страница разворота). Данные считает ReportDialog.
-
 const r = text.report
-// Металлы — тысячные доли мг/дм³, органика — десятки: знаков после запятой столько, сколько в обзоре
 const fmt = (v: number) =>
   formatNumber(
     v,
     v < 1 ? Math.min(4, Math.max(2, -Math.floor(Math.log10(v)) + 2)) : Number.isInteger(v) ? 0 : 1,
   ).replace(/(,\d*?[1-9])0+$/, "$1")
-// Чуть выше норматива (1,03×) не должно выглядеть как «1,0×» — без превышения
+// Slightly above the norm (1.03×) must not read as "1.0×" (no excess).
 export const times = (ratio: number) => formatNumber(ratio, ratio < 1.1 ? 2 : 1)
 const monthOf = (period: string) => months[Number(period.slice(5, 7)) - 1]
-/** Показатель в середине фразы: «марганец», но «ХПК» и «БПК₅» — аббревиатуры не трогаем */
 export const indicatorInline = (key: string) => {
   const short = indicators[key]?.short ?? key
   return /^[А-ЯЁ][а-яё]/.test(short) ? short[0].toLowerCase() + short.slice(1) : short
 }
 const WATER_POST = "водность реки"
 
-/**
- * Шкала точечного графика: от норматива (1×) до чуть больше худшего случая, но не меньше 2×. Если худший случай
- * больше 4× (марганец бывает в 12 раз выше нормы), шкала логарифмическая — иначе остальные точки слиплись бы у 1×.
- */
 export function ratioScale(maxRatio: number) {
   const max = Math.max(2, Math.ceil(maxRatio * 4) / 4 + 0.25)
   const log = max > 4
@@ -45,7 +37,6 @@ export type ReportData = {
   temperature: readonly Reading[]
 }
 
-/** Глава 1: четыре числа и карта участков */
 export function SummaryPage({ data }: { data: ReportData }) {
   const worst = data.exceedances[0]
   const withIssues = data.sections.filter((s) => s.worst > 1).length
@@ -112,7 +103,6 @@ function LegendDot({ color, label, small = false }: { color: string; label: stri
   )
 }
 
-/** Глава 2: точечный график «во сколько раз хуже норматива» */
 export function ExceedancesPage({
   items,
   scale,
@@ -199,7 +189,6 @@ export function ExceedancesPage({
   )
 }
 
-/** Глава 3: водность рек и уровни у городов */
 export function HydrologyPage({ items }: { items: readonly Reading[] }) {
   return (
     <ol className="divide-y divide-border border-y border-border">
@@ -209,7 +198,6 @@ export function HydrologyPage({ items }: { items: readonly Reading[] }) {
           className="book-row grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-3 py-2.5 text-[13px]"
           style={{ animationDelay: `${i * 40}ms` }}
         >
-          {/* Водность — за весь квартал, у событий на постах — месяц */}
           <span className="pt-px text-[12px] text-muted-foreground first-letter:uppercase">
             {h.post === WATER_POST ? r.quarterWater : monthOf(h.period)}
           </span>
@@ -223,7 +211,6 @@ export function HydrologyPage({ items }: { items: readonly Reading[] }) {
   )
 }
 
-/** Глава 4: насколько вода теплее обычного — полосами */
 export function TemperaturePage({ items }: { items: readonly Reading[] }) {
   const sorted = [...items].sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
   const max = Math.max(1, ...sorted.map((t) => t.value ?? 0))
@@ -259,7 +246,6 @@ export function TemperaturePage({ items }: { items: readonly Reading[] }) {
   )
 }
 
-/** Глава 5: словарь показателей, оговорки и ссылка на обзор */
 export function GlossaryPage({
   label,
   sourceUrl,
@@ -267,7 +253,6 @@ export function GlossaryPage({
 }: {
   label: string
   sourceUrl?: string
-  /** Показатели, которые встречаются в этом квартале, — словарь только по ним */
   used: ReadonlySet<string>
 }) {
   return (

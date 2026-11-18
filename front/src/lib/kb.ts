@@ -1,13 +1,7 @@
-// База знаний: группировка статей по рубрикам (CLAUDE.md §11).
-
 type Categorized = { category?: string; order?: number; title: string }
 
 export type CategoryGroup<T> = { category: string; articles: T[] }
 
-/**
- * Статьи по рубрикам: сначала рубрики в порядке `order` из content/kb.ts, потом остальные по алфавиту,
- * без рубрики — в `other` в конце. Внутри рубрики — по полю order, затем по названию.
- */
 export function groupByCategory<T extends Categorized>(
   articles: readonly T[],
   order: readonly string[],

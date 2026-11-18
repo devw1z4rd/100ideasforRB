@@ -10,7 +10,6 @@ const icons = {
   other: CircleAlert,
 } satisfies Record<ReportsCategoryOptions, unknown>
 
-/** Значок категории обращения */
 export function ReportIcon({ category, ...props }: { category: ReportsCategoryOptions } & LucideProps) {
   const Icon = icons[category]
   return <Icon aria-hidden="true" {...props} />

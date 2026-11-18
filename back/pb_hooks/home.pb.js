@@ -1,9 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Данные первого экрана главной одним ответом (CLAUDE.md §6 «Загрузка главной»): точки воздуха, районы, значения
-// «сейчас», суточные за 30 дней, посты и уровни рек, квартальные обзоры воды. Запрос уходит прямо из index.html,
-// пока браузер ещё качает JS, — к старту React данные уже есть. Те же строки и те же поля, что отдают обычные
-// запросы коллекций из front/src/api (air.ts, reference.ts, rivers.ts, water.ts): все эти коллекции открыты
-// на чтение всем. Фронт сверяет окна (daily.from / daily.to) со своими и при расхождении идёт обычным путём.
+// Home page first-screen data in one response, requested straight from index.html while JS loads. Must return
+// the same rows and fields as the matching queries in front/src/api (air.ts, reference.ts, rivers.ts,
+// water.ts) — change both together.
 
 routerAdd("GET", "/api/eco/home", (e) => {
   const DAY = 86400000;
@@ -20,19 +18,16 @@ routerAdd("GET", "/api/eco/home", (e) => {
     return out;
   };
 
-  // Активные точки опроса — как airPointsQuery
   const points = find("air_points", "active = true", "name").map((r) => ({
     ...pick(r, ["id", "name", "district"], ["lat", "lon"]),
     active: true,
   }));
 
-  // Полигоны районов — как districtGeometryQuery: без них карта не начинает рисоваться
   const districts = find("districts", "id != ''", "name").map((r) => ({
     ...pick(r, ["id", "name"], []),
     geometry: r.get("geometry"),
   }));
 
-  // Фактические значения за последние 3 часа, свежие первыми — как latestAirQuery
   const latest = find(
     "air_readings",
     "is_forecast = false && ts >= {:since}",
@@ -48,7 +43,6 @@ routerAdd("GET", "/api/eco/home", (e) => {
     ),
   );
 
-  // Суточные за 30 завершённых минских суток (до вчера) — как airDailyQuery(from, to) у карты
   const to = minskDay(now - DAY);
   const from = minskDay(now - 30 * DAY);
   const daily = find("air_daily", "date >= {:from} && date <= {:to}", "date", {
@@ -62,7 +56,6 @@ routerAdd("GET", "/api/eco/home", (e) => {
     ),
   );
 
-  // Посты и уровни рек за 31 день — как riverPostsQuery и riverLevelsQuery
   const riverPosts = find("river_posts", "id != ''", "river,name").map((r) =>
     pick(
       r,
@@ -74,7 +67,6 @@ routerAdd("GET", "/api/eco/home", (e) => {
     since: pbDate(now - 31 * DAY),
   }).map((r) => pick(r, ["post", "date", "ice"], ["level", "change"]));
 
-  // Квартальные обзоры воды с адресом обзора — как waterReadingsQuery
   const sourceUrls = {};
   const sourceUrl = (id) => {
     if (!id) return "";
@@ -109,7 +101,7 @@ routerAdd("GET", "/api/eco/home", (e) => {
     }),
   );
 
-  // Данные меняются не чаще раза в час; кэшировать ответ нельзя — «сейчас» должно быть свежим
+  // Don't cache: "now" values must stay fresh.
   e.response.header().set("Cache-Control", "no-store");
   return e.json(200, {
     points,

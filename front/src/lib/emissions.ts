@@ -1,6 +1,3 @@
-// Расчёты секции «Предприятия» (CLAUDE.md §10.7). Белстат публикует по областям, сколько загрязняющих веществ
-// отходит от стационарных источников и сколько из них уловлено; выбросы в воздух = отходящие − уловленные.
-
 export type Stat = { territory: string; year: number; indicator: string; pollutant?: string; value: number }
 
 export const COUNTRY = "Республика Беларусь"
@@ -9,13 +6,9 @@ export type RegionYear = {
   territory: string
   generated: number
   captured: number
-  /** В воздух: отходящие − уловленные */
   emitted: number
-  /** Доля уловленного, % */
   capturedShare: number
-  /** Доля в выбросах предприятий страны, % */
   countryShare: number
-  /** Накопленная доля по убыванию выбросов, % */
   cumulative: number
   rank: number
 }
@@ -27,7 +20,6 @@ const totals = (rows: readonly Stat[], indicator: string, year: number) =>
       .map((r) => [r.territory, r.value]),
   )
 
-/** Годы, за которые есть и отходящие, и уловленные */
 export function emissionYears(rows: readonly Stat[]): number[] {
   const gen = new Set(rows.filter((r) => r.indicator === "generated").map((r) => r.year))
   return [
@@ -35,7 +27,6 @@ export function emissionYears(rows: readonly Stat[]): number[] {
   ].sort()
 }
 
-/** Страна и области за год; области — по убыванию выбросов, с долей и накопленной долей (Парето). */
 export function regionsForYear(rows: readonly Stat[], year: number) {
   const gen = totals(rows, "generated", year)
   const cap = totals(rows, "captured", year)
@@ -64,7 +55,6 @@ export function regionsForYear(rows: readonly Stat[], year: number) {
   return { country, regions }
 }
 
-/** Ряд по годам для одной территории */
 export function regionSeries(rows: readonly Stat[], territory: string) {
   return emissionYears(rows).map((year) => {
     const r = regionsForYear(rows, year)
@@ -73,13 +63,11 @@ export function regionSeries(rows: readonly Stat[], territory: string) {
   })
 }
 
-/** Изменение в процентах; null, если не с чем сравнить */
 export function change(now: number | undefined, before: number | undefined): number | null {
   if (now == null || before == null || before === 0) return null
   return ((now - before) / before) * 100
 }
 
-/** Выбросы от транспорта (мобильные источники) за год, всего по территории; null — нет данных */
 export function mobileFor(rows: readonly Stat[], territory: string, year: number): number | null {
   return (
     rows.find((r) => r.indicator === "mobile" && r.territory === territory && r.year === year && !r.pollutant)
@@ -87,7 +75,6 @@ export function mobileFor(rows: readonly Stat[], territory: string, year: number
   )
 }
 
-/** Что выбрасывают предприятия страны: вещества за год по убыванию */
 export function compositionForYear(rows: readonly Stat[], year: number) {
   return rows
     .filter((r) => r.indicator === "stationary" && r.year === year && r.territory === COUNTRY && r.pollutant)
@@ -95,7 +82,6 @@ export function compositionForYear(rows: readonly Stat[], year: number) {
     .sort((a, b) => b.value - a.value)
 }
 
-/** Транспорт страны за год: в данных — по веществам, итог — их сумма; null — нет данных */
 export function countryMobile(rows: readonly Stat[], year: number): number | null {
   const parts = rows.filter(
     (r) => r.indicator === "mobile" && r.year === year && r.territory === COUNTRY && r.pollutant,
@@ -103,10 +89,6 @@ export function countryMobile(rows: readonly Stat[], year: number): number | nul
   return parts.length ? parts.reduce((sum, r) => sum + r.value, 0) : null
 }
 
-/**
- * Вещества за год с долей от всех выбросов предприятий страны (total) и остаток «другие вещества»:
- * Белстат выделяет основные вещества, их сумма — 91–94 % итога. Остаток null, если почти ноль.
- */
 export function compositionShares(rows: readonly Stat[], year: number, total: number) {
   const items = compositionForYear(rows, year).map((c) => ({
     ...c,

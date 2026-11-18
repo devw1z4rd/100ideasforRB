@@ -21,10 +21,6 @@ export type MapTip =
   | { kind: "level"; item: PostSummary }
   | { kind: "place"; item: MapPlace }
 
-/**
- * Содержимое подсказки у маркера на карте (§10.4). У всех одна раскладка: надпись-тип, название и метка
- * состояния, главное число, подробности, внизу тихой строкой источник и ссылка в раздел.
- */
 export function MapTipContent({
   tip,
   waterQuarter,
@@ -32,7 +28,6 @@ export function MapTipContent({
 }: {
   tip: MapTip
   waterQuarter: string
-  /** «Развернуть» у поста уровня — окно с подробностями по посту и реке */
   onExpand?: () => void
 }) {
   if (tip.kind === "level") return <LevelTip summary={tip.item} onExpand={onExpand} />
@@ -57,7 +52,6 @@ export function MapTipContent({
 
 function LevelTip({ summary: s, onExpand }: { summary: PostSummary; onExpand?: () => void }) {
   const { post, latest } = s
-  // Без порогов «обычный уровень» ничего не значит: метку и строку о пороге не показываем
   const hasThresholds = Boolean(post.low_level || post.flood_level || post.danger_level)
   return (
     <Shell
@@ -156,7 +150,6 @@ function Shell({
   children,
 }: {
   eyebrow: string
-  /** Кнопка в правом верхнем углу (у поста — «развернуть») */
   action?: ReactNode
   title: ReactNode
   badge?: ReactNode
@@ -188,7 +181,6 @@ function Badge({ color, children }: { color: string; children: ReactNode }) {
   )
 }
 
-/** Источник и «Подробнее»: ведёт не просто в раздел «Вода», а к той же реке в нём — прокрутка и подсветка */
 function Footer({ source, target }: { source: string; target: string }) {
   return (
     <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-2.5 text-[11px] text-muted-foreground">

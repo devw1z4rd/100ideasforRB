@@ -1,6 +1,3 @@
-// Тема сайта (CLAUDE.md §10.1): светлая, тёмная или как в системе; переключатель — в футере.
-// Выбор хранится в localStorage (удобство одного браузера, не данные) и применяется классом .dark на <html>.
-// До загрузки React то же делает скрипт в index.html — без вспышки светлой страницы в тёмной теме.
 import { useEffect, useState } from "react"
 
 export type ThemePref = "system" | "light" | "dark"
@@ -8,7 +5,7 @@ export type Theme = "light" | "dark"
 
 const KEY = "theme"
 const DARK_QUERY = "(prefers-color-scheme: dark)"
-// Цвет панели браузера на телефоне — фон страницы (= --background в tokens.css)
+// Mobile browser bar color = page background (--background in tokens.css).
 const THEME_COLOR: Record<Theme, string> = { light: "#ffffff", dark: "#18181b" }
 
 export function readThemePref(): ThemePref {
@@ -27,14 +24,13 @@ export function resolveTheme(pref: ThemePref, systemDark: boolean): Theme {
 function applyTheme(theme: Theme) {
   const root = document.documentElement
   if (root.classList.contains("dark") === (theme === "dark")) return
-  // На кадр без переходов: иначе фон, рамки и текст перекрашиваются вразнобой, каждый со своей скоростью
+  // One frame without transitions, otherwise background, borders and text recolor at different speeds.
   root.classList.add("theme-switching")
   root.classList.toggle("dark", theme === "dark")
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[theme])
   requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("theme-switching")))
 }
 
-/** Выбранная тема и смена; при «как в системе» следит за сменой темы ОС на лету. */
 export function useTheme() {
   const [pref, setPref] = useState<ThemePref>(readThemePref)
 
@@ -52,9 +48,7 @@ export function useTheme() {
     try {
       if (next === "system") localStorage.removeItem(KEY)
       else localStorage.setItem(KEY, next)
-    } catch {
-      // Приватный режим или запрет хранилища: тема меняется до перезагрузки
-    }
+    } catch {}
   }
 
   return [pref, choose] as const

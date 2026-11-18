@@ -15,17 +15,11 @@ import { formatDay, formatDayLong, levelColor } from "../air/format"
 import { CountUp } from "@/components/CountUp"
 import { Tooltip } from "@/components/ui/tooltip"
 
-// Без backdrop-blur: панели лежат поверх холста карты, и размытие пересчитывалось бы на каждом кадре её
-// движения — на встроенной графике (ноутбук от батареи) карта от этого подтормаживала
+// No backdrop-blur: panels sit over the map canvas, and the blur would be recomputed on every map frame.
 const panel = "rounded-xl border border-border bg-background/95 p-5"
-// Шкала до 200, как в макете: выше — редкость для области, отметка упирается в край
 const SCALE_MAX = 200
 const scaleSegments = AQI_SCALE.filter((c) => c.min < SCALE_MAX)
 
-/**
- * «Воздух сейчас» (оверлей слева сверху): вместо одного AQI по области — сколько городов с хорошим воздухом
- * и где на шкале каждый город. Хуже и лучше всего — кликабельны.
- */
 export function AirOverview({
   towns,
   selectedId,
@@ -41,7 +35,6 @@ export function AirOverview({
   reportsOpen: number
   reportsResolved: number
   className?: string
-  /** Сцена старта карты дошла до панели: «N из 21» отсчитывается, отметки городов разъезжаются по шкале */
   intro?: boolean
 }) {
   const withData = towns.filter((t) => t.aqi != null)
@@ -90,7 +83,6 @@ export function AirOverview({
                     "absolute top-1/2 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full",
                     t.id === selectedId ? "z-10 h-5 bg-focus" : "h-3 bg-foreground/80",
                   )}
-                  // На старте отметки разъезжаются от нуля шкалы по своим местам
                   style={{
                     left: intro ? `${(Math.min(t.aqi!, SCALE_MAX) / SCALE_MAX) * 100}%` : "0%",
                     transition: "left 1100ms cubic-bezier(0.16, 1, 0.3, 1)",
@@ -134,7 +126,6 @@ export function AirOverview({
 
           <p className="mt-4 text-[12px] text-muted-foreground">{text.overview.reports}</p>
           <dl className="mt-1 grid grid-cols-2 gap-x-4">
-            {/* dt идёт первым по разметке, число визуально слева */}
             <div className="flex flex-row-reverse items-baseline justify-end gap-2">
               <dt className="text-[12px] text-muted-foreground">{text.overview.reportsOpen}</dt>
               <dd className="font-heading text-2xl font-semibold tabular-nums">{reportsOpen}</dd>
@@ -152,10 +143,6 @@ export function AirOverview({
   )
 }
 
-/**
- * Белая карточка выбранного города (оверлей справа, §10.4): AQI сейчас — цветной плашкой (data-aqi-surface
- * в tokens.css), показатели сейчас, PM2.5 по дням за 30 суток и ссылка на раздел «Воздух».
- */
 export function TownCard({
   town,
   districtName,
@@ -166,7 +153,6 @@ export function TownCard({
   town: MapTown
   districtName: string | undefined
   reading: AirReading | undefined
-  /** PM2.5 по дням за 30 завершённых суток; null — за день нет данных */
   days: ReadonlyArray<{ day: string; value: number | null }>
   className?: string
 }) {
@@ -175,7 +161,6 @@ export function TownCard({
   const known = days.filter((d): d is { day: string; value: number } => d.value != null)
   const over = known.filter((d) => d.value > pm25.norm).length
   const worst = known.reduce<(typeof known)[number] | null>((w, d) => (!w || d.value > w.value ? d : w), null)
-  // У г. Гомеля «район» — сам город: подпись повторяла бы название
   const district = districtName && !districtName.startsWith("г.") ? text.card.district(districtName) : null
 
   return (
@@ -267,12 +252,6 @@ export function TownCard({
   )
 }
 
-/**
- * Плитка показателя «сейчас»: значение и мини-шкала к суточной норме ВОЗ — засечка посередине (норма),
- * шкала до двух норм, цвет заливки — как у дней на полосе. При наведении или фокусе — подсказка:
- * что это за вещество и сколько сейчас против нормы. Значение — за последний час, норма — среднесуточная:
- * шкала — ориентир, а не превышение (дни выше нормы считаются по суточным средним, ниже в карточке).
- */
 function PollutantTile({
   label,
   hint,
@@ -284,7 +263,6 @@ function PollutantTile({
   hint: string
   norm: number
   value: number
-  /** Крайние плитки прижимают подсказку к своему краю, чтобы она не вылезала из карточки */
   align: "start" | "center" | "end"
 }) {
   const level = normLevel(value, norm)
@@ -312,7 +290,6 @@ function PollutantTile({
         {hint}; {details}
       </dd>
 
-      {/* Подсказка и стрелка гаснут одной обёрткой — как у полосы дней */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-full z-10 mb-2.5 translate-y-1 opacity-0 transition-[opacity,translate] duration-150 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus:translate-y-0 group-focus:opacity-100 motion-reduce:transition-none"
@@ -336,16 +313,9 @@ function PollutantTile({
   )
 }
 
-// Подсказка над полосой фиксированной ширины — её можно прижать к краям полосы одним clamp() без замеров
 const TIP_W = 184
 const TIP_OVERHANG = 12
 
-/**
- * Полоса «как аптайм»: столбик — сутки, цвет — PM2.5 к суточной норме ВОЗ, как в разделе «Воздух»; дни в норме
- * бледнее, чтобы считались дни выше. Наведение, касание или стрелки: столбик подрастает, остальные приглушаются,
- * над ним — подсказка с датой и значением, она плавно переезжает между днями. Строка ниже — всегда худший день;
- * наведение на неё показывает его на полосе. Для клавиатуры и скринридера полоса — слайдер по дням.
- */
 function DayStrip({
   days,
   norm,
@@ -359,7 +329,6 @@ function DayStrip({
     0,
     days.findIndex((d) => d.day === worstDay),
   )
-  // index остаётся и после ухода курсора: подсказка гаснет на месте, а не теряет текст и не съезжает
   const [tip, setTip] = useState({ index: worstIndex, open: false })
   const show = (index: number) => setTip({ index: Math.min(days.length - 1, Math.max(0, index)), open: true })
   const hide = () => setTip((t) => ({ ...t, open: false }))
@@ -400,8 +369,7 @@ function DayStrip({
   return (
     <>
       <div className="relative mt-3">
-        {/* Подсказка и стрелка — в одной обёртке, и прозрачность меняется у обёртки: при появлении и исчезании
-            они гаснут одним слоем, без тёмного ромба там, где стрелка заходит на подсказку */}
+        {/* Tip and arrow fade as one wrapper, so no dark diamond shows where they overlap. */}
         <div
           aria-hidden="true"
           className={cn(
@@ -416,8 +384,6 @@ function DayStrip({
             )}
             style={{
               width: TIP_W,
-              // У крайних дней подсказка выходит за полосу на TIP_OVERHANG (в поле карточки) — стрелка остаётся
-              // на прямом участке нижнего края, а не упирается в скруглённый угол
               left: `clamp(-${TIP_OVERHANG}px, calc(${center}% - ${TIP_W / 2}px), calc(100% - ${TIP_W - TIP_OVERHANG}px))`,
             }}
           >
@@ -450,9 +416,7 @@ function DayStrip({
           })()}
           onPointerDown={fromPointer}
           onPointerMove={fromPointer}
-          // Мышь ушла — подсказка гаснет; после касания остаётся, пока не тронут другое место
           onPointerLeave={(e) => e.pointerType === "mouse" && hide()}
-          // Фокус с клавиатуры — сразу худший день; после касания уже выбран свой, его не трогаем
           onFocus={() => setTip((t) => (t.open ? t : { index: worstIndex, open: true }))}
           onBlur={hide}
           onKeyDown={onKeyDown}
@@ -508,7 +472,6 @@ function DayStrip({
   )
 }
 
-/** Легенда (оверлей слева снизу). Выключателей слоёв нет: на карте всегда всё */
 export function MapLegend({ className }: { className?: string }) {
   return (
     <section aria-label="Легенда" className={cn(panel, "text-[13px]", className)}>

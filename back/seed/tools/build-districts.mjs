@@ -1,11 +1,8 @@
-// Собирает back/seed/districts.geojson: 21 район + г. Гомель (CLAUDE.md §8, §9).
+// Builds back/seed/districts.geojson: boundaries from OSM via Nominatim, district centers from GeoNames.
 //   node back/seed/tools/build-districts.mjs
-// Границы и белорусские названия — OpenStreetMap (ODbL) через Nominatim lookup, один запрос.
-// Центры — райцентры из GeoNames (CC BY 4.0, выгрузка BY.zip), geonameid указан у каждой записи.
-// У Гомельского района в OSM есть «дырки» под г. Гомель, поэтому точка попадает ровно в один полигон.
 import { writeFile } from "node:fs/promises";
 
-// [название, OSM relation, geonameid райцентра, широта, долгота]
+// [name, OSM relation, center geonameid, lat, lon]
 const DISTRICTS = [
   ["Брагинский", 70801, 629646, 51.79067, 30.26709],
   ["Буда-Кошелёвский", 59175, 629564, 52.71725, 30.5679],
@@ -31,7 +28,6 @@ const DISTRICTS = [
   ["г. Гомель", 163244, 627907, 52.4345, 30.9754],
 ];
 
-// ~100 м: достаточно для привязки обращения к району и для карты области
 const SIMPLIFY_DEG = 0.001;
 const OUT = new URL("../districts.geojson", import.meta.url);
 

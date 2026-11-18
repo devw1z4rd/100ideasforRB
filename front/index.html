@@ -10,7 +10,7 @@
     />
     <meta name="theme-color" content="#ffffff" />
     <script>
-      // Тема до загрузки React (то же, что lib/theme.ts): без вспышки светлой страницы в тёмной теме
+      // Apply the theme before React loads (same logic as lib/theme.ts) to avoid a light flash in dark mode
       try {
         var theme = localStorage.getItem("theme")
         if (theme === "dark" || (theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)) {
@@ -18,10 +18,9 @@
           document.querySelector('meta[name="theme-color"]').setAttribute("content", "#18181b")
         }
       } catch (e) {}
-      // Заглушка первого экрана (ниже): тёмная панель карты — только на главной
       if (location.pathname === "/") {
         document.documentElement.setAttribute("data-home", "")
-        // Данные первого экрана — одним запросом и сразу, пока качается JS (src/api/home.ts)
+        // First-screen data in one request while JS downloads (src/api/home.ts)
         window.__ecoHome = fetch("/api/eco/home")
           .then(function (r) {
             return r.ok ? r.json() : null
@@ -31,8 +30,8 @@
           })
       }
     </script>
-    <!-- Заглушка до загрузки JS: шапка и панель карты рисуются сразу, из HTML (на 3G до React — секунды белого
-         экрана). Размеры и цвета — как у SiteHeader и MapSection (tokens.css); React при старте заменяет её -->
+    <!-- Static shell painted before JS loads (header, plus the dark map panel on the home page).
+         Sizes and colors must match SiteHeader and MapSection; React replaces it on start. -->
     <style>
       body {
         margin: 0;
@@ -108,7 +107,7 @@
         }
       }
     </style>
-    <!-- Карточка ссылки в мессенджерах. og:url и og:image — после выбора домена (CLAUDE.md §16, вопрос 5) -->
+    <!-- TODO: og:url and og:image once the domain is set -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ru_RU" />
     <meta property="og:site_name" content="Экология Гомельской области" />

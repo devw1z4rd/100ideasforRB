@@ -4,17 +4,16 @@ import { Outlet, ScrollRestoration, useLocation, useNavigationType, type Locatio
 import { SiteFooter } from "@/components/layout/SiteFooter"
 import { SiteHeader } from "@/components/layout/SiteHeader"
 
-// Для адресов с якорем ключ не location.key: иначе сохранённая позиция entry "default" перебивает переход к #якорю.
-// Следствие: Back/Forward к записи с якорем заново прокручивает к якорю (эффект HomePage по location.key),
-// а не восстанавливает точную позицию чтения.
+// Anchored URLs don't use location.key, otherwise the saved "default" position overrides the jump to #anchor.
+// Side effect: Back/Forward to an anchored entry re-scrolls to the anchor instead of restoring the exact
+// position.
 const getScrollKey = (location: Location) =>
   location.hash ? `${location.pathname}${location.hash}` : location.key
 
 /**
- * `html { scroll-behavior: smooth }` анимирует и window.scrollTo из ScrollRestoration.
- * На время восстановления позиции (Back/Forward) и сброса при смене страницы без якоря — мгновенный скролл;
- * плавным остаётся прокрутка к якорям и кнопка «Наверх». Рендерить строго ПЕРЕД <ScrollRestoration>:
- * layout-эффекты соседей выполняются в порядке дерева.
+ * `html { scroll-behavior: smooth }` also animates ScrollRestoration's window.scrollTo, so scrolling is
+ * instant while restoring or resetting the position. Must render BEFORE <ScrollRestoration>: sibling layout
+ * effects run in tree order.
  */
 function InstantScrollRestoration() {
   const { key, hash } = useLocation()

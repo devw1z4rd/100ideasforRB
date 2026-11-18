@@ -25,17 +25,10 @@ const levels = waterText.levels
 
 type Row = { date: Date; day: string; level: number; change: number }
 
-/**
- * График уровня за 30 дней в окне поста (§10.4, §10.8) — bklit AreaChart: вода заливкой под линией, зоны порогов
- * поста («мелко», «пойма», «опасно») подкрашены цветом статуса, пороги — пунктиром с подписью. Наведение (касание) —
- * вертикаль, точка, дата плашкой на оси (не выходит за край графика) и подсказка: уровень, изменение за сутки, статус.
- * Шкала — общая с мини-графиком карточки (levelScale). При появлении линия раскрывается слева направо (bklit).
- */
 export function RiverLevelChart({ summary }: { summary: PostSummary }) {
   const { series, post } = summary
   const { lo, hi, zones } = levelScale(summary)
   const data = useMemo<Row[]>(
-    // 8:00 по Минску — 05:00 UTC
     () =>
       series.map((l) => ({
         date: new Date(`${l.day}T05:00:00Z`),
@@ -52,21 +45,18 @@ export function RiverLevelChart({ summary }: { summary: PostSummary }) {
       <AreaChart
         data={data}
         yDomain={[lo, hi]}
-        // Снизу 40 px: подписи дат bklit стоят в 12 px от низа, нижняя отметка шкалы не должна на них налезать
+        // 40 px bottom: bklit draws date labels 12 px from the bottom.
         margin={{ top: 12, right: 12, bottom: 40, left: 44 }}
-        // Высота — своя, а не из пропорции: на телефоне график не сплющивается; вертикальная прокрутка окна — пальцем по графику
         style={{ aspectRatio: "auto", height: 252, touchAction: "pan-y" }}
       >
         {zones.map((z) => (
           <ReferenceArea
             key={z.kind}
-            // Край шкалы — без границы: bklit округляет шкалу, зона должна доходить до края графика
             y1={z.to >= hi ? undefined : z.to}
             y2={z.from <= lo ? undefined : z.from}
             fill={riverColor[z.kind]}
             fillOpacity={0.12}
             fadeEdges={false}
-            // Края зоны не обводим: порог рисует ThresholdLines с подписью, а нижний / верхний край — просто край шкалы
             strokeWidth={0}
           />
         ))}
@@ -84,7 +74,6 @@ export function RiverLevelChart({ summary }: { summary: PostSummary }) {
   )
 }
 
-/** Пороги поста пунктиром цвета порога, подпись — над линией слева: «судоходный · 94 см» */
 function ThresholdLines({ summary }: { summary: PostSummary }) {
   const { yScale, innerWidth } = useChartStable()
   return (

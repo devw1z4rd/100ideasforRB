@@ -13,18 +13,11 @@ import type { Section as WaterSection } from "@/lib/water"
 import { riverColor } from "./riverColor"
 import { RiverTriangle } from "./RiverTriangle"
 
-// График bklit (d3 и обвязка графиков) — отдельным чанком: на главной нужен только спарклайн карточек
 const RiverLevelChart = lazy(() => import("./RiverLevelChart").then((m) => ({ default: m.RiverLevelChart })))
 
 const text = mapText.riverDialog
 const levels = waterText.levels
 
-/**
- * Окно поста уровня воды (§10.4, §10.8): открывается из подсказки на карте («развернуть»), щелчком по посту на карте
- * или по карточке поста в разделе «Вода».
- * Пост крупно — уровень, сутки, график за 30 дней, пороги; ниже — та же река: другие посты области
- * (щелчок переключает окно на них) и качество воды из квартального обзора.
- */
 export function RiverPostDialog({
   summary,
   posts,
@@ -34,14 +27,12 @@ export function RiverPostDialog({
   onClose,
   inSection = false,
 }: {
-  /** Открытый пост; null — окно закрыто */
   summary: PostSummary | null
   posts: readonly PostSummary[]
   sections: readonly WaterSection[]
   quarter: string
   onSelect: (postId: string) => void
   onClose: () => void
-  /** Окно открыто из раздела «Вода» — ссылка «Раздел «Вода»» внизу не нужна */
   inSection?: boolean
 }) {
   return (
@@ -49,9 +40,8 @@ export function RiverPostDialog({
       <DialogContent
         className="max-w-[760px]"
         closeLabel={text.close}
-        // Фокус не возвращаем на маркер: фокус показал бы его подсказку поверх только что закрытого окна
+        // Don't return focus to the marker: it would show its tooltip over the just-closed dialog.
         onCloseAutoFocus={(e) => e.preventDefault()}
-        // Фокус — на само окно, а не на первую кнопку внутри (строку соседнего поста с рамкой фокуса)
         onOpenAutoFocus={(e) => {
           e.preventDefault()
           ;(e.currentTarget as HTMLElement).focus()
@@ -126,7 +116,6 @@ function Body({
           </Stat>
         </dl>
 
-        {/* key — при переключении на другой пост график рисуется заново, с анимацией */}
         <Suspense fallback={<div className="mt-5 h-[252px]" />}>
           <RiverLevelChart key={post.id} summary={s} />
         </Suspense>
@@ -238,7 +227,7 @@ function Body({
           <a
             href="#water"
             onClick={(e) => {
-              // Сначала закрыть окно (оно запирает прокрутку страницы), потом ехать к разделу
+              // Close the dialog first (it locks page scroll), then scroll to the section.
               e.preventDefault()
               onClose()
               setTimeout(() => focusTarget(riverPostAnchor(post.code), "water"), 250)
@@ -284,7 +273,6 @@ function Threshold({
     )
   }
   const diff = level - value
-  // Ниже судоходного и выше поймы / опасного — плохо: цветом порога; остальное — спокойным текстом
   const crossed = kind === "low" ? diff < 0 : diff > 0
   return (
     <li className="flex items-center justify-between gap-3 py-2">

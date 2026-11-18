@@ -16,18 +16,15 @@ import { anchors, cta, login as guestLogin, account, pages } from "@/content/nav
 import { useAuth } from "@/api/auth"
 import { cn } from "@/lib/utils"
 
-// Строки по 48 px — под палец
 const item =
   "flex min-h-12 items-center rounded-md px-3 text-base font-medium transition-colors hover:bg-muted"
 const groupLabel = "px-3 pb-1 text-xs font-medium text-muted-foreground"
 
 type Props = {
   className?: string
-  /** Текущая секция главной (из useActiveSection в шапке); null — вне главной или над секциями */
   activeSection: string | null
 }
 
-/** Навигация для экранов < 1024px: Sheet с якорями главной, страницами и входом. */
 export function MobileNav({ className, activeSection }: Props) {
   const { user } = useAuth()
   const login = user ? account(user.name) : guestLogin
@@ -35,7 +32,6 @@ export function MobileNav({ className, activeSection }: Props) {
   const [target, setTarget] = useState<SectionId | null>(null)
   const navigate = useNavigate()
 
-  // Шторка нужна только до lg (64rem = 1024px): при расширении окна закрываем её — триггер уже скрыт
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 64rem)")
     const closeOnDesktop = () => {
@@ -55,12 +51,10 @@ export function MobileNav({ className, activeSection }: Props) {
       <SheetContent
         side="right"
         onCloseAutoFocus={(event) => {
-          // Пока Sheet открыт, скролл страницы заблокирован — к секции переходим уже после закрытия
+          // Page scroll is locked while the Sheet is open — scroll to the section after it closes.
           if (!target) return
           event.preventDefault()
           navigate({ pathname: "/", hash: target })
-          // Фокус — на заголовок секции, чтобы клавиатура и скринридер не потеряли место (а не на <body>).
-          // Навигация завершается асинхронно, поэтому ждём появления заголовка (до ~1 с)
           const headingId = sectionHeadingId(target)
           let attempts = 0
           const focusHeading = () => {
@@ -91,7 +85,6 @@ export function MobileNav({ className, activeSection }: Props) {
                 aria-current={a.id === activeSection ? "location" : undefined}
                 className={cn(item, "aria-[current=location]:bg-muted")}
                 onClick={(event) => {
-                  // Клик с модификатором — штатное поведение ссылки (новая вкладка/окно)
                   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
                     return
                   event.preventDefault()

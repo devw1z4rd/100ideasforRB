@@ -9,18 +9,12 @@ import { Panel } from "./ui"
 type Props = {
   year: number
   home: RegionYear
-  /** Сколько регионов в рейтинге */
   total: number
-  /** Изменение выбросов к прошлому году, %; null — не с чем сравнить */
   delta: number | null
   grown: boolean
   className?: string
 }
 
-/**
- * Гомельская область за выбранный год (§10.7): слева — сколько ушло в воздух, изменение к прошлому году и место
- * среди регионов; справа — откуда эта цифра: путь веществ от образовавшихся на предприятиях до воздуха.
- */
 export function RegionCard({ year, home, total, delta, grown, className }: Props) {
   return (
     <Panel
@@ -34,7 +28,7 @@ export function RegionCard({ year, home, total, delta, grown, className }: Props
           <span aria-hidden className="size-2.5 flex-none rounded-full bg-destructive" />
           {text.region.title(year)}
         </h3>
-        {/* Крупная цифра: без tabular-nums — у большого одиночного числа моноширинные цифры смотрятся рыхло */}
+        {/* No tabular-nums: monospaced digits look loose on a single large number. */}
         <p className="mt-1 flex items-baseline gap-2">
           <span className="font-heading text-[80px] leading-[0.8] font-semibold tracking-[-0.045em] text-destructive md:text-[96px]">
             {kt(home.emitted)}

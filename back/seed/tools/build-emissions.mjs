@@ -1,13 +1,9 @@
-// Собирает back/seed/emission_stats.json из выгрузок Белстата (dataportal.belstat.gov.by) в back/seed/belstat/:
+// Builds back/seed/emission_stats.json from Belstat exports in back/seed/belstat/:
 //   node back/seed/tools/build-emissions.mjs
-// Районов в открытых данных нет — самая подробная разбивка по областям (CLAUDE.md §9).
-//   10301000003 — загрязняющие вещества, отходящие от стационарных источников, по областям   → generated
-//   10301000004 — уловлено и (или) обезврежено, по областям                                → captured
-//   10301000002 — выбросы от стационарных источников по веществам, Республика Беларусь     → stationary
-//   10301000021 — выбросы от мобильных источников по веществам, Республика Беларусь        → mobile
-// Выбросы предприятий области = отходящие − уловленные (так считает Белстат; сверено с буклетом и стратегией).
-// Мобильные источники по областям есть только в буклетах «Охрана окружающей среды в Республике Беларусь»
-// (табл. 4.2, тыс. т, целые) — внесены ниже вручную.
+// Datasets: 10301000003 → generated, 10301000004 → captured (by region); 10301000002 → stationary,
+// 10301000021 → mobile (by pollutant, whole country).
+// Regional emissions = generated − captured (Belstat's method). Mobile sources by region come from Belstat
+// booklets (table 4.2) and are entered by hand below.
 import { readFile, writeFile } from "node:fs/promises";
 
 const DIR = new URL("../belstat/", import.meta.url);
@@ -27,7 +23,7 @@ const BOOKLET_MOBILE = {
   2025: { "Брестская область": 68, "Витебская область": 40, "Гомельская область": 43, "Гродненская область": 51, "г. Минск": 79, "Минская область": 120, "Могилевская область": 43 },
 };
 
-// CSV портала: «;», десятичная запятая, BOM, две строки заголовка (название, единица), затем шапка с годами; null — нет данных
+// Portal CSV: ";" separator, decimal comma, BOM, two title rows, then the year header; null = no data.
 function parse(text) {
   const lines = text.replace(/^﻿/, "").split(/\r?\n/).filter((l) => l.trim());
   const unit = lines[1].trim().replace(/\.$/, "");

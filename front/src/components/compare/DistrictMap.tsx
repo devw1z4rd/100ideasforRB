@@ -8,7 +8,6 @@ type Props = {
   width: number
   height: number
   shapes: readonly MapShape[]
-  /** Райцентры — точки, для которых модель считает воздух; пусто — не рисуются */
   dots: readonly MapDot[]
   labels: readonly MapLabel[]
   fill: (id: string) => string
@@ -30,10 +29,6 @@ const outline = (color: string, width: number) => ({
   pointerEvents: "none" as const,
 })
 
-/**
- * Картограмма районов на SVG: цвет — значение показателя, контуры — два сравниваемых района.
- * Без MapLibre и тайлов: 22 полигона, лёгкий чанк, работает офлайн. Доступная альтернатива — список рядом.
- */
 export function DistrictMap({
   width,
   height,
@@ -50,7 +45,6 @@ export function DistrictMap({
   ariaLabel,
 }: Props) {
   const box = useRef<HTMLDivElement>(null)
-  // flip — подсказка у правого края уходит влево от курсора
   const [pointer, setPointer] = useState<{ x: number; y: number; flip: boolean } | null>(null)
   const pathOf = (id: string | null) => shapes.find((s) => s.id === id)?.path
 
@@ -86,7 +80,6 @@ export function DistrictMap({
             onClick={() => onSelect(s.id)}
           />
         ))}
-        {/* Контуры поверх заливки: под цветной линией — светлая подложка, чтобы контур читался на любом цвете */}
         {[
           { id: hovered, color: "var(--foreground)", w: 1.5 },
           { id: a, color: "var(--compare-a)", w: 2.5 },

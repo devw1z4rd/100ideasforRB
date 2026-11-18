@@ -1,6 +1,3 @@
-// Расчёты секции «Вода» (CLAUDE.md §10.8): последний квартал из обзоров Белгидромета, во сколько раз показатель
-// хуже норматива, группировка по участкам рек.
-
 export type Reading = {
   river: string
   post: string
@@ -14,17 +11,15 @@ export type Reading = {
   period: string
   quarter?: string
   note?: string
-  /** Адрес обзора Белгидромета, из которого выписана запись */
   sourceUrl?: string
 }
 
 export type Exceedance = Reading & {
-  /** Во сколько раз хуже норматива: для «не более» — значение / норма, для «не менее» (кислород) — норма / значение */
+  /** For "max" norms value / norm, for "min" norms (oxygen) norm / value. */
   ratio: number
   month: number
 }
 
-/** Последний квартал «2026-Q2» среди записей */
 export function latestQuarter(rows: readonly Reading[]): string | null {
   return rows.reduce<string | null>(
     (max, r) => (r.quarter && (!max || r.quarter > max) ? r.quarter : max),
@@ -32,23 +27,19 @@ export function latestQuarter(rows: readonly Reading[]): string | null {
   )
 }
 
-/** Все кварталы с записями — от старого к новому (полка книжек) */
 export function quarters(rows: readonly Reading[]): string[] {
   return [...new Set(rows.map((r) => r.quarter).filter((q): q is string => !!q))].sort()
 }
 
 export type Season = "winter" | "spring" | "summer" | "autumn"
-/** Сезон квартала — цвет обложки книжки: I — зима, II — весна, III — лето, IV — осень */
 export const quarterSeason = (quarter: string): Season =>
   (["winter", "spring", "summer", "autumn"] as const)[Number(quarter.split("-Q")[1]) - 1] ?? "spring"
 
-/** «2026-Q2» → «II квартал 2026» */
 export function quarterLabel(quarter: string): string {
   const [year, q] = quarter.split("-Q")
   return `${["I", "II", "III", "IV"][Number(q) - 1]} квартал ${year}`
 }
 
-/** Отклонения от нормативов качества воды за квартал, от худшего к лучшему */
 export function exceedances(rows: readonly Reading[], quarter: string): Exceedance[] {
   return rows
     .filter(
@@ -63,7 +54,6 @@ export function exceedances(rows: readonly Reading[], quarter: string): Exceedan
     .sort((a, b) => b.ratio - a.ratio)
 }
 
-/** Записи квартала по показателю (температура, гидрология) */
 export function byIndicator(rows: readonly Reading[], quarter: string, indicator: string) {
   return rows.filter((r) => r.quarter === quarter && r.indicator === indicator)
 }
@@ -73,11 +63,9 @@ export type Section = {
   river: string
   location: { lat: number; lon: number }
   exceedances: Exceedance[]
-  /** Худшее отношение к нормативу на участке; 0 — отклонений по качеству нет */
   worst: number
 }
 
-/** Участки рек с координатами (для карты): по названию участка, с отклонениями за квартал */
 export function sections(rows: readonly Reading[], quarter: string): Section[] {
   const ex = exceedances(rows, quarter)
   const map = new Map<string, Section>()

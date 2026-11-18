@@ -12,18 +12,14 @@ type Props = {
   townName: string
   names: ReadonlyMap<string, string>
   pollutant: PollutantInfo
-  /** Подсвеченные сутки или неделя — общие с таблицей «где и когда» */
   hover: Range | null
   onHover: (range: Range | null) => void
-  /** Данные начинаются позже начала периода — подпись «данные с …» */
   dataFrom: string | null
-  /** Сегодня, пока сутки идут: среднее за прошедшие часы — отдельной точкой справа; null — нет данных */
   today?: TodayPoint | null
 }
 
 const PAD = { top: 18, right: 12, bottom: 26, left: 40 }
 const value1 = (v: number) => formatNumber(v, 1)
-// Обводка подписей цветом фона: подпись читается, даже когда под ней проходит линия графика
 const halo = {
   stroke: "var(--background)",
   strokeWidth: 3,
@@ -31,14 +27,6 @@ const halo = {
   paintOrder: "stroke",
 } as const
 
-/**
- * График показателя по дням в духе графика уровня воды: линия города (плавная, монотонная), под ней —
- * мягкая заливка; серая полоса — разброс по всем городам области; пунктир — суточная норма ВОЗ, зоны
- * выше нормы и выше двух норм подкрашены, а участки линии в них — цветом уровня: плохие дни видны сразу.
- * Появление: полоса проявляется, заливка поднимается, линия прорисовывается, точка «вчера» пульсирует
- * (CSS river-* и air-* в index.css; при prefers-reduced-motion — сразу). Наведение — вертикаль, точка
- * и подсказка едут за курсором; неделя из таблицы ниже подсвечивается полосой.
- */
 export default function AirChart({
   series,
   pointId,
@@ -57,7 +45,6 @@ export default function AirChart({
   const norm = pollutant.norm
 
   const values = series.map((s) => s.value)
-  // Сегодня — ещё одна позиция справа от вчера (сутки идут, в air_daily их нет)
   const slots = n + (today ? 1 : 0)
   const top =
     Math.max(
@@ -76,7 +63,6 @@ export default function AirChart({
   const y = (v: number) => PAD.top + (1 - v / hi) * plotH
   const bottom = PAD.top + plotH
 
-  // Линия города и полоса области — участками без пропусков данных
   const townSegments = segments(
     series.map((s, i) => (s.value == null ? null : ([x(i), y(s.value)] as const))),
   )
@@ -101,7 +87,6 @@ export default function AirChart({
   const worstDays = series.filter((s) => s.maxPoint === pointId).length
   const bestDays = series.filter((s) => s.minPoint === pointId).length
 
-  // Подсветка: одни сутки — вертикаль и подсказка; неделя (из таблицы) — полоса без подсказки
   const fromI = hover ? series.findIndex((s) => s.day >= hover.from) : -1
   const toI = hover ? findLastIndex(series, (s) => s.day <= hover.to) : -1
   const single = hover && hover.from === hover.to && fromI >= 0 ? fromI : null
@@ -111,7 +96,6 @@ export default function AirChart({
     today ? [...series.map((s) => s.day), today.day] : series.map((s) => s.day),
     innerW,
   )
-  // Точка, что едет за курсором: наведённые сутки; без наведения — сегодня (или вчера, если сегодня ещё пусто)
   const dot =
     shown && shown.value != null
       ? { i: single!, v: shown.value, today: false }
@@ -197,7 +181,6 @@ export default function AirChart({
               </clipPath>
             </defs>
 
-            {/* Зоны выше нормы и выше двух норм — фоном */}
             <g className="river-fade">
               {zones.map((z) => (
                 <rect
@@ -227,10 +210,8 @@ export default function AirChart({
               </g>
             ))}
 
-            {/* Разброс по области — серой полосой */}
             <path d={band} fill="var(--foreground)" opacity={0.08} className="river-fade" />
 
-            {/* Неделя из таблицы — полосой поверх */}
             {hover && single === null && fromI >= 0 && toI >= fromI && (
               <rect
                 x={x(fromI) - step / 2}
@@ -245,7 +226,6 @@ export default function AirChart({
 
             <path d={area} fill="url(#air-fill)" className="river-rise" />
 
-            {/* Норма ВОЗ и две нормы */}
             <g className="river-fade [animation-delay:500ms]">
               <line
                 x1={PAD.left}
@@ -289,7 +269,6 @@ export default function AirChart({
               )}
             </g>
 
-            {/* Линия города: ниже нормы — цветом текста, выше — цветом уровня */}
             {(["ok", "elevated", "high"] as const).map((level) => (
               <path
                 key={level}
@@ -321,7 +300,6 @@ export default function AirChart({
               </g>
             )}
 
-            {/* Сегодня — пунктиром от вчера: сутки не закончились, значение ещё изменится */}
             {today && lastI === n - 1 && (
               <line
                 x1={x(lastI)}
@@ -378,7 +356,6 @@ export default function AirChart({
                 style={{ background: levelColor[normLevel(dot.v, norm)] }}
               />
             )}
-            {/* Сегодня — пустой кружок: значение неокончательное */}
             <span
               className="absolute inset-0 rounded-full ring-2 ring-background"
               style={
@@ -430,7 +407,6 @@ function Tip({
   norm,
 }: {
   point: SeriesPoint
-  /** Сегодня: сколько часов прошло — подсказка про неполные сутки */
   hours?: number
   left: number
   top: number
@@ -478,7 +454,6 @@ function Tip({
   )
 }
 
-/** Участки подряд идущих не-null значений: линия и полоса не тянутся через пропуски данных */
 function segments<T>(items: ReadonlyArray<T | null>): T[][] {
   const out: T[][] = []
   let current: T[] = []
@@ -499,7 +474,6 @@ function findLastIndex<T>(items: readonly T[], pred: (item: T) => boolean): numb
 
 const monthFormat = new Intl.DateTimeFormat("ru-RU", { month: "short", timeZone: "UTC" })
 
-/** Подписи оси дат: длинный период — начала месяцев, короткий — равномерно, не теснее ~70 px */
 function dateTicks(days: readonly string[], width: number): Array<{ i: number; label: string }> {
   if (!days.length) return []
   const room = Math.max(2, Math.floor(width / 70))

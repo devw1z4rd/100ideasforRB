@@ -11,12 +11,11 @@ type Props = {
   oblast?: OblastFeature
   towns: readonly MapTown[]
   selectedId: string | null
-  /** Те же отступы под панели, что у настоящей карты: область встаёт на то же место */
   padding: { top: number; right: number; bottom: number; left: number }
 }
 
-// Та же рамка и та же проекция (Меркатор), что у MapLibre: карта вписывает text.bounds в панель за вычетом
-// отступов, заглушка — туда же, поэтому контуры заглушки и настоящей карты совпадают
+// Same frame and projection (Mercator) as MapLibre: fits text.bounds into the panel minus paddings, so the
+// preview matches the real map. Keep in sync with MapView (paddings, MIN_ZOOM, maxBounds).
 const mercator = (lat: number) => (Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) * 180) / Math.PI
 const [WEST, SOUTH, EAST, NORTH] = text.bounds
 const SCALE = 1000 / (EAST - WEST)
@@ -26,8 +25,6 @@ const projection: Projection = {
   project: (lon, lat) => [(lon - WEST) * SCALE, (mercator(NORTH) - mercator(lat)) * SCALE],
 }
 
-// Ограничения настоящей карты (MapView): она не отдаляется дальше MIN_ZOOM и не показывает ничего за maxBounds —
-// на узком высоком экране телефона из-за этого область крупнее, чем «вписанная». Заглушка повторяет то же
 const MIN_ZOOM = 5.3
 const MIN_SCALE = (512 * 2 ** MIN_ZOOM) / 360 / SCALE
 const [MAX_WEST, MAX_SOUTH, MAX_EAST, MAX_NORTH] = text.maxBounds
@@ -35,12 +32,6 @@ const [MAX_X0, MAX_Y0] = projection.project(MAX_WEST, MAX_NORTH)
 const [MAX_X1, MAX_Y1] = projection.project(MAX_EAST, MAX_SOUTH)
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
 
-/**
- * Карта-заглушка на SVG, пока качается MapLibre (CLAUDE.md §6 «Загрузка главной»): районы, контур области и
- * города цветом AQI — из уже загруженных данных, без тайлов и WebGL. На медленной сети область с городами видна
- * на секунды (на 3G — на десятки секунд) раньше настоящей карты; та потом проявляется поверх на том же месте
- * и в том же масштабе. Картинка без действий: города выбираются в панели рядом.
- */
 export function MapPreview({ districts, oblast, towns, selectedId, padding }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState<{ w: number; h: number } | null>(null)
@@ -65,8 +56,6 @@ export function MapPreview({ districts, oblast, towns, selectedId, padding }: Pr
     [districts, oblast],
   )
 
-  // Рамка вписывается в панель за вычетом отступов и встаёт по центру — как fitBounds у MapLibre.
-  // Города и подпись рисуются в пикселях экрана: на телефоне рамка втрое меньше, а точки должны остаться видны
   const innerW = size ? size.w - padding.left - padding.right : 0
   const innerH = size ? size.h - padding.top - padding.bottom : 0
   const width = size?.w ?? 0
@@ -116,7 +105,6 @@ export function MapPreview({ districts, oblast, towns, selectedId, padding }: Pr
               />
             )}
           </g>
-          {/* Выбранный город — последним: его точка и подпись ложатся поверх соседних */}
           {[...towns.filter((t) => t.id !== selectedId), ...towns.filter((t) => t.id === selectedId)].map(
             (t) => {
               const [px, py] = projection.project(t.lon, t.lat)
@@ -135,7 +123,6 @@ export function MapPreview({ districts, oblast, towns, selectedId, padding }: Pr
                   />
                   {selected && (
                     <text
-                      // У правого края подпись встаёт слева от точки — иначе обрежется
                       x={x > width * 0.7 ? x - 10 : x + 10}
                       textAnchor={x > width * 0.7 ? "end" : "start"}
                       y={y + 4.5}

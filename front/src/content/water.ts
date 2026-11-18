@@ -1,8 +1,6 @@
 import { plural } from "@/lib/plural"
 import type { FactSource } from "./hero"
 
-// Секция «Вода» (CLAUDE.md §10.8). Значения — из PocketBase (water_readings, обзоры Белгидромета), здесь только тексты.
-
 const belgidromet: FactSource = {
   label: "Состояние рек",
   title: "Белгидромет: квартальные обзоры состояния поверхностных вод",
@@ -84,24 +82,20 @@ export const water = {
       flood: "вода на пойме",
       danger: "опасно высокий",
     },
-    /** Зоны на мини-графике — словом прямо на зоне, вместо легенды */
     zone: { low: "мелко", flood: "пойма", danger: "опасно" },
     change: (cm: number) =>
       cm === 0 ? "без изменений за сутки" : `${cm > 0 ? "+" : "−"}${Math.abs(cm)} см за сутки`,
-    /** Коротко, для строки списка на телефоне */
     changeShort: (cm: number) => (cm === 0 ? "0 см" : `${cm > 0 ? "+" : "−"}${Math.abs(cm)} см`),
     belowLow: (cm: number, low: number) => `на ${cm} см ниже судоходного уровня (${low} см)`,
     aboveLow: (cm: number, low: number) => `на ${cm} см выше судоходного уровня (${low} см)`,
     aboveFlood: (cm: number, flood: number) => `на ${cm} см выше выхода на пойму (${flood} см)`,
     toFlood: (cm: number) => `до выхода на пойму ${cm} см`,
-    /** Пост без порогов: с чем сравнить сегодняшний уровень — с его же месяцем */
     range: (days: number, min: string, max: string) => `за ${days} дн. — от ${min} до ${max} см`,
     daysLow: (n: number, total: number) => `ниже судоходного ${n} из ${total} дн.`,
     threshold: { low: "судоходный", flood: "пойма", danger: "опасный" },
     stale: (date: string) => `данные на ${date}`,
     chartLabel: (river: string, post: string) => `Уровень воды: ${river}, ${post}, за 30 дней`,
     noThresholds: "порогов нет",
-    /** Телефон: посты списком, сначала только первые (хуже всего) */
     showAll: (n: number) => `Показать все посты — ${n}`,
     showLess: "Свернуть список",
     open: (river: string, post: string, level: string) => `${river}, ${post}: ${level} — подробно о посте`,
@@ -117,7 +111,6 @@ export const water = {
     value: (value: string, unit: string, sign: string, norm: string, month: string) =>
       `${value} ${unit} при нормативе ${sign} ${norm} · ${month}`,
   },
-  /** Квартальный обзор качества воды в виде книжки: закрыта — обложка и «что внутри», открыта — главы */
   report: {
     eyebrow: "Квартальный обзор Белгидромета",
     shelf: {

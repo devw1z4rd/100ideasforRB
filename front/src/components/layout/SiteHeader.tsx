@@ -22,17 +22,11 @@ import { cn } from "@/lib/utils"
 
 const MORE_KEY = "more"
 
-// Без transition-colors, а подложка анимирует только сдвиг (его считает видеокарта): активный раздел меняется
-// прямо во время прокрутки, и любая анимация в главном потоке (цвет, ширина) на каждом своём кадре заставляла
-// браузер заново проходить всю длинную страницу — на ноутбуке от батареи прокрутка в эти моменты дёргалась
+// No transition-colors; the indicator animates only translate (GPU). The active section changes mid-scroll,
+// and main-thread animations relayout the long page every frame — janky on battery.
 const navItem =
   "relative z-10 flex h-8 items-center rounded-lg px-3.5 text-sm font-medium whitespace-nowrap outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
 
-/**
- * Sticky-шапка (CLAUDE.md §10.2). Разделы главной — в «капсуле», остальные страницы — в «Ещё».
- * < 1024 — логотип, CTA (с 640) и бургер; 1024–1279 — капсула, короткая CTA, «Войти» в «Ещё»;
- * ≥ 1280 — полная CTA и «Войти».
- */
 export function SiteHeader() {
   const { user } = useAuth()
   const login = user ? account(user.name) : guestLogin
@@ -48,8 +42,6 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background">
-      {/* Три колонки: капсула — строго по центру шапки, боковые колонки поровну делят остаток.
-          Не хватает места (узкий десктоп) — колонка не уже своего содержимого: капсула чуть сдвигается, но не налезает */}
       <Container className="grid h-14 grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] items-center gap-x-4">
         <Link
           to="/"
@@ -88,7 +80,6 @@ export function SiteHeader() {
                 aria-current={current ? "location" : undefined}
                 className={cn(navItem, current ? "text-foreground" : "text-muted-foreground")}
                 onClick={(event) => {
-                  // Клик с модификатором открывает новую вкладку — эта страница никуда не едет
                   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
                   setTarget(a.id)
                 }}
@@ -164,7 +155,6 @@ export function SiteHeader() {
   )
 }
 
-/** Модератору — ссылка на очередь с числом новых обращений (обновляется само) */
 function ModerationLink() {
   const { isModerator } = useAuth()
   if (!isModerator) return null
@@ -189,15 +179,8 @@ function ModerationCount() {
   )
 }
 
-/** Сколько ждать следующего события scroll, прежде чем считать, что страница остановилась, мс */
 const SCROLL_IDLE_MS = 1000
 
-/**
- * Раздел, к которому едет плавный скролл после клика в шапке. Пока он задан, подложка стоит на нём
- * и не перескакивает по разделам, мимо которых проезжает страница. Сбрасывается, когда скролл
- * закончился (`scrollend`, а где его нет — секунда без событий scroll) или пользователь сам взялся
- * за прокрутку. Таймер не от клика, а от последнего движения: на слабом ноутбуке скролл бывает долгим.
- */
 function useScrollTarget() {
   const [target, setTarget] = useState<string | null>(null)
 

@@ -1,16 +1,14 @@
 /// <reference path="../pb_data/types.d.ts" />
-// У select в PocketBase нет значения по умолчанию: новые пользователи получают роль user (CLAUDE.md §8).
-// Хук уровня модели — срабатывает и при регистрации, и при входе через OAuth, и при создании из админки.
-// Выбрать другую роль при регистрации не даёт createRule коллекции users.
+// select fields have no default in PocketBase, so new users get role "user" here. Model-level hook: fires for
+// sign-up, OAuth and admin-created users.
 
 onRecordCreate((e) => {
   if (!e.record.getString("role")) e.record.set("role", "user")
   e.next()
 }, "users")
 
-// Назначить роль пользователю сайта из консоли — для демо-аккаунтов (CLAUDE.md §15) и первого модератора:
+// Set a role from the console (demo accounts, first moderator); the user must already exist:
 //   pocketbase set-role moderator@example.com moderator
-// Роли: user, moderator, admin. Пользователь должен уже быть зарегистрирован.
 $app.rootCmd.addCommand(
   new Command({
     use: "set-role <email> <role>",

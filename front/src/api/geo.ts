@@ -1,8 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
 
-// Статичные слои карты из front/public/geo (собирают back/seed/tools/build-map-geo.mjs и build-map-borders.mjs).
-// Меняются только с деплоем.
-
 export type LineFeature = {
   type: "Feature"
   properties: { name: string; major: boolean }
@@ -16,14 +13,9 @@ export type OblastFeature = {
     { type: "Polygon"; coordinates: number[][][] } | { type: "MultiPolygon"; coordinates: number[][][][] }
 }
 
-/**
- * Окружение области (build-map-borders.mjs): границы стран и областей — линии, вдоль контура области без дублей;
- * контур Беларуси — полигон, им остальная страна отделяется от соседних государств
- */
 export type BorderFeature =
   | {
       type: "Feature"
-      // blr — линия Беларуси (граница страны или её областей): на старте карты видна только она
       properties: { kind: "country" | "region"; blr?: boolean }
       geometry: { type: "MultiLineString"; coordinates: number[][][] }
     }

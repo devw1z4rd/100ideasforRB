@@ -1,16 +1,11 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Новости (CLAUDE.md §4 S4, §8): свои новости — через админку; обзоры гидрологической обстановки Белгидромета —
-// автоматически. Расписание cron в PocketBase — UTC.
 
-// Обзоры выходят днём; второй запуск — если сайт не ответил
 cronAdd("hydro_news", "15 9,15 * * *", () => {
   const news = require(`${__hooks}/lib/hydroNews.js`)
   const r = news.importReviews($app)
   $app.logger().info("hydro_news", "found", r.found, "added", r.added, "failed", r.failed)
 })
 
-// `pocketbase hydro-news` — последние обзоры со страницы раздела; `pocketbase hydro-news <url> …` — конкретные обзоры
-// (например, архив за сезон)
 $app.rootCmd.addCommand(
   new Command({
     use: "hydro-news [url...]",
@@ -23,7 +18,7 @@ $app.rootCmd.addCommand(
   }),
 )
 
-// Опубликованная новость без даты получает дату публикации — иначе в ленте (сортировка по published_at) она уйдёт в конец
+// A published item without published_at gets the current time, otherwise it sorts to the end of the feed.
 onRecordCreate((e) => {
   if (e.record.getBool("is_published") && !e.record.getString("published_at"))
     e.record.set("published_at", new Date().toISOString())

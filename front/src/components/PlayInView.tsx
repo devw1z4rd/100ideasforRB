@@ -2,10 +2,8 @@ import { useInView } from "motion/react"
 import { useRef, type ReactNode } from "react"
 
 /**
- * CSS-анимации внутри стоят на первом кадре, пока блок не показался на экране, и запускаются, когда до него
- * докрутили (data-play, правило — в index.css). Иначе графики и полосы отыгрывали появление ещё при загрузке
- * страницы, за экраном, и к моменту, когда до них доходили, всё уже стояло на месте. Срабатывает один раз.
- * Анимации при смене данных (новый город, период) играют как обычно — блок уже «показан».
+ * CSS entry animations inside stay paused on the first frame (data-play, see index.css) until the block
+ * scrolls into view.
  */
 export function PlayInView({
   children,
@@ -14,7 +12,6 @@ export function PlayInView({
 }: {
   children: ReactNode
   className?: string
-  /** Какая доля блока должна быть видна, чтобы запустить */
   amount?: number
 }) {
   const ref = useRef<HTMLDivElement>(null)

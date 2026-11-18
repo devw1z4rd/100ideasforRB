@@ -17,7 +17,6 @@ describe("snapToLines", () => {
 
 describe("scaleBar", () => {
   it("picks the largest round distance that fits and its length in pixels", () => {
-    // zoom 7 на широте Гомеля: ~373 м/пикс, в 120 px — ~44,8 км; крупнейший шаг до этого — 25 км = 67 px
     const { km, px } = scaleBar(7, 52.4)
     expect(km).toBe(25)
     expect(px).toBeGreaterThan(60)

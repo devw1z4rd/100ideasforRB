@@ -1,9 +1,5 @@
-/*
- * Токены дизайна (CLAUDE.md §10.1). Значения сняты с макета temp-design/Main.dc.html.
- * Общие роли названы по схеме shadcn (--background, --foreground, --border…), чтобы компоненты ui/ брали их без правок.
- *
- * .light возвращает светлые роли внутри .dark — белая карточка поверх тёмной карты (§10.4).
- */
+/* Design tokens. Shared roles follow shadcn naming (--background, --foreground, --border…), so ui/ components
+   use them as is. .light restores light roles inside .dark (white card over the dark map). */
 :root,
 .light {
   --background: #ffffff;
@@ -30,7 +26,6 @@
   --link-hover: #1f4fd1;
   --success: #4cc38a;
 
-  /* Панели и бары секции «Предприятия» (§10.7) в светлой теме; тёмные значения — в .dark ниже */
   --panel-border: #ececea;
   --panel-raised: #f7f7f5;
   --panel-highlight: #f0f0ed;
@@ -42,7 +37,7 @@
   --success-ink: #1d7a4c;
   --destructive-ink: #b8391f;
 
-  /* Шкала AQI (lib/aqi.ts): 0–200 — цвета макета, 201+ — стандартные цвета EPA (в макете шкала до 200) */
+  /* AQI scale (lib/aqi.ts) */
   --aqi-good: #4cc38a;
   --aqi-moderate: #f0a92e;
   --aqi-usg: #e2583a;
@@ -50,8 +45,6 @@
   --aqi-very-unhealthy: #8f3f97;
   --aqi-hazardous: #7e0023;
 
-  /* Плашка с AQI по категории ([data-aqi-surface] ниже) и цвет числа на ней. Светлые категории — тот же оттенок,
-     чуть светлее, с тёмным числом; тёмные — цвет шкалы как есть с белым */
   --aqi-good-surface: color-mix(in oklab, var(--aqi-good) 78%, white);
   --aqi-good-ink: #0c3a24;
   --aqi-moderate-surface: color-mix(in oklab, var(--aqi-moderate) 78%, white);
@@ -65,21 +58,19 @@
   --aqi-hazardous-surface: var(--aqi-hazardous);
   --aqi-hazardous-ink: #ffffff;
 
-  /* Уровень относительно нормы ВОЗ (секция «Воздух»): до нормы / до двух норм / выше — те же цвета, что у AQI */
+  /* Level relative to the WHO norm (air section) */
   --level-ok: var(--aqi-good);
   --level-elevated: var(--aqi-moderate);
   --level-high: var(--aqi-usg);
 
-  /* Уровень воды относительно порогов поста — как на карте уровенного режима Белгидромета:
-     маловодье жёлтым, обычный зелёным, пойма синим, опасный красным */
+  /* River level relative to post thresholds, as on the Belhydromet map */
   --river-low: var(--aqi-moderate);
   --river-normal: var(--aqi-good);
   --river-flood: #3d8bea;
   --river-danger: var(--aqi-usg);
 
-  /* Квартальный отчёт о воде — книжка (§10.8): обложка цвета глубокой реки, страницы — бумага */
+  /* Water report book */
   --book-cover: #0f3a45;
-  /* Обложка по сезону квартала (полка обзоров): I — зима, II — весна, III — лето, IV — осень */
   --book-winter: #1c3150;
   --book-spring: #0f3a45;
   --book-summer: #1d3b2a;
@@ -91,8 +82,8 @@
   --book-edge: #e2ded3;
   --book-shadow: rgb(15 30 35 / 0.28);
 
-  /* Графики bklit (components/charts, графики воды): переменные их реестра — через роли сайта, поэтому тёмная
-     тема и тёмные блоки работают сами. Основная линия — цвет рек */
+  /* bklit charts (components/charts): their variables mapped to site roles, so the dark theme and dark blocks
+     just work */
   --chart-1: var(--map-river);
   --chart-2: var(--level-elevated);
   --chart-3: var(--river-flood);
@@ -129,19 +120,16 @@
   --chart-segment-background: color-mix(in oklab, var(--foreground) 6%, transparent);
   --chart-segment-line: color-mix(in oklab, var(--foreground) 25%, transparent);
 
-  /* Карта (§10.4) — всегда тёмная, значения сняты с макета. MapLibre читает их через getComputedStyle */
+  /* Map — always dark. MapLibre reads these via getComputedStyle */
   --map-bg: #151517;
   --map-land: #252528;
   --map-outline: #f4f4f5;
   --map-district: #3d3d43;
   --map-river: #4e93a8;
   --map-river-label: #7fb6c7;
-  /* Границы соседей (Natural Earth): страны — пунктир светлее, области — тонкая линия чуть светлее фона */
   --map-border-country: #8e8e95;
   --map-border-region: #3d3d43;
-  /* Остальная Беларусь — между фоном (соседние государства) и заливкой области */
   --map-belarus: #1e1e21;
-  /* Детали при приближении (OpenFreeMap): лес, водоёмы, дороги, застройка, подписи деревень */
   --map-wood: #1b3023;
   --map-water: #1f3e4b;
   --map-road: #45454b;
@@ -150,8 +138,7 @@
   --map-place: #909097;
   --focus: #336bf1;
 
-  /* Сравнение районов (§10.14): первый район — графитовый, второй — синий; одни и те же цвета на картограмме,
-     в списке и в барах */
+  /* District comparison: first district graphite, second blue */
   --compare-a: var(--foreground);
   --compare-b: var(--focus);
 
@@ -159,7 +146,7 @@
   --header-h: 56px;
 }
 
-/* Тёмные блоки главной (карта) и тёмная тема сайта (.dark на <html>): класс .dark переключает роли */
+/* Dark blocks (map) and the site's dark theme (.dark on <html>): .dark switches the roles */
 .dark {
   --background: #0f0f11;
   --foreground: #f4f4f5;
@@ -181,7 +168,6 @@
   --link: #8fb0ff;
   --link-hover: #b9ceff;
 
-  /* Панели и бары секции «Предприятия» (§10.7) — значения сняты с temp-design (temp-factory, Mobile · 390) */
   --panel-border: #29292d;
   --panel-raised: #1f1f22;
   --panel-highlight: #27272b;
@@ -194,11 +180,8 @@
   --destructive-ink: #ff8f7a;
 }
 
-/*
- * Тёмная тема сайта (переключатель в футере, lib/theme.ts): .dark на <html> включает тёмные роли на всей странице,
- * а эти значения поднимают страницу на полтона над тёмными блоками (карта, «Предприятия») — они остаются
- * отдельными панелями. Блоки со своим .dark переопределяют роли обратно на значения выше.
- */
+/* Site dark theme (.dark on <html>, lib/theme.ts): lifts the page half a tone above dark blocks (map), which
+   keep their own .dark and stay distinct panels. */
 :root {
   color-scheme: light;
 }
@@ -218,14 +201,13 @@ html.dark {
   --book-edge: #34343a;
   --book-shadow: rgb(0 0 0 / 0.55);
 }
-/* На кадр смены темы — без переходов, чтобы всё перекрасилось разом (lib/theme.ts) */
+/* One frame without transitions while switching themes (lib/theme.ts) */
 .theme-switching,
 .theme-switching * {
   transition: none !important;
 }
 
-/* Футер (§10.9) окрашен по худшему AQI в области прямо сейчас: data-aqi-footer="<категория>".
-   Нет данных — инверсия страницы. Цвет — сам цвет шкалы (ярче плашек), текст — ink категории */
+/* Footer colored by the worst AQI in the oblast: data-aqi-footer="<category>"; no data — inverted page colors */
 [data-aqi-footer] {
   --footer-bg: var(--foreground);
   --footer-ink: var(--background);
@@ -255,7 +237,7 @@ html.dark {
   --footer-ink: var(--aqi-hazardous-ink);
 }
 
-/* Плашка с AQI в карточке города на карте (§10.4): data-aqi-surface="<категория>" задаёт --surface и --ink */
+/* AQI badge: data-aqi-surface="<category>" sets --surface and --ink */
 [data-aqi-surface="good"] {
   --surface: var(--aqi-good-surface);
   --ink: var(--aqi-good-ink);

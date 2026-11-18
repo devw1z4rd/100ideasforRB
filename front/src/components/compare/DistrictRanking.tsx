@@ -8,10 +8,8 @@ import { DistrictMap, type MapDot, type MapLabel, type MapShape } from "./Distri
 type Props = {
   metric: MetricInfo
   ranked: readonly Ranked[]
-  /** Районы без значения — внизу списка, на карте серые */
   missing: readonly string[]
   names: ReadonlyMap<string, string>
-  /** Дней в периоде с данными — для «18 дн. из 90» */
   daysTotal: ReadonlyMap<string, number>
   periodShort: string
   map: { width: number; height: number; shapes: readonly MapShape[]; dots: readonly MapDot[] }
@@ -24,11 +22,9 @@ type Props = {
 const chip =
   "h-8 cursor-pointer rounded-full border px-3.5 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 
-// Последовательная шкала одного тона: 0 — едва заметный оттенок, максимум — полный --destructive
 const ramp = (share: number) =>
   `color-mix(in oklab, var(--destructive) ${Math.round(8 + 92 * share)}%, var(--background))`
 
-/** Выбор показателя — чипами; видны и пока данные грузятся */
 export function MetricChips({ value, onChange }: { value: RankMetric; onChange: (m: RankMetric) => void }) {
   return (
     <div role="radiogroup" aria-label={text.ranking.metricLabel} className="flex flex-wrap gap-2">
@@ -53,16 +49,11 @@ export function MetricChips({ value, onChange }: { value: RankMetric; onChange: 
   )
 }
 
-/** Группа районов с одинаковым значением: «Мозырский район, Речицкий район и ещё 2» */
 function groupNames(group: readonly Ranked[], names: ReadonlyMap<string, string>) {
   const shown = group.slice(0, 2).map((r) => districtLabel(names.get(r.id) ?? ""))
   return group.length > 2 ? `${shown.join(", ")} и ещё ${group.length - 2}` : shown.join(" и ")
 }
 
-/**
- * Районы по одному показателю: картограмма + список от большего к меньшему. Наведение связывает карту и список,
- * клик ставит район вторым в сравнение ниже.
- */
 export function DistrictRanking({
   metric,
   ranked,
@@ -95,7 +86,6 @@ export function DistrictRanking({
 
   return (
     <div>
-      {/* Вывод словами — до картинки: кто чаще всех и кто реже */}
       <p className="max-w-[70ch] font-heading text-[clamp(20px,2vw,24px)] leading-snug font-semibold tracking-[-0.02em] text-balance">
         {max === 0 ? (
           text.ranking.none(metric, periodShort)
@@ -143,7 +133,6 @@ export function DistrictRanking({
             }}
           />
           <figcaption className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-muted-foreground">
-            {/* Когда у всех 0, шкала «0 — 0» ничего не объясняет */}
             {max > 0 && (
               <span className="inline-flex items-center gap-2 tabular-nums">
                 0

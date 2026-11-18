@@ -4,7 +4,6 @@ import { pb } from "./pb"
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Воздух обновляется раз в час, справочники — при деплое: 5 минут свежести с запасом
       staleTime: 5 * 60_000,
       retry: 1,
       refetchOnWindowFocus: false,
@@ -12,7 +11,7 @@ export const queryClient = new QueryClient({
   },
 })
 
-// Вход и выход меняют видимость записей по API rules (свои обращения, очередь модерации) — перезапросить всё
+// Sign-in/out changes what API rules expose (own reports, moderation queue) — refetch everything.
 pb.authStore.onChange(() => {
   void queryClient.invalidateQueries()
 })

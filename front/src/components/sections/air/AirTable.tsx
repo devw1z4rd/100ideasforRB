@@ -24,25 +24,18 @@ const t = air.table
 type Props = {
   rows: readonly DailyRow[]
   range: Range
-  /** «за 30 дней» */
   periodLabel: string
   names: ReadonlyMap<string, string>
   selected: string
-  /** Показатель, выбранный в виде «По городу», — по нему таблица сортируется сначала */
   pollutant: Pollutant
-  /** Открыть город в виде «По городу» */
   onOpen: (id: string) => void
 }
 
-/**
- * «Таблица»: все города области за период — AQI сейчас и сколько суток каждый показатель был выше нормы ВОЗ.
- * Полоска — доля таких суток, цвет — насколько выше нормы были худшие сутки. Сортировка — по заголовку колонки.
- */
 export function AirTable({ rows, range, periodLabel, names, selected, pollutant, onOpen }: Props) {
   const { data: latest } = useLatestAir()
   const [sort, setSort] = useState<{ key: TownSortKey; dir: SortDir }>({ key: pollutant, dir: "desc" })
 
-  // range приходит новым объектом на каждый рендер — зависимость по датам
+  // range is a new object on every render — depend on its dates.
   const { from, to } = range
   const summaries = useMemo(() => summarizeAll(rows, pollutants, { from, to }), [rows, from, to])
   const towns = useMemo(() => {
@@ -55,7 +48,6 @@ export function AirTable({ rows, range, periodLabel, names, selected, pollutant,
     return sortTowns(list, sort.key, sort.dir)
   }, [names, latest, summaries, sort])
 
-  // Повторный клик — обратный порядок; первый — сначала худшие (для города — по алфавиту)
   const sortBy = (key: TownSortKey) =>
     setSort((prev) =>
       prev.key === key
@@ -162,7 +154,6 @@ export function AirTable({ rows, range, periodLabel, names, selected, pollutant,
   )
 }
 
-/** Заголовок колонки — кнопка сортировки; стрелка у активной */
 function SortHeader({
   column,
   sort,
@@ -200,7 +191,6 @@ function SortHeader({
   )
 }
 
-/** Дни выше нормы: число, полоска-доля (цвет — худшие сутки к норме) и худшее значение */
 function DaysCell({ info, summary }: { info: PollutantInfo; summary: TownRow["summary"][Pollutant] }) {
   if (!summary || summary.daysTotal === 0) {
     return <td className="py-2 pr-2 text-muted-foreground md:pr-3">—</td>

@@ -1,15 +1,15 @@
-// Собирает back/seed/water_readings.json из ручных выписок квартальных обзоров Белгидромета (back/seed/water/*.json):
+// Builds back/seed/water_readings.json from manual extracts of Belhydromet quarterly reviews
+// (back/seed/water/*.json):
 //   node back/seed/tools/build-water.mjs
-// Выписка — только пункты наблюдений в Гомельской области и только то, что сказано в обзоре (CLAUDE.md §9):
-// отклонения от нормативов качества воды, температурный режим, гидрология. Координат в обзорах нет — пункт ставится
-// на русло реки рядом с населённым пунктом: GeoNames (geonameid ниже) → ближайшая точка линии из rivers.geojson.
+// Reviews have no coordinates: each point is snapped to the nearest point of the river line (rivers.geojson)
+// next to the settlement (GeoNames).
 import { readdir, readFile, writeFile } from "node:fs/promises";
 
 const DIR = new URL("../water/", import.meta.url);
 const OUT = new URL("../water_readings.json", import.meta.url);
 const RIVERS = new URL("../../../front/public/geo/rivers.geojson", import.meta.url);
 
-// населённый пункт → [geonameid, широта, долгота, «у кого/чего» для подписи участка]
+// settlement → [geonameid, lat, lon, genitive form for the section label]
 const SETTLEMENTS = {
   Наровля: [624799, 51.7972, 29.4978, "Наровли"],
   Мозырь: [625324, 52.0416, 29.2163, "Мозыря"],
@@ -24,7 +24,6 @@ const SETTLEMENTS = {
   Жлобин: [618806, 52.8926, 30.024, "Жлобина"],
   Речица: [622794, 52.3617, 30.3916, "Речицы"],
   Добруш: [629018, 52.4147, 31.3143, "Добруша"],
-  // Координаты — гидропостов Белгидромета у этих пунктов (pogoda.by, river_posts: 79376, 79381, 79627)
   Черничи: [null, 52.0792, 27.8303, "Черничей"],
   Петриков: [null, 52.1172, 28.4892, "Петрикова"],
   "Першая Слободка": [null, 52.3033, 28.8219, "Першей Слободки"],

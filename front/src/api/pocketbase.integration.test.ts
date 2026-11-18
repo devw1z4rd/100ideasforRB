@@ -1,7 +1,7 @@
-// Хуки данных против настоящего PocketBase: схема, API rules, seed и сбор воздуха из back/.
-// Запускается только с адресом сервера, иначе пропускается:
+// Data hooks against a real PocketBase; skipped without PB_TEST_URL:
 //   PB_TEST_URL=http://127.0.0.1:8090 PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… npx vitest run src/api
-// Нужны `pocketbase seed`, `pocketbase air-backfill`, `pocketbase river-fetch` и `pocketbase hydro-news` (CLAUDE.md §12). Созданные записи удаляются в конце.
+// Needs `pocketbase seed`, `air-backfill`, `river-fetch` and `hydro-news`. Created records are deleted at the
+// end.
 import { QueryClient } from "@tanstack/react-query"
 import PocketBase from "pocketbase"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
@@ -18,13 +18,12 @@ import { articleQuery, articlesQuery } from "./articles"
 import { newsItemQuery, newsListQuery, newsTagsQuery } from "./news"
 import { summarizePosts } from "@/lib/rivers"
 
-// Тесты идут в Node, но собираются с tsconfig приложения, где типов Node нет
+// Tests run in Node but compile with the app tsconfig, which has no Node types.
 declare const process: { env: Record<string, string | undefined> }
 
 const url = process.env.PB_TEST_URL
 const run = Date.now().toString(36)
 const password = "testpassword123"
-// queryOptions из src/api — через QueryClient без React; кэш общий на файл, ключи в тестах не повторяются
 const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 const fetchQuery = client.fetchQuery.bind(client)
 const day = (shift: number) =>
@@ -82,7 +81,6 @@ describe.skipIf(!url)("api against PocketBase", () => {
     const rows = await fetchQuery(emissionStatsQuery())
     const gomel = (year: number) =>
       regionsForYear(rows, year).regions.find((r) => r.territory === "Гомельская область")!
-    // Опубликовано: 108,2 тыс. т (2023, стратегия области), 95,078 (2024, бюллетень Минприроды), 80 (2025, буклет Белстата)
     expect(gomel(2023).emitted).toBeCloseTo(108.2, 1)
     expect(gomel(2024).emitted).toBeCloseTo(95.08, 1)
     expect(Math.round(gomel(2025).emitted)).toBe(80)
@@ -94,7 +92,6 @@ describe.skipIf(!url)("api against PocketBase", () => {
     const gomel = posts.find((p) => p.river === "Сож" && p.name === "Гомель")!
     expect(gomel.low_level).toBeGreaterThan(0)
     expect(gomel.district).not.toBe("")
-    // Пост на пограничном Днепре — в 0,5 км за полигоном района, должен попасть в область
     expect(posts.some((p) => p.name === "Лоев")).toBe(true)
 
     const summaries = summarizePosts(posts, await fetchQuery(riverLevelsQuery()))
@@ -108,7 +105,7 @@ describe.skipIf(!url)("api against PocketBase", () => {
     const list = await fetchQuery(articlesQuery())
     expect(list.length).toBeGreaterThanOrEqual(8)
     const aqi = list.find((a) => a.slug === "aqi")!
-    expect(aqi.body).not.toContain("<") // в списке — анонс без разметки
+    expect(aqi.body).not.toContain("<")
     const full = await fetchQuery(articleQuery("aqi"))
     expect(full?.body).toContain("<h2>")
     expect(await fetchQuery(articleQuery("no-such-article"))).toBeNull()

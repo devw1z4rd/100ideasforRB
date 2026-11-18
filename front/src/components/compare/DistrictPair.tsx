@@ -34,7 +34,6 @@ type Props = {
   onA: (id: string) => void
   onB: (id: string) => void
   onSwap: () => void
-  /** Район по координатам или null — вне области */
   locate: (lon: number, lat: number) => string | null
   periodShort: string
   riversAsOf: string | null
@@ -44,10 +43,6 @@ type Props = {
 const control =
   "h-9 rounded-md border border-input bg-background px-3 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 
-/**
- * Два района бок о бок по всему, что есть на сайте: воздух за период и сейчас, посты на реках, участки рек из
- * квартального обзора, обращения. Числа — зеркальными барами от центра, первый район слева, второй справа.
- */
 export function DistrictPair({
   a,
   b,
@@ -67,7 +62,6 @@ export function DistrictPair({
 
   return (
     <div>
-      {/* Названия районов остаются на экране, пока листаются группы */}
       <div className="sticky top-(--header-h) z-10 -mx-4 border-b border-border bg-background/95 px-4 py-3 backdrop-blur md:-mx-10 md:px-10">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2 sm:gap-4">
           <Picker
@@ -204,7 +198,6 @@ function Picker({
   )
 }
 
-/** «Мой район»: точка из геолокации — в полигон района; координаты остаются в браузере */
 function NearMe({ locate, onFound }: { locate: Props["locate"]; onFound: (id: string) => void }) {
   const [state, setState] = useState<"idle" | "busy" | "error" | "outside">("idle")
   if (typeof navigator === "undefined" || !("geolocation" in navigator)) return null
@@ -273,7 +266,6 @@ function Group({
   )
 }
 
-/** Строка «первый | второй»: подпись по центру, значения у краёв, бары растут от центра наружу */
 function Mirror({
   label,
   a,
@@ -305,7 +297,6 @@ function Mirror({
   )
 }
 
-/** Дорожка — весь период, полоса — доля дней выше нормы; у центральной линии бары первого и второго встречаются */
 function Bar({ share, color, side }: { share: number | null; color: string; side: "left" | "right" }) {
   return (
     <span
@@ -363,7 +354,6 @@ function AqiValue({ value }: { value: number | null }) {
   )
 }
 
-/** Две колонки списков: первый район слева, второй справа */
 function Columns({ a, b }: { a: ReactNode; b: ReactNode }) {
   return (
     <div className="grid grid-cols-2 gap-x-3 py-4 sm:gap-x-6">

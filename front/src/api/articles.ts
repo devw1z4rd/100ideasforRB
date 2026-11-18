@@ -3,9 +3,6 @@ import { ClientResponseError } from "pocketbase"
 import { pb } from "./pb"
 import type { ArticlesResponse } from "./pocketbase-types"
 
-// База знаний (CLAUDE.md §4 S4): статьи из PocketBase. Стартовый набор — back/seed/articles.json (seed добавляет
-// только новые), дальше — через админку. Черновики видит только admin.
-
 export type Article = Pick<
   ArticlesResponse,
   "id" | "slug" | "title" | "category" | "order" | "is_published" | "updated" | "body"
@@ -13,7 +10,6 @@ export type Article = Pick<
 
 const STALE = 10 * 60_000
 
-/** Все статьи с анонсом вместо текста — для оглавления и «Ещё в разделе» */
 export const articlesQuery = () =>
   queryOptions({
     queryKey: ["articles", "list"],
@@ -25,7 +21,6 @@ export const articlesQuery = () =>
     staleTime: STALE,
   })
 
-/** Статья по slug; null — такой нет (или это черновик, а смотрит не админ) */
 export const articleQuery = (slug: string) =>
   queryOptions({
     queryKey: ["articles", "item", slug],

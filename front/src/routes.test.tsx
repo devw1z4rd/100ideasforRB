@@ -1,10 +1,8 @@
 import { matchRoutes } from "react-router"
 import { describe, expect, it } from "vitest"
 import { footer, cta, login, pages } from "@/content/nav"
-// import { hero } from "@/content/hero" — мета-блок hero скрыт
 import { routes } from "./routes"
 
-// CLAUDE.md §11
 const claudeMdPaths = [
   "/reports",
   "/reports/new",
@@ -20,13 +18,7 @@ const claudeMdPaths = [
   "/moderation",
 ]
 
-const navTargets = [
-  ...pages.map((p) => p.to),
-  cta.to,
-  login.to,
-  footer.data.to,
-  // ...hero.meta.flatMap((m) => (m.to ? [m.to] : [])),
-]
+const navTargets = [...pages.map((p) => p.to), cta.to, login.to, footer.data.to]
 
 describe("routes", () => {
   it.each([...new Set([...claudeMdPaths, ...navTargets])])("%s resolves to a real route", (path) => {

@@ -1,8 +1,6 @@
 /**
- * Регистрация service worker (sw/sw.js, CLAUDE.md §6 «Загрузка главной») — только в сборке. При установке он
- * скачивает весь код сайта (~1 МБ), поэтому регистрируется не сразу: после загрузки страницы, после `after`
- * (на главной — код карты) и ещё паузы — чтобы не отбирать канал у первого экрана. При экономии трафика
- * (Save-Data) не регистрируется вовсе.
+ * Production builds only. Install downloads the whole site (~1 MB), so registration waits for page load,
+ * `after` (the map code on the home page) and a pause; skipped with Save-Data.
  */
 export function registerServiceWorker(after?: Promise<unknown>) {
   if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return

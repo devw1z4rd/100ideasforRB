@@ -1,4 +1,4 @@
-// PROTOTYPE — вариант A «Банка воздуха»: пылинки в банке города против банки «по норме ВОЗ».
+// PROTOTYPE — variant A "Air jar".
 import { useMemo, useState, type CSSProperties } from "react"
 import { formatDay, mockTowns, verdict, WHO_PM25 } from "./mock"
 import { DaySlider, TownChips, VerdictLine } from "./shared"
@@ -10,8 +10,6 @@ function seeded(i: number) {
   return x - Math.floor(x)
 }
 
-// Пул пылинок с постоянными местами: при смене дня точки не прыгают, а появляются и гаснут.
-// У банки «по норме» свой пул — иначе её точки совпадают с первыми точками города
 const makeParticles = (o: number) =>
   Array.from({ length: POOL }, (_, i) => ({
     x: 34 + seeded(i + o) * 152,
@@ -62,10 +60,8 @@ function Jar({
             <stop offset="1" stopColor="#e3eefb" stopOpacity="0.9" />
           </linearGradient>
         </defs>
-        {/* крышка и горлышко */}
         <rect x="56" y="8" width="108" height="26" rx="8" fill={tone === "town" ? "#3b3f3d" : "#4cc38a"} />
         <rect x="64" y="34" width="92" height="28" rx="6" fill="#f3f6f9" stroke="#c9d3dd" strokeWidth="2" />
-        {/* стекло */}
         <rect
           x="22"
           y="60"
@@ -100,7 +96,6 @@ function Jar({
             </g>
           ))}
         </g>
-        {/* блик */}
         <rect x="36" y="80" width="10" height="150" rx="5" fill="#ffffff" opacity="0.7" />
       </svg>
       <figcaption className="text-center">
@@ -117,7 +112,6 @@ function Jar({
 export function VariantJar() {
   const [townId, setTownId] = useState("gomel")
   const town = mockTowns.find((t) => t.id === townId)!
-  // Сначала — самый пыльный день месяца: разница с нормой видна сразу
   const [index, setIndex] = useState(() =>
     town.daily.reduce((best, d, i, all) => (d.pm25 > all[best].pm25 ? i : best), 0),
   )

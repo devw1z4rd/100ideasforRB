@@ -2,9 +2,6 @@ import type { RiverStatus, RiverTrend } from "@/lib/rivers"
 import { cn } from "@/lib/utils"
 import { riverColor } from "./riverColor"
 
-// Знак поста как на карте уровенного режима Белгидромета: направление — уровень растёт / без изменений / падает,
-// цвет — положение относительно порогов поста
-
 const points: Record<RiverTrend, string> = {
   up: "6,1 11.5,11 0.5,11",
   down: "0.5,1 11.5,1 6,11",

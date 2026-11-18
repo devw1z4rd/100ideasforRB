@@ -3,9 +3,6 @@ import { takeHome } from "./home"
 import { pb } from "./pb"
 import type { WaterReadingsResponse } from "./pocketbase-types"
 
-// Состояние рек по квартальным обзорам Белгидромета (CLAUDE.md §8, §9): отклонения от нормативов качества воды,
-// температурный режим и гидрология в пунктах наблюдений Гомельской области. Меняется раз в квартал через seed.
-
 export type WaterReading = Pick<
   WaterReadingsResponse,
   | "river"
@@ -22,7 +19,6 @@ export type WaterReading = Pick<
   | "note"
 >
 
-/** Запись с адресом обзора, из которого она выписана (sources.url) — у каждого квартала свой */
 export type WaterReadingWithSource = WaterReading & { sourceUrl?: string }
 
 export const waterReadingsQuery = () =>

@@ -27,21 +27,11 @@ type Props = {
 }
 
 const text = air.summary
-// Дни в норме — бледным, как в полосе «Где и когда»: бросаются в глаза дни выше нормы
 const pale = (color: string) => `color-mix(in oklab, ${color} 35%, transparent)`
 const dayLevels: readonly NormLevel[] = ["ok", "elevated", "high"]
 
-// Карточка — четыре строки общей сетки (subgrid): заголовок, число, полоса, подпись. Строки выровнены
-// по всему ряду карточек, сколько бы строк ни занял текст в соседней.
 const cell = "row-span-4 grid grid-rows-subgrid gap-y-2.5 p-3.5 text-left md:p-4"
 
-/**
- * Сводка выбранного города (§10.6) — два разных по смыслу блока, чтобы было видно, что можно выбирать:
- * слева AQI сейчас и дни периода по категориям AQI — спокойная серая плашка без рамки, только информация;
- * справа под заголовком PM2.5 / PM10 / NO₂ / SO₂ — отдельные карточки с рамкой (радиогруппа): сколько дней
- * периода выше нормы ВОЗ, из них выше двух норм, худший день. Выбранная — тёмной рамкой, она идёт на график
- * и в полосу «Где и когда».
- */
 export function AirSummary({ rows, pointId, current, previous, value, onChange }: Props) {
   const info = pollutants.find((p) => p.key === value)!
 
@@ -81,8 +71,6 @@ export function AirSummary({ rows, pointId, current, previous, value, onChange }
                   role="radio"
                   aria-checked={active}
                   onClick={() => onChange(p.key)}
-                  // Отдельная карточка с рамкой — видно, что её можно выбрать. Выбранная — серой рамкой 2 px
-                  // (рамка + inset-тень, без сдвига содержимого) и лёгкой подложкой: чёрная рамка резала глаз
                   className={cn(
                     cell,
                     "cursor-pointer rounded-xl border transition-[border-color,box-shadow,background-color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
@@ -149,7 +137,6 @@ export function AirSummary({ rows, pointId, current, previous, value, onChange }
               )
             })}
           </div>
-          {/* Что за показатель выбран — одной строкой под карточками, а не в каждой */}
           <p className="mt-3 text-[13px] text-muted-foreground">
             <span className="font-medium text-foreground">{info.label}</span> — {info.hint}.
           </p>
@@ -159,16 +146,10 @@ export function AirSummary({ rows, pointId, current, previous, value, onChange }
   )
 }
 
-// Шкала AQI до 200, как на карте: выше — редкость для области, отметка упирается в край
 const SCALE_MAX = 200
 const scaleSegments = AQI_SCALE.filter((c) => c.min < SCALE_MAX)
 const onScale = (v: number) => `${(Math.min(Math.max(v, 0), SCALE_MAX) / SCALE_MAX) * 100}%`
 
-/**
- * AQI города: значение за последний час и где оно на шкале AQI; светлая скобка на шкале — в каких пределах
- * был AQI за период (по худшему часу суток). Шкала прямо показывает, что это другая мерка, чем карточки ВОЗ
- * рядом: «умеренный» AQI ещё не «выше нормы ВОЗ» — это объясняет подсказка у ⓘ, а не абзац текста.
- */
 function AqiCell({ rows, pointId, range }: { rows: readonly DailyRow[]; pointId: string; range: Range }) {
   const { data: latest } = useLatestAir()
   const reading = latest?.get(pointId)
@@ -177,8 +158,6 @@ function AqiCell({ rows, pointId, range }: { rows: readonly DailyRow[]; pointId:
   const spread = aqiRange(rows, pointId, range)
 
   return (
-    // Заголовок — как над карточками показателей, поэтому верх плашки на одной линии с ними.
-    // Сама плашка — только информация: серая, без рамки, не похожа на карточки, которые выбирают
     <div className="flex min-w-0 flex-col">
       <p className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
         <span className="text-[15px] font-semibold">{text.aqiTitle}</span>
@@ -207,7 +186,6 @@ function AqiCell({ rows, pointId, range }: { rows: readonly DailyRow[]; pointId:
           </span>
         </span>
 
-        {/* Шкала AQI: цветом — категории, скобка — пределы за период, черта — сейчас */}
         <div className="mt-1">
           <div className="relative py-1.5">
             <div className="flex h-2 gap-0.5 overflow-hidden rounded-full">
@@ -269,13 +247,12 @@ function AqiCell({ rows, pointId, range }: { rows: readonly DailyRow[]; pointId:
   )
 }
 
-/** Состав дней периода одной полосой: доля каждой части пропорциональна числу дней */
 function Bar({ parts }: { parts: ReadonlyArray<{ key: string; n: number; color: string }> }) {
   const total = parts.reduce((a, p) => a + p.n, 0)
   return (
     <span
       aria-hidden="true"
-      // w-full: в столбце (плашка AQI) self-center иначе сжал бы полосу в ноль
+      // w-full: in a column, self-center would shrink the bar to zero.
       className="summary-bar flex h-2 w-full gap-px self-center overflow-hidden rounded-full bg-muted"
     >
       {total > 0 &&

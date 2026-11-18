@@ -4,15 +4,13 @@ import { takeHome } from "./home"
 import { pb } from "./pb"
 import type { DistrictsResponse } from "./pocketbase-types"
 
-// Справочники (CLAUDE.md §8): районы, источники, точки опроса воздуха. Меняются только через seed и админку.
 const REFERENCE_STALE = 60 * 60_000
 
-/** Полигон района из OSM (back/seed/districts.geojson); у Гомельского района внутренние кольца — г. Гомель. */
 export type DistrictGeometry = PolygonGeometry
 
 export type DistrictWithGeometry = DistrictsResponse<DistrictGeometry>
 
-// Без geometry: полигоны весят ~150 КБ и нужны только карте
+// No geometry here: polygons weigh ~150 KB and only the map needs them.
 const DISTRICT_FIELDS = "id,name,name_be,center,area_km2,population,forest_cover"
 
 export const districtsQuery = () =>

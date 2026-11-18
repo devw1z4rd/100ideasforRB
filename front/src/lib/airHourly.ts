@@ -1,12 +1,10 @@
-// Почасовые значения воздуха (air_readings) для видов «Прогноз» и «По часам» раздела «Воздух» (CLAUDE.md §10.6).
-// Время в базе — UTC; сутки и часы показываем по Минску (круглый год UTC+3).
+// Time in the database is UTC; days and hours are shown in Minsk time (UTC+3 all year).
 import type { Pollutant } from "./airStats"
 import { normLevel } from "./airStats"
 
 const MINSK_OFFSET_MS = 3 * 3_600_000
 
 export type HourlyRow = {
-  /** Время в формате PocketBase "YYYY-MM-DD HH:MM:SS.sssZ" (UTC) */
   ts: string
   us_aqi: number
   pm2_5: number
@@ -15,19 +13,16 @@ export type HourlyRow = {
   so2: number
 }
 
-/** Минские сутки и час для времени из базы */
 export function minskHour(ts: string): { day: string; hour: number } {
   const local = new Date(Date.parse(ts.replace(" ", "T")) + MINSK_OFFSET_MS)
   return { day: local.toISOString().slice(0, 10), hour: local.getUTCHours() }
 }
 
-/** Начало минских суток day ("YYYY-MM-DD") как момент UTC */
 export const minskDayStart = (day: string) => new Date(Date.parse(`${day}T00:00:00Z`) - MINSK_OFFSET_MS)
 
 export type ForecastSlot = HourlyRow & { past: boolean }
 export type ForecastDay = { day: string; hours: Array<ForecastSlot | null> }
 
-/** Прогноз по минским суткам: 24 клетки на сутки, past — час уже прошёл (значение — фактическое). */
 export function forecastDays(rows: readonly HourlyRow[], now: Date): ForecastDay[] {
   const byDay = new Map<string, Array<ForecastSlot | null>>()
   for (const r of rows) {
@@ -39,10 +34,6 @@ export function forecastDays(rows: readonly HourlyRow[], now: Date): ForecastDay
   return [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([day, hours]) => ({ day, hours }))
 }
 
-/**
- * Лучшее окно для прогулки: len часов подряд в пределах [from, to) с наименьшим «худшим часом» по AQI;
- * при равенстве — раньше. Часы до minHour (уже прошли) и без данных не берутся. null — подходящего окна нет.
- */
 export function bestWindow(
   hours: ReadonlyArray<{ us_aqi: number } | null>,
   {
@@ -66,14 +57,11 @@ export type DayFilter = "all" | "weekdays" | "weekends"
 
 export type HourStat = {
   hour: number
-  /** Среднее значение показателя в этот час; null — данных нет */
   mean: number | null
-  /** Сколько суток в этот час значение было выше нормы и из скольки */
   over: number
   total: number
 }
 
-/** Профиль суток: среднее по каждому часу (по Минску) за все сутки выборки; filter — будни / выходные. */
 export function hourProfile(
   rows: readonly HourlyRow[],
   pollutant: Pollutant,
@@ -96,7 +84,6 @@ export function hourProfile(
   return stats
 }
 
-/** Худшее и лучшее окно из len часов подряд по среднему профиля (через полночь тоже) */
 export function profileExtremes(
   profile: readonly HourStat[],
   len = 3,
@@ -112,6 +99,5 @@ export function profileExtremes(
   return { worst, best }
 }
 
-/** «19:00–22:00»; конец 24 → «24:00» не пишем — «00:00» */
 export const hourRange = (start: number, end: number) =>
   `${String(start % 24).padStart(2, "0")}:00–${String(end % 24).padStart(2, "0")}:00`

@@ -36,10 +36,6 @@ const MAP_WIDTH = 1000
 const h2 = "font-heading text-[clamp(24px,2.6vw,32px)] leading-[1.15] font-semibold tracking-[-0.02em]"
 const NO_REPORTS = { total: 0, open: 0, resolved: 0 }
 
-/**
- * «Сравнение районов» (§4 S3, §10.14): районы по одному показателю — картограмма и список, затем два района
- * рядом по всему, что есть на сайте. Показатель, период и районы — в адресе: сравнением можно поделиться.
- */
 export function ComparePage() {
   useDocumentTitle(text.title)
   const [params, setParams] = useSearchParams()
@@ -71,10 +67,9 @@ export function ComparePage() {
         for (const [key, value] of Object.entries(patch)) next.set(PARAM[key as keyof CompareState], value)
         return next
       },
-      // Смена показателя или района — не новая страница: без записи в историю и без прокрутки
       { replace: true, preventScrollReset: true },
     )
-  // Районы пишутся в адрес парой, иначе второй по умолчанию может совпасть с новым первым
+  // Write both districts together, otherwise the default second one could equal the new first.
   const selectA = (id: string) => {
     const name = names.get(id)
     if (name) set({ a: name, b: name === state.b ? state.a : state.b })
@@ -91,7 +86,6 @@ export function ComparePage() {
 
   const towns = useMemo(() => districtPoints(list, points.data ?? []), [list, points.data])
 
-  // Воздух по районам: дни выше нормы ВОЗ и худший день за период по каждому показателю
   const air = useMemo(() => {
     const result = new Map<Pollutant, Map<string, PointSummary>>()
     for (const p of pollutants)
@@ -142,8 +136,6 @@ export function ComparePage() {
     }
   }, [list, points.data])
 
-  // Подписи двух сравниваемых районов — над их райцентром; у г. Гомеля и Гомельского района райцентр общий,
-  // поэтому вторая подпись в таком случае уходит под точку
   const labels = useMemo(() => {
     const result: MapLabel[] = []
     for (const [id, color] of [

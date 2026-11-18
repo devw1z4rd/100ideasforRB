@@ -4,7 +4,6 @@ import type { ReportsStatusOptions } from "@/api/pocketbase-types"
 import { categoryLabels, statusLabels } from "@/content/reports"
 import { cn } from "@/lib/utils"
 
-/** Цвет точки статуса — только токены; текст статуса всегда рядом (цвет не единственный признак) */
 const statusDot: Record<ReportsStatusOptions, string> = {
   new: "bg-muted-foreground",
   accepted: "bg-(--link)",
@@ -27,11 +26,9 @@ export function StatusBadge({ status, className }: { status: ReportsStatusOption
   )
 }
 
-/** «Речицкий район»; город Гомель — как есть */
 export const districtLabel = (name: string | undefined) =>
   !name ? undefined : /^г\.|^Гомель$/.test(name) ? name : `${name} район`
 
-/** Правдоподобность из автопроверки (только модераторам): цвет — уровень, текст — всегда рядом */
 export function ScoreBadge({ score, className }: { score: number; className?: string }) {
   const tone = score >= 70 ? "bg-success" : score >= 40 ? "bg-aqi-moderate" : "bg-destructive"
   return (
@@ -47,7 +44,6 @@ export function ScoreBadge({ score, className }: { score: number; className?: st
   )
 }
 
-/** Дата и время по Минску: «15 нояб., 14:32» */
 export const formatDateTime = (iso: string) =>
   new Date(iso).toLocaleString("ru-RU", {
     timeZone: "Europe/Minsk",
@@ -57,7 +53,6 @@ export const formatDateTime = (iso: string) =>
     minute: "2-digit",
   })
 
-/** Список обращений строками: категория и статус, район и дата, начало описания, первое фото */
 export function ReportList({ reports, empty }: { reports: readonly ReportWithDistrict[]; empty: string }) {
   if (!reports.length) return <p className="py-10 text-muted-foreground">{empty}</p>
   return (
@@ -90,7 +85,6 @@ export function ReportList({ reports, empty }: { reports: readonly ReportWithDis
                 loading="lazy"
                 className={cn(
                   "size-16 shrink-0 rounded-lg object-cover md:size-20",
-                  // Непроверенное (видно только автору и модератору) — превью размыто: на фото может быть что угодно
                   r.status === "new" && r.auto_check && "blur-md",
                 )}
               />

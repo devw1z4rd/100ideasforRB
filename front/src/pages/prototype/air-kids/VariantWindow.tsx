@@ -1,4 +1,4 @@
-// PROTOTYPE — вариант B «Окно в город»: вид из окна, небо затягивает дымкой по уровню пыли за день.
+// PROTOTYPE — variant B "Window to the town".
 import { useState } from "react"
 import { formatDay, mockTowns, verdict } from "./mock"
 import { DaySlider, TownChips, VerdictLine } from "./shared"
@@ -6,7 +6,6 @@ import { DaySlider, TownChips, VerdictLine } from "./shared"
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
 
 function Scene({ pm25 }: { pm25: number }) {
-  // 8 мкг/м³ и меньше — прозрачно; к 45 — густая пелена
   const haze = clamp((pm25 - 8) / 37, 0, 0.72)
   const clean = pm25 <= 15
   const smoke = clamp(Math.round(pm25 / 6), 1, 7)
@@ -39,14 +38,12 @@ function Scene({ pm25 }: { pm25: number }) {
           style={{ opacity: clean ? 0.25 : 0, transition: t }}
         />
 
-        {/* облака */}
         <g fill="#ffffff" opacity="0.9">
           <ellipse cx="190" cy="100" rx="60" ry="20" />
           <ellipse cx="230" cy="88" rx="40" ry="22" />
           <ellipse cx="470" cy="140" rx="50" ry="16" />
         </g>
 
-        {/* птицы — только в чистый день */}
         <g
           fill="none"
           stroke="#2b3a48"
@@ -58,7 +55,6 @@ function Scene({ pm25 }: { pm25: number }) {
           <path d="M380 95 q8 -8 16 0 q8 -8 16 0" />
         </g>
 
-        {/* дальние дома */}
         <g fill="#a9bccd">
           <rect x="40" y="250" width="70" height="180" />
           <rect x="120" y="220" width="55" height="210" />
@@ -66,7 +62,6 @@ function Scene({ pm25 }: { pm25: number }) {
           <rect x="690" y="230" width="70" height="200" />
         </g>
 
-        {/* завод с трубой и дымом */}
         <g>
           <rect x="520" y="300" width="150" height="130" fill="#8697a8" />
           <rect x="600" y="190" width="24" height="120" fill="#7a8b9c" />
@@ -83,7 +78,6 @@ function Scene({ pm25 }: { pm25: number }) {
           ))}
         </g>
 
-        {/* ближние дома с окнами */}
         <g>
           <rect x="190" y="280" width="120" height="150" fill="#5e7286" />
           <rect x="320" y="300" width="90" height="130" fill="#6a7e92" />
@@ -102,7 +96,6 @@ function Scene({ pm25 }: { pm25: number }) {
           )}
         </g>
 
-        {/* деревья и земля */}
         <rect x="0" y="420" width="800" height="60" fill="#7fbf82" />
         {[80, 150, 450, 760].map((x) => (
           <g key={x}>
@@ -111,7 +104,6 @@ function Scene({ pm25 }: { pm25: number }) {
           </g>
         ))}
 
-        {/* пыльная пелена */}
         <rect
           x="0"
           y="0"
@@ -122,12 +114,10 @@ function Scene({ pm25 }: { pm25: number }) {
         />
       </g>
 
-      {/* рама окна */}
       <rect x="22" y="22" width="756" height="416" rx="16" fill="none" stroke="#f1ebe1" strokeWidth="18" />
       <rect x="392" y="30" width="16" height="400" fill="#f1ebe1" />
       <rect x="30" y="222" width="740" height="16" fill="#f1ebe1" />
       <rect x="10" y="434" width="780" height="34" rx="6" fill="#e7dccb" />
-      {/* цветок на подоконнике */}
       <rect x="96" y="402" width="34" height="34" rx="4" fill="#d9774f" />
       <path
         d="M113 402 q-14 -26 -2 -44 M113 402 q10 -22 24 -30"

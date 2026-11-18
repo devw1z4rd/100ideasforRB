@@ -27,21 +27,15 @@ import {
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 import { cn } from "@/lib/utils"
 
-/**
- * Карточка обращения (CLAUDE.md §4 M3, M6): статус и что он значит, описание, фото, место, история статусов.
- * Модератор меняет статус здесь же (переходы — как в back/pb_hooks/lib/reports.js). Обновляется сама (realtime).
- */
 export function ReportPage() {
   const { id = "" } = useParams()
   const { state } = useLocation() as { state?: { created?: boolean } }
-  // Личная ссылка анонима: ?key=… — обращение через /api/eco/reports (видно и до модерации)
   const key = useSearchParams()[0].get("key")
   const keyed = useKeyedReport(id, key)
   const plain = useReport(id)
   const plainEvents = useReportEvents(id)
   useReportsRealtime()
   const { isModerator } = useAuth()
-  // Фото непроверенного обращения модератор видит размытыми, пока сам не откроет
   const [revealed, setRevealed] = useState(false)
   const r = key ? (keyed.data?.report ?? plain.data) : plain.data
   const events = { data: key && keyed.data ? keyed.data.events : plainEvents.data }
@@ -152,7 +146,6 @@ export function ReportPage() {
   )
 }
 
-/** Скопировать личную ссылку на обращение (с ключом) */
 function CopyLink() {
   const [copied, setCopied] = useState(false)
   return (
@@ -183,7 +176,6 @@ function BackLink() {
   )
 }
 
-/** Смена статуса модератором: допустимые переходы кнопками, комментарий для автора — в историю */
 function ModerationPanel({
   id,
   status,

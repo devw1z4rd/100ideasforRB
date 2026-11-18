@@ -1,4 +1,4 @@
-// PROTOTYPE — вариант C «Угадай, где чище»: 5 раундов, два города, выбрать, где вчера было легче дышать.
+// PROTOTYPE — variant C "Guess where it's cleaner".
 import { Check, Factory, House, RotateCcw, X } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
@@ -6,7 +6,6 @@ import { mockTowns, verdict, type MockTown } from "./mock"
 import { VerdictFace } from "./shared"
 
 const ROUNDS = 5
-// У промышленных городов — значок завода: подсказка для догадки
 const industrial = new Set(["gomel", "mozyr", "zhlobin", "svetlogorsk"])
 
 const yesterday = (t: MockTown) => t.daily[t.daily.length - 1].pm25

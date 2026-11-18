@@ -2,14 +2,10 @@ import { useSyncExternalStore } from "react"
 import { pb } from "./pb"
 import type { UsersResponse } from "./pocketbase-types"
 
-// Аккаунты и роли (CLAUDE.md §4 M5, §8). Токен хранит authStore SDK (localStorage); роль решает только то,
-// что показать в интерфейсе — права проверяют API rules на сервере.
-
-// Суперпользователь из админки (/_/) — не пользователь сайта
 const readUser = () =>
   pb.authStore.isValid && pb.authStore.record?.collectionName === "users" ? pb.authStore.record : null
-// Снимок кэшируется: authStore.record читает localStorage и каждый раз отдаёт новый объект, а
-// useSyncExternalStore требует один и тот же объект, пока ничего не поменялось (иначе бесконечный цикл)
+// The snapshot is cached: authStore.record returns a new object on every read, and useSyncExternalStore needs
+// a stable one, otherwise it loops forever.
 let current = readUser()
 pb.authStore.onChange(() => {
   current = readUser()
@@ -31,7 +27,6 @@ export function login(email: string, password: string) {
   return pb.collection("users").authWithPassword(email, password)
 }
 
-/** Регистрация и сразу вход. Роль сервер ставит сам (user). */
 export async function register({
   email,
   password,

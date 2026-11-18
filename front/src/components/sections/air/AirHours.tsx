@@ -9,16 +9,9 @@ import { cn } from "@/lib/utils"
 import { levelColor } from "./format"
 
 const text = air.hours
-// Почасовые значения хранятся 90 дней (cron air_daily чистит старшие)
 const HOURLY_DAYS = 90
 const filters: readonly DayFilter[] = ["all", "weekdays", "weekends"]
 
-/**
- * «По часам» (CLAUDE.md §10.6): средний профиль суток выбранного города — часы на 24 часа, у каждого часа
- * столбик-сектор длиной по среднему значению за период и цветом уровня относительно нормы ВОЗ; пунктирное
- * кольцо — норма. Рядом — худшие и лучшие три часа словами и четыре части суток. Будни и выходные — отдельно.
- * Секторы вырастают по кругу, как стрелка (CSS hours-wedge в index.css).
- */
 export function AirHours({
   pointId,
   townName,
@@ -184,7 +177,6 @@ function Extreme({ label, start, mean, norm }: { label: string; start: number; m
   )
 }
 
-// Часы: 0 — сверху, по часовой; секторы от внутреннего кольца наружу
 const SIZE = 440
 const C = SIZE / 2
 const R0 = 78
@@ -203,8 +195,6 @@ function Clock({
   hovered: number | null
   onHover: (hour: number | null) => void
 }) {
-  // Шкала — по данным; норма входит в неё, только если близко. Иначе (NO₂, SO₂ далеко ниже нормы) лепестки
-  // были бы крошечными и ритм суток не читался бы — кольцо нормы тогда не рисуется, о ней говорит легенда.
   const top = Math.max(...profile.map((s) => s.mean ?? 0))
   const normShown = norm <= top * 1.5
   const vmax = (normShown ? Math.max(norm * 1.15, top) : top) * 1.08
@@ -216,7 +206,6 @@ function Clock({
     <div className="mx-auto w-full max-w-[440px]">
       <div className="relative">
         <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full" onPointerLeave={() => onHover(null)}>
-          {/* Дорожки: внешний круг и норма ВОЗ пунктиром */}
           <circle cx={C} cy={C} r={R1} fill="none" stroke="var(--border)" />
           <circle cx={C} cy={C} r={R0} fill="none" stroke="var(--border)" />
 
@@ -251,7 +240,6 @@ function Clock({
             />
           )}
 
-          {/* Подписи часов снаружи */}
           {Array.from({ length: 8 }, (_, k) => k * 3).map((h) => {
             const a = angle(h)
             return (
@@ -271,7 +259,6 @@ function Clock({
             )
           })}
 
-          {/* Стрелка «сейчас» */}
           <g className="river-fade pointer-events-none [animation-delay:1000ms]">
             <line
               x1={C + (R0 - 6) * Math.cos(angle(nowHour))}
@@ -291,7 +278,6 @@ function Clock({
           </g>
         </svg>
 
-        {/* Центр: наведённый час или среднее за сутки */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
           {focus && focus.mean !== null ? (
             <>
@@ -322,7 +308,6 @@ function Clock({
         </div>
       </div>
 
-      {/* Легенда кольца: пунктир — норма, стрелка — текущий час */}
       <p className="mt-2 flex justify-center gap-5 text-[12px] text-muted-foreground">
         {normShown ? (
           <span className="inline-flex items-center gap-1.5">
@@ -341,10 +326,8 @@ function Clock({
   )
 }
 
-/** Угол часа: 0 ч — сверху, по часовой стрелке */
 const angle = (hour: number) => (hour / 24) * Math.PI * 2 - Math.PI / 2
 
-/** Кольцевой сектор часа hour от радиуса r0 до r1 с небольшим зазором между часами */
 function sector(hour: number, r0: number, r1: number): string {
   const gap = 0.012
   const a0 = angle(hour) + gap

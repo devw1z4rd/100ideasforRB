@@ -1,7 +1,5 @@
 import type { ReportsCategoryOptions, ReportsStatusOptions } from "@/api/pocketbase-types"
 
-// Подписи обращений (CLAUDE.md §4 M3, §8): категории и статусы
-
 export const categoryLabels: Record<ReportsCategoryOptions, string> = {
   dump: "Свалка",
   discharge: "Сброс в воду",
@@ -19,10 +17,8 @@ export const statusLabels: Record<ReportsStatusOptions, string> = {
   rejected: "Отклонено",
 }
 
-/** Статусы, которые видит любой посетитель (API rule reports) */
 export const publicStatuses: readonly ReportsStatusOptions[] = ["accepted", "forwarded", "resolved"]
 
-/** Переходы статусов для модератора — как TRANSITIONS в back/pb_hooks/lib/reports.js */
 export const statusTransitions: Record<ReportsStatusOptions, readonly ReportsStatusOptions[]> = {
   new: ["accepted", "rejected"],
   accepted: ["forwarded", "resolved", "rejected"],
@@ -31,7 +27,6 @@ export const statusTransitions: Record<ReportsStatusOptions, readonly ReportsSta
   rejected: [],
 }
 
-/** Что значит статус — простыми словами, для карточки обращения */
 export const statusHints: Record<ReportsStatusOptions, string> = {
   new: "Ждёт проверки модератором. До проверки его видите только вы.",
   accepted: "Модератор проверил обращение — оно видно всем на карте.",
@@ -40,7 +35,6 @@ export const statusHints: Record<ReportsStatusOptions, string> = {
   rejected: "Отклонено модератором — причина в комментарии.",
 }
 
-/** Действие модератора — подпись кнопки перехода в статус */
 export const statusActions: Partial<Record<ReportsStatusOptions, string>> = {
   accepted: "Принять",
   forwarded: "Передать в службу",

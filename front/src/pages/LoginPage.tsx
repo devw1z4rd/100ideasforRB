@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils"
 const input =
   "mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
 
-/** Вход и регистрация по email (CLAUDE.md §4 M5). После входа — туда, откуда пришли (?next=), иначе в профиль. */
 export function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login")
   useDocumentTitle(mode === "login" ? text.login : text.register)

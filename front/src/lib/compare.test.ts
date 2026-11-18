@@ -78,9 +78,8 @@ describe("countReports", () => {
         { district: "a", created: "2026-10-05 10:00:00.000Z", status: "accepted" },
         { district: "a", created: "2026-10-06 10:00:00.000Z", status: "forwarded" },
         { district: "a", created: "2026-10-07 10:00:00.000Z", status: "resolved" },
-        // 22:30 UTC 30 сентября — уже 1 октября по Минску
+        // 22:30 UTC on Sep 30 is already Oct 1 in Minsk
         { district: "b", created: "2026-09-30 22:30:00.000Z", status: "resolved" },
-        // До периода
         { district: "b", created: "2026-09-30 20:00:00.000Z", status: "resolved" },
         { district: "b", created: "2026-10-10 10:00:00.000Z", status: "rejected" },
         { created: "2026-10-10 10:00:00.000Z", status: "accepted" },

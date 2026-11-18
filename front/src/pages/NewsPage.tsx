@@ -8,7 +8,6 @@ import { formatDate, hostname } from "@/lib/format"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 import { cn } from "@/lib/utils"
 
-/** «Новости» (§11): лента из PocketBase, фильтр по рубрике в адресе (?tag=), подгрузка по 12. */
 export function NewsPage() {
   useDocumentTitle(text.title)
   const [params, setParams] = useSearchParams()

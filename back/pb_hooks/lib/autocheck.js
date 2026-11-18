@@ -1,11 +1,6 @@
-// Автопроверка обращений (CLAUDE.md §10.15): мат — с обходами, и оценка правдоподобности для модератора.
-// Чистые функции, без глобалов PocketBase, кроме score(app, …) — их можно проверить и в node (back/tests).
+// Report auto-check: profanity (with common obfuscations) and a plausibility score for moderators. Pure
+// functions except score(app, …), so they can be tested in Node.
 
-// --- Мат ---------------------------------------------------------------------------------------------------
-// Обходы: латиница вместо кириллицы — и по виду (xyй, eбать), и по звучанию (pidor, blyad); цифры вместо букв
-// (p1d0r, 6лядь) или как мусор (pi4dor); точки и пробелы между буквами (п.и.д.о.р, п и д о р); повторы (пииидор).
-
-// Похожие на вид: латиница и цифры, которые выглядят как кириллица
 const VISUAL = {
   a: "а",
   b: "в",
@@ -27,7 +22,6 @@ const VISUAL = {
   "@": "а",
   $: "с",
 };
-// По звучанию: транслит (сначала сочетания)
 const DIGRAPHS = [
   ["sch", "щ"],
   ["shch", "щ"],
@@ -42,7 +36,6 @@ const DIGRAPHS = [
   ["ye", "е"],
   ["ja", "я"],
   ["ju", "ю"],
-  // y после гласной — «й»: huy, nahuy, moy
   ["ay", "ай"],
   ["ey", "ей"],
   ["iy", "ий"],
@@ -85,7 +78,6 @@ const TRANSLIT = {
   $: "с",
 };
 
-// Корни, которые можно искать где угодно (в том числе в склеенном тексте без пробелов)
 const ANYWHERE = [
   "пизд",
   "пезд",
@@ -110,8 +102,7 @@ const ANYWHERE = [
   "уебищ",
   "долбоеб",
 ];
-// Целые слова и начала слов — короткие корни, которые иначе ловили бы обычные слова
-// («колебался», «себе», «употребляет», «мандарин», «сучковатый», «застрахуй»)
+// Short roots match only as whole words or word starts, otherwise they hit ordinary words.
 const WORDS = [
   /^(вы|за|на|у|от|отъ|оть|разъ|разь|съ|сь|до|про|по|под|подъ|пере|недо|при|долбо)?еб(а|у|л|н|ы|и|е|ч|ош)/,
   /^бля(ть|дь|ха)?$/,
@@ -120,7 +111,7 @@ const WORDS = [
   /^манд(а|ы|е|у|ой)$/,
   /^(fuck|cunt|bitch|whore|shit)/,
 ];
-const SAFE = /страху[йея]/; // «застрахуй»
+const SAFE = /страху[йея]/;
 
 const collapse = (s) => s.replace(/(.)\1+/g, "$1");
 
@@ -136,7 +127,6 @@ function translit(s, map, digits) {
   return res;
 }
 
-/** Варианты текста для поиска: по виду и по звучанию, цифры как буквы и как мусор */
 function variants(text) {
   const base = String(text || "")
     .toLowerCase()
@@ -148,7 +138,6 @@ function variants(text) {
   return [...out].map(collapse);
 }
 
-/** Найденный мат (нормализованные корни); пустой массив — чисто */
 function findProfanity(text) {
   const found = new Set();
   for (const v of variants(text)) {
@@ -158,7 +147,6 @@ function findProfanity(text) {
       for (const root of ANYWHERE) if (w.includes(root)) found.add(root);
       for (const re of WORDS) if (re.test(w)) found.add(w);
     }
-    // Буквы через пробелы и точки: «п и д о р», «х.у.й» — склеиваем и ищем только длинные корни
     const glued = collapse(v.replace(/[^a-zа-я]+/g, ""));
     for (const root of ANYWHERE)
       if (root.length >= 4 && glued.includes(root) && !SAFE.test(glued))
@@ -167,9 +155,6 @@ function findProfanity(text) {
   return [...found];
 }
 
-// --- Правдоподобность ---------------------------------------------------------------------------------------
-
-// Слова, которые обычно стоят в описании такой проблемы
 const CATEGORY_WORDS = {
   dump: [
     "мусор",
@@ -240,7 +225,6 @@ const CATEGORY_WORDS = {
 };
 const KEYBOARD_MASH = /(йцук|цуке|фыва|ывап|ячсм|qwer|asdf|zxcv|ролд|олдж)/;
 
-/** Похоже на набор букв: нет гласных, длинные согласные подряд, клавиатурные ряды, одно и то же слово */
 function looksLikeGibberish(text) {
   const t = String(text || "").toLowerCase();
   const letters = t.replace(/[^a-zа-яё]/g, "");
@@ -261,10 +245,6 @@ function looksLikeGibberish(text) {
 
 const clamp = (n) => Math.max(5, Math.min(95, Math.round(n)));
 
-/**
- * Насколько обращение похоже на настоящее, 5–95 %, с причинами — подсказка модератору, не решение.
- * Не трогает базу, кроме чтения соседних обращений и истории автора.
- */
 function score(app, { id, category, description, photos, lat, lon, authorId }) {
   const reasons = [];
   const add = (delta, text) => reasons.push({ delta, text });
@@ -284,7 +264,6 @@ function score(app, { id, category, description, photos, lat, lon, authorId }) {
   else if (desc.length >= 20 && words.length)
     add(-5, "В описании нет слов о такой проблеме");
 
-  // Рядом уже сообщали о том же (500 м, 60 дней) — подтверждает
   try {
     const since = new Date(Date.now() - 60 * 86400e3)
       .toISOString()
@@ -300,7 +279,7 @@ function score(app, { id, category, description, photos, lat, lon, authorId }) {
     );
     if (near.length) add(10, `Рядом уже сообщали: ${near.length}`);
   } catch (_) {
-    // geoDistance нет в старой версии PocketBase — без этого признака
+    // geoDistance is missing in older PocketBase versions — skip this signal.
   }
 
   if (authorId) {

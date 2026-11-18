@@ -29,11 +29,9 @@ import { CoverFront, CoverShade, Endpaper, PageEdges, seasonStyle } from "./Cove
 import { Leaf } from "./Leaf"
 
 const r = text.report
-// Строк точечного графика на страницу: больше — глава продолжается на следующей странице
 const ROWS_PER_PAGE = 12
 
 type ChapterKey = keyof typeof r.chapters
-/** Страница разворота: глава (у длинной главы — несколько частей), левая и правая страницы */
 type Page = {
   chapter: ChapterKey
   title: string
@@ -43,14 +41,12 @@ type Page = {
   right: ReactNode
 }
 
-/** Данные квартала для книжки */
 export function buildReport(rows: readonly Reading[], quarter: string): ReportData & { sourceUrl?: string } {
   const label = quarterLabel(quarter)
   return {
     label,
     exceedances: exceedances(rows, quarter),
     sections: sections(rows, quarter),
-    // Сначала водность рек за квартал, потом отдельные события у городов
     hydrology: [...byIndicator(rows, quarter, "hydrology")].sort(
       (a, b) => Number(!!a.section) - Number(!!b.section),
     ),
@@ -59,18 +55,11 @@ export function buildReport(rows: readonly Reading[], quarter: string): ReportDa
   }
 }
 
-// enter — на месте книжки на полке (прозрачная), fly — перелёт в центр, closed — закрыта в центре,
-// opening / open — обложка открывается / открыта, unread — гаснет текст левой страницы перед закрытием,
-// closing — обложка закрывается, leave — перелёт на полку, land — перетекание в книжку полки
+// Phases: enter — at the shelf book's spot (transparent); fly — flight to the center; closed — closed in the
+// center; opening / open — the cover opens / is open; unread — left page text fades before closing; closing —
+// the cover closes; leave — flight back to the shelf; land — hand-off to the shelf book.
 type Phase = "enter" | "fly" | "closed" | "opening" | "open" | "unread" | "closing" | "leave" | "land"
 
-/**
- * Книжка квартального обзора в модальном окне (§10.8). Десктоп: книжка вылетает с полки (origin — её кнопка)
- * в центр, страница сзади размывается; обложка переворачивается влево и становится левой страницей, книжка
- * съезжает к центру разворота. Закрытие — в обратном порядке, книжка возвращается на полку. Смена страницы —
- * лист с изгибом (Leaf). ← → листают, Esc и щелчок мимо книжки закрывают.
- * Телефон и планшет: окно во весь экран, страницы друг под другом, без перелёта.
- */
 export function ReportDialog({
   rows,
   quarter,
@@ -80,9 +69,7 @@ export function ReportDialog({
 }: {
   rows: readonly Reading[]
   quarter: string
-  /** Кнопка книжки на полке: откуда вылетает и куда возвращается */
   origin: RefObject<HTMLElement | null>
-  /** Книжка долетела до полки: полка проявляет свою книжку, летевшая гаснет */
   onLand: () => void
   onDone: () => void
 }) {
@@ -91,21 +78,19 @@ export function ReportDialog({
   const [open, setOpen] = useState(true)
   const [phase, setPhase] = useState<Phase>(desktop ? "enter" : "open")
   const [index, setIndex] = useState(0)
-  // Перелистывание: с какой страницы на какую. Пока лист летит, страницы под ним показывают нужные стороны
   const [turn, setTurn] = useState<{ id: number; dir: "next" | "prev"; from: number; to: number } | null>(
     null,
   )
-  // После первого перелистывания страницы появляются уже «напечатанными» — без анимации строк
   const [turned, setTurned] = useState(false)
   const [river, setRiver] = useState<string | null>(null)
-  // Размер книжки на полке (без наведения): обложка в окне — та же вёрстка, увеличенная, поэтому в точке взлёта
-  // и посадки летящая книжка совпадает с книжкой полки и подмена не видна
+  // Shelf book size (without hover): the dialog cover is the same layout scaled up, so at takeoff and landing
+  // the flying book matches the shelf book pixel for pixel.
   const [shelf] = useState(() => {
     const el = origin.current
     return el && el.offsetWidth ? { w: el.offsetWidth, h: el.offsetHeight } : null
   })
-  // Книжка на полке под курсором приоткрыта: летящая стартует с той же обложкой (угол — из её transform,
-  // в том числе посреди перехода) и открывается дальше с него
+  // A hovered shelf book is ajar: the flying book starts at the same cover angle (read from its transform,
+  // even mid-transition).
   const [ajar] = useState(() => coverAngle(origin.current?.querySelector("[data-book-cover]")))
   const size = useBookSize(shelf ? shelf.h / shelf.w : 4 / 3)
   const latest = useMemo(() => quarters(rows).at(-1), [rows])
@@ -113,7 +98,6 @@ export function ReportDialog({
   const bookRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
-  // Страницы: длинный список отклонений делится на части
   const rivers = [...new Set(data.exceedances.map((e) => e.river))]
   const shown = river ? data.exceedances.filter((e) => e.river === river) : data.exceedances
   const scale = ratioScale(data.exceedances[0]?.ratio ?? 1)
@@ -162,7 +146,6 @@ export function ReportDialog({
     },
   ]
   const at = Math.min(index, pages.length - 1)
-  // Оглавление — главы, у каждой первая страница
   const toc = pages.flatMap((p, i) =>
     pages.findIndex((q) => q.chapter === p.chapter) === i ? [{ ...p, at: i }] : [],
   )
@@ -172,17 +155,13 @@ export function ReportDialog({
   const go = (to: number) => {
     if (to < 0 || to >= pages.length || to === at) return
     if (desktop) {
-      // Лист ещё летит — следующий после него
       if (turn) return
       setTurned(true)
       setTurn({ id: Date.now(), dir: to > at ? "next" : "prev", from: at, to })
-    }
-    // Телефон: страницы друг под другом — новую главу показываем с начала
-    else contentRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+    } else contentRef.current?.scrollTo({ top: 0, behavior: "smooth" })
     setIndex(to)
   }
 
-  // К этому моменту книжка полки уже видна, а летевшая погасла — окно убирается без мерцания
   const finish = useCallback(() => {
     setOpen(false)
     setTimeout(onDone, 0)
@@ -199,26 +178,22 @@ export function ReportDialog({
     else if (phase === "enter" || phase === "fly" || phase === "closed") setPhase("leave")
   }
 
-  // Перелёт с полки: первый кадр — на месте книжки на полке, со следующего она летит в центр и уже раскрывается
-  // в полёте (без остановки закрытой в центре)
   useEffect(() => {
     if (phase !== "enter") return
     let id = requestAnimationFrame(() => (id = requestAnimationFrame(() => setPhase("opening"))))
     return () => cancelAnimationFrame(id)
   }, [phase])
-  // Закрытая книжка в центре — короткая пауза и открываем
   useEffect(() => {
     if (phase !== "closed") return
     const t = setTimeout(() => setPhase("opening"), 120)
     return () => clearTimeout(t)
   }, [phase])
-  // Перед закрытием текст левой страницы гаснет, потом обложка закрывается
   useEffect(() => {
     if (phase !== "unread") return
     const t = setTimeout(() => setPhase("closing"), 200)
     return () => clearTimeout(t)
   }, [phase])
-  // Подстраховка, если transitionend не придёт (вкладка в фоне, reduced motion)
+  // Fallback in case transitionend never fires (background tab, reduced motion).
   useEffect(() => {
     const next: Partial<Record<Phase, () => void>> = {
       fly: () => setPhase("closed"),
@@ -246,7 +221,6 @@ export function ReportDialog({
 
   const leftPage = (i: number, real: boolean) => (
     <LeftPage
-      // Гаснет только при смене главы: между частями одной главы текст слева тот же
       turning={
         real && turn && pages[clamp(turn.from)].chapter !== pages[clamp(turn.to)].chapter ? turn : null
       }
@@ -271,16 +245,14 @@ export function ReportDialog({
       onClose={requestClose}
     />
   )
-  // Как в книге: вперёд слева остаётся старая страница, пока на неё не ляжет лист с новой (новое не появляется
-  // раньше листа), справа под листом уже новая — лист её открывает. Назад — наоборот: слева под листом уже
-  // новая, справа старая, пока на неё не ляжет лист. Номер главы — только слева, он меняется один раз: когда
-  // лист ложится (вперёд) или открывает страницу (назад). Лист ложится на такую же страницу — исчезновение не видно
+  // Like a real book: going forward, the old left page stays until the leaf lands on it, and the new right
+  // page is already under the leaf; backwards is mirrored. The leaf lands on an identical page, so its
+  // removal is invisible.
   const leftAt = turn ? clamp(turn.dir === "next" ? turn.from : turn.to) : at
   const rightAt = turn ? clamp(turn.dir === "next" ? turn.to : turn.from) : at
   const left = leftPage(leftAt, true)
   const right = rightPage(rightAt)
 
-  // Положение книжки: на полке (перелёт), закрыта в центре (обложка по центру экрана) или раскрыта
   const { P, H } = size
   const flipped = phase === "opening" || phase === "open" || phase === "unread"
   const bookTransform = (): string | undefined => {
@@ -295,13 +267,11 @@ export function ReportDialog({
     }
     return flipped ? "translateX(0)" : `translateX(${-P / 2}px)`
   }
-  // Перелёт с полки и на полку — с перетеканием: книжки на полке и в полёте свёрстаны по-разному
   const bookTransition =
     phase === "fly"
       ? "transform 620ms cubic-bezier(0.2, 0.8, 0.2, 1)"
       : phase === "opening"
-        ? // Полёт чуть короче оборота обложки (1100 мс): книжка прилетает, обложка дораскрывается на месте
-          "transform 900ms cubic-bezier(0.3, 0.7, 0.2, 1), perspective-origin 900ms cubic-bezier(0.3, 0.7, 0.2, 1)"
+        ? "transform 900ms cubic-bezier(0.3, 0.7, 0.2, 1), perspective-origin 900ms cubic-bezier(0.3, 0.7, 0.2, 1)"
         : phase === "closing"
           ? "transform 1100ms cubic-bezier(0.45, 0.05, 0.2, 1), perspective-origin 1100ms cubic-bezier(0.45, 0.05, 0.2, 1)"
           : phase === "leave"
@@ -310,9 +280,7 @@ export function ReportDialog({
               ? "opacity 160ms ease-in"
               : "none"
   const leftVisible = phase === "open" || phase === "unread"
-  // Правая страница до раскрытия — только бумага: её видно в щель приоткрытой обложки, текст появляется с раскрытием
   const paperOnly = phase !== "opening" && !leftVisible && phase !== "closing"
-  // Обложка: раскрыта; приоткрыта, как была на полке (пока летит и ждёт в центре); закрыта
   const coverTurn = flipped ? -180 : phase === "enter" || phase === "fly" || phase === "closed" ? ajar : 0
 
   return (
@@ -331,13 +299,13 @@ export function ReportDialog({
             e.preventDefault()
             bookRef.current?.focus({ preventScroll: true })
           }}
-          // Фокус на книжку полки возвращает WaterShelf, когда она снова видна (скрытая фокус не примет)
+          // WaterShelf returns focus to the shelf book once it's visible again (a hidden element can't take
+          // focus).
           onCloseAutoFocus={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => {
             e.preventDefault()
             requestClose()
           }}
-          // Щелчок мимо книжки — закрыть
           onPointerDown={(e) => e.target === e.currentTarget && requestClose()}
           onKeyDown={onKeyDown}
           style={seasonStyle(quarter)}
@@ -348,7 +316,6 @@ export function ReportDialog({
         >
           <DialogPrimitive.Title className="sr-only">{r.dialogTitle(data.label)}</DialogPrimitive.Title>
 
-          {/* Телефон и планшет: окно прокручивается, кнопка закрытия всегда в углу */}
           {!desktop && (
             <div className="pointer-events-none sticky top-0 z-20 flex h-0 justify-end">
               <button
@@ -379,21 +346,15 @@ export function ReportDialog({
                 transformOrigin: "75% 50%",
                 transform: bookTransform(),
                 transition: bookTransition,
-                // Глаз — в центре экрана: над закрытой книжкой (центр правой половины), над раскрытой — над корешком.
-                // Перспектива — 4 ширины страницы, как у книжки на полке (400cqw): приоткрытая обложка совпадает
                 perspective: 4 * P,
                 perspectiveOrigin: flipped ? "50% 50%" : "75% 50%",
-                // Посадка: книжка полки уже видна под летящей (они одинаковые) — летящая просто гаснет
                 opacity: phase === "land" ? 0 : 1,
               }}
             >
-              {/* Левая половина — изнанка обложки, когда книжка раскрыта */}
               <div className="relative min-w-0">
-                {/* Фон страницы — сразу (он такой же, как изнанка обложки под ним), проявляется только текст */}
                 {leftVisible && <div className="absolute inset-0">{left}</div>}
               </div>
 
-              {/* Правая страница — бумага; под обложкой — стопка листов */}
               <div className="relative min-w-0 [perspective-origin:0%_50%] [perspective:2600px]">
                 <PageEdges />
                 <div
@@ -406,9 +367,7 @@ export function ReportDialog({
                     className="transition-opacity duration-500"
                     style={{ opacity: paperOnly && coverTurn < 0 ? 1 : 0 }}
                   />
-                  {/* Текст скрыт, но смонтирован: его анимации появления отыгрывают, пока книжка летит */}
                   <div className={cn("absolute inset-0", paperOnly && "invisible")}>
-                    {/* Тень корешка */}
                     <span className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-[linear-gradient(90deg,rgb(0_0_0/0.12),transparent)]" />
                     {right}
                   </div>
@@ -418,21 +377,18 @@ export function ReportDialog({
                     key={turn.id}
                     dir={turn.dir}
                     width={P}
-                    // Лицо — правая страница: вперёд та, с которой уходим, назад — та, на которую приходим
                     front={
                       <div className="relative h-full bg-book-paper">
                         <span className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-[linear-gradient(90deg,rgb(0_0_0/0.12),transparent)]" />
                         {rightPage(clamp(turn.dir === "next" ? turn.from : turn.to))}
                       </div>
                     }
-                    // Изнанка — левая страница: вперёд новая (её лист и приносит), назад — та, с которой уходим
                     back={leftPage(clamp(turn.dir === "next" ? turn.to : turn.from), false)}
                     onDone={() => setTurn(null)}
                   />
                 )}
               </div>
 
-              {/* Обложка: лицо — обложка обзора, изнанка — форзац, он ложится на левую половину */}
               <div
                 aria-hidden="true"
                 onTransitionEnd={(e) => {
@@ -456,7 +412,6 @@ export function ReportDialog({
               >
                 <span className="absolute inset-0 [backface-visibility:hidden]">
                   {shelf ? (
-                    // Вёрстка книжки полки, увеличенная до страницы окна
                     <span
                       className="absolute top-0 left-0 origin-top-left"
                       style={{ width: shelf.w, height: shelf.h, transform: `scale(${P / shelf.w})` }}
@@ -499,10 +454,6 @@ export function ReportDialog({
   )
 }
 
-/**
- * Размер страницы: почти вся высота окна (до 920 px) и пропорции книжки на полке (ratio = высота / ширина),
- * разворот — с полями по бокам. На ноутбуке 1366 × 768 — около 528 × 704, на Full HD — 672 × 896.
- */
 function useBookSize(ratio: number) {
   const measure = () => {
     const maxH = Math.min(920, window.innerHeight - 64)
@@ -518,7 +469,6 @@ function useBookSize(ratio: number) {
   return size
 }
 
-/** Левая страница: глава, пояснение, элементы главы и оглавление внизу */
 function LeftPage({
   turning,
   visible,
@@ -530,22 +480,17 @@ function LeftPage({
   animate,
   onGo,
 }: {
-  /** Лист над страницей: текст гаснет (вперёд) или проявляется после него (назад) — один номер главы за раз */
   turning: { id: number; dir: "next" | "prev" } | null
-  /** Текст виден: проявляется после появления страницы и гаснет перед закрытием книжки */
   visible: boolean
   page: Page
   toc: ReadonlyArray<Page & { at: number }>
   chapterNo: number
   label: string
-  /** Только у настоящей страницы: на неё переходит фокус. У отпечатка на листе — нет */
   headingRef?: RefObject<HTMLHeadingElement | null>
-  /** Смена главы — проявлением (телефон). На десктопе главу приносит лист: проявление после него мигнуло бы */
   animate: boolean
   onGo: (to: number) => void
 }) {
   const isStatic = useContext(StaticPage)
-  // Первый кадр — прозрачный текст, следующий — видимый: переход opacity проявляет его
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true))
@@ -555,7 +500,6 @@ function LeftPage({
     <div className="relative flex h-full flex-col overflow-hidden bg-book-cover px-7 py-7 text-book-cover-ink lg:rounded-l-xl lg:px-10 lg:py-9">
       <Endpaper />
       <div
-        // Новый ключ на каждое перелистывание — анимация запускается заново
         key={turning?.id ?? "still"}
         className={cn(
           "relative flex min-h-0 flex-1 flex-col",
@@ -592,7 +536,6 @@ function LeftPage({
           {page.left && <div className="mt-5">{page.left}</div>}
         </div>
 
-        {/* Оглавление — как в книге: номер, глава; текущая подсвечена */}
         <nav aria-label={r.contents} className="relative mt-8 lg:mt-auto">
           <ol className="border-t border-book-cover-ink/20">
             {toc.map((c, i) => (
@@ -625,7 +568,6 @@ function LeftPage({
   )
 }
 
-/** Правая страница: закрыть, содержимое, листание и номер страницы. Номер главы — только на левой */
 function RightPage({
   page,
   at,
@@ -638,9 +580,7 @@ function RightPage({
   page: Page
   at: number
   total: number
-  /** Смена страницы — проявлением (телефон); на десктопе страницу открывает лист */
   animate: boolean
-  /** Без анимации строк: страница открыта листанием и уже «напечатана» */
   still: boolean
   onGo: (to: number) => void
   onClose: () => void
@@ -654,8 +594,6 @@ function RightPage({
             type="button"
             aria-label={r.close}
             onClick={onClose}
-            // Телефон и планшет: страницы идут друг под другом, и кнопка оказалась бы посреди экрана —
-            // там её заменяет кнопка, закреплённая в углу окна (ReportDialog)
             className="grid size-8 cursor-pointer place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring max-lg:hidden"
           >
             <X aria-hidden="true" className="size-4" />
@@ -702,7 +640,6 @@ function RightPage({
   )
 }
 
-/** Фильтр по рекам в главе «Где вода хуже нормы» — на левой странице, в цветах обложки */
 function RiverChips({
   rivers,
   value,
@@ -735,7 +672,6 @@ function RiverChips({
   )
 }
 
-/** Угол поворота обложки книжки на полке вокруг корешка (rotateY), градусы; 0 — закрыта или не найдена */
 function coverAngle(el: Element | null | undefined): number {
   if (!el) return 0
   const t = getComputedStyle(el).transform

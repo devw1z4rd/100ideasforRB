@@ -1,11 +1,10 @@
-// PROTOTYPE — плавающая панель переключения вариантов прототипа. Только в dev-сборке.
+// PROTOTYPE — floating variant switcher, dev builds only.
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect } from "react"
 import { useSearchParams } from "react-router"
 
 export type PrototypeVariant = { key: string; name: string }
 
-/** Текущий вариант из `?variant=`; по умолчанию — первый */
 export function usePrototypeVariant(variants: readonly PrototypeVariant[]) {
   const [params] = useSearchParams()
   const key = params.get("variant")

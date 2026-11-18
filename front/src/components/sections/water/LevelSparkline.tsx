@@ -9,18 +9,9 @@ import { cn } from "@/lib/utils"
 import { formatDay } from "../air/format"
 
 const text = water.levels
-// Отступы графика, px: сверху и справа — место под точку «сейчас»
 const PAD = { top: 6, right: 6, bottom: 0, left: 0 }
-/** Ниже такой высоты, px, слово зоны не помещается внутрь — ставится по другую сторону границы */
 const LABEL_ROOM = 14
 
-/**
- * Уровень за 30 дней мини-графиком (bklit AreaSparkline): вода — заливкой под линией, за ней — зоны порогов поста
- * цветом статуса со словом прямо на зоне («мелко», «пойма», «опасно»), поэтому без легенды видно, где уровень сейчас.
- * Точка «сейчас» — цветом статуса. Наведение — дата и уровень дня в подписи под графиком.
- * Карточки постов в разделе «Вода» и подсказка поста на карте. Вода «наливается» (анимация bklit при появлении),
- * когда график показался на экране, а не при загрузке страницы — иначе к приходу в раздел всё уже стояло.
- */
 export function LevelSparkline({
   summary,
   height = 56,
@@ -67,7 +58,6 @@ export function LevelSparkline({
         {seen && !hover && (
           <span
             aria-hidden="true"
-            // Точка «сейчас» — когда линия дорисовалась (у bklit появление ~0,9 с)
             className="pointer-events-none absolute size-2 -translate-1/2 animate-in rounded-full ring-2 ring-background delay-700 duration-300 fill-mode-both zoom-in-50 fade-in"
             style={{
               left: `calc(100% - ${PAD.right}px)`,
@@ -93,14 +83,11 @@ export function LevelSparkline({
   )
 }
 
-/** Зона порога: подкрашена цветом статуса, граница-порог пунктиром, слово — внутри зоны у границы (или снаружи, если тесно) */
 function Zone({ zone, top, bottom }: { zone: LevelZone; top: number; bottom: number }) {
   const color = riverColor[zone.kind]
   const below = zone.kind === "low"
   const room = bottom - top >= LABEL_ROOM
-  // Граница-порог: у «мелко» — сверху зоны, у «поймы» и «опасно» — снизу
   const edge = below ? top : bottom
-  // Слово под границей: у «мелко» — когда помещается внутрь, у «поймы» и «опасно» — когда не помещается
   const labelBelow = below === room
   return (
     <>

@@ -30,7 +30,6 @@ import { clearDrawn, INTRO_MIN_ZOOM, introCamera, playIntro, setDrawn, type Intr
 import type { MapPlace, MapReport, MapTown } from "./types"
 import { Tooltip } from "@/components/ui/tooltip"
 
-// Окно поста (Radix Dialog, тексты, график) нужно только по щелчку — отдельным чанком, не в коде карты
 const RiverPostDialog = lazy(() => import("./RiverPostDialog").then((m) => ({ default: m.RiverPostDialog })))
 
 export type MapLayersShown = {
@@ -46,30 +45,22 @@ type Props = {
   selectedId: string | null
   onSelectTown: (id: string) => void
   districts: readonly DistrictWithGeometry[]
-  /** Район → город с точкой воздуха (у Гомельского района — сам Гомель) */
   districtTown: ReadonlyMap<string, string>
   oblast: GeoCollection<OblastFeature> | undefined
   rivers: GeoCollection<LineFeature> | undefined
-  /** Границы стран и областей вокруг (Natural Earth) */
   borders: GeoCollection<BorderFeature> | undefined
   reports: readonly MapReport[]
   places: readonly MapPlace[]
-  /** Участки рек из последнего обзора Белгидромета (§10.8) */
   waterSections: readonly WaterSection[]
-  /** «II квартал 2026» — подпись источника во всплывашке */
   waterQuarter: string
-  /** Посты уровня воды Белгидромета (§10.8) */
   levelPosts: readonly PostSummary[]
   shown: MapLayersShown
-  /** Отступы при «Вся область»: на десктопе слева и справа лежат панели */
   padding: { top: number; right: number; bottom: number; left: number }
-  /** Без сцены старта, сразу итоговый кадр: на месте карты уже стояла заглушка MapPreview (медленная сеть) */
   skipIntro?: boolean
-  /** Сцена старта дошла до панелей (или её нет при reduced motion) — панели вокруг заезжают */
   onReady?: () => void
 }
 
-// Цвета карты — токены tokens.css (MapLibre не понимает var(), читаем значения)
+// MapLibre doesn't understand var(): read the token values.
 function readColors() {
   const css = getComputedStyle(document.documentElement)
   const v = (name: string) => css.getPropertyValue(name).trim()
@@ -93,13 +84,9 @@ function readColors() {
 
 type MapColors = ReturnType<typeof readColors>
 
-// Детали при приближении — векторные тайлы OpenFreeMap (OpenMapTiles, данные OSM): лес, водоёмы, дороги,
-// застройка и подписи деревень. С этого масштаба и ближе: на обзоре области тайлы не грузятся вовсе.
-// Нет интернета — карта остаётся своей, из GeoJSON, просто без этих деталей.
 const DETAIL_FROM_ZOOM = 8
-/** Вторая волна маркеров (всё, кроме городов) — через столько мс после первой */
 const REST_WAVE_MS = 120
-/** Слои HTML-маркеров: волны монтируются в другом порядке, поэтому наложение задано явно */
+/** HTML marker layers: the waves mount in a different order, so stacking is set explicitly. */
 const Z = { labels: 1, places: 2, water: 3, posts: 4, towns: 5, reports: 6 } as const
 const OPENFREEMAP = "https://tiles.openfreemap.org/planet"
 const GLYPHS = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf"
@@ -115,8 +102,7 @@ const fadeIn = (from: number): ExpressionSpecification => [
 
 function detailLayers(c: MapColors): StyleSpecification["layers"] {
   const ofm = { source: "ofm", minzoom: DETAIL_FROM_ZOOM }
-  // Толщина растёт с масштабом; base — множитель для класса дороги (выражение-match допустимо внутри стопов,
-  // а два зависящих от масштаба выражения в одном свойстве MapLibre не принимает)
+  // match is allowed inside zoom stops, but MapLibre rejects two zoom-dependent expressions in one property.
   const roadWidth = (base: number | ExpressionSpecification): ExpressionSpecification => [
     "interpolate",
     ["exponential", 1.4],
@@ -148,7 +134,6 @@ function detailLayers(c: MapColors): StyleSpecification["layers"] {
       ...ofm,
       minzoom: 10,
       "source-layer": "waterway",
-      // Русла — цветом наших рек: когда реки Natural Earth гаснут, реки остаются того же цвета
       paint: {
         "line-color": c.river,
         "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 14, 1.6],
@@ -198,23 +183,19 @@ function detailLayers(c: MapColors): StyleSpecification["layers"] {
   ] as StyleSpecification["layers"]
 }
 
-// MapLibre 6 ищет воркер рядом со своим модулем (import.meta.url), а после сборки Vite его там нет —
-// отдаём воркер отдельным ассетом и говорим, где он
+// MapLibre 6 looks for its worker next to its module (import.meta.url), which isn't there after the Vite
+// build — ship the worker as a separate asset.
 setWorkerUrl(workerUrl)
 
 const DISTRICTS_FROM_ZOOM = 8
 const MIN_ZOOM = 5.3
-/** С этого масштаба на телефоне появляются посты, участки рек, места и обращения (до него — только города) */
 const EXTRAS_FROM_ZOOM = 6.3
 const MAX_ZOOM = 14
-/** Шаг двойного щелчка: два уровня — в 4 раза ближе за раз */
 const ZOOM_STEP = 2
-/** Двойной щелчок по городу — сразу улицы и кварталы */
 const TOWN_ZOOM = 12
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-/** Смесь двух цветов #rrggbb (t — доля второго): подсветка области на старте — заливка с оттенком рек */
 function mixHex(a: string, b: string, t: number): string {
   const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
   if (!/^#[0-9a-f]{6}$/i.test(a) || !/^#[0-9a-f]{6}$/i.test(b)) return a
@@ -228,7 +209,6 @@ function mixHex(a: string, b: string, t: number): string {
     .join("")}`
 }
 
-// Подсказка над маркером: у поста уровня маркер выше точки (треугольник над ней), у обращения — крупнее
 const TIP_OFFSET: Record<MapTip["kind"], number> = { report: 16, water: 14, level: 22, place: 12 }
 
 function tipAt(tip: MapTip): { lon: number; lat: number } {
@@ -237,11 +217,6 @@ function tipAt(tip: MapTip): { lon: number; lat: number } {
   return tip.item
 }
 
-/**
- * Одна подсказка на карте вместо попапов «по клику»: наведение мыши показывает, уход — прячет (с задержкой,
- * чтобы курсор успел перейти на саму подсказку к ссылке), фокус с клавиатуры — показывает, касание —
- * показывает до касания по карте. Новая подсказка заменяет старую, Esc закрывает.
- */
 function useMapTip() {
   const [tip, setTip] = useState<MapTip | null>(null)
   const timer = useRef(0)
@@ -274,7 +249,8 @@ function useMapTip() {
     onFocus: () => openTip(next),
     onBlur: closeTipSoon,
     onClick: (e: React.MouseEvent) => {
-      // Не даём клику дойти до карты: она закрыла бы подсказку и выбрала район под маркером
+      // Keep the click from reaching the map: it would close the tip and select the district under the
+      // marker.
       e.stopPropagation()
       openTip(next)
     },
@@ -283,7 +259,6 @@ function useMapTip() {
   return { tip, tipHandlers, closeTip, keepTip, closeTipSoon }
 }
 
-/** Размах внешнего кольца по долготе и широте — чтобы найти, какой из районов объемлет остальные */
 function ringSpan(geometry: NonNullable<DistrictWithGeometry["geometry"]>): number {
   const outer =
     geometry.type === "Polygon" ? [geometry.coordinates[0]] : geometry.coordinates.map((p) => p[0])
@@ -292,10 +267,6 @@ function ringSpan(geometry: NonNullable<DistrictWithGeometry["geometry"]>): numb
   return Math.max(...lons) - Math.min(...lons) + Math.max(...lats) - Math.min(...lats)
 }
 
-/**
- * Карта области: свой стиль из GeoJSON — область, районы, реки, границы соседей; работает офлайн.
- * При приближении добавляются детали OpenFreeMap (лес, вода, дороги, деревни), если есть интернет.
- */
 function MapView({
   towns,
   selectedId,
@@ -317,27 +288,24 @@ function MapView({
 }: Props) {
   const mapRef = useRef<MapRef>(null)
   const rootRef = useRef<HTMLDivElement>(null)
-  // Сцена старта (components/map/intro.ts): такт 0 — готовится, 4 — закончилась. При reduced motion её нет
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- решается один раз, при создании карты
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- decided once, when the map is created
   const reduce = useMemo(() => reducedMotion() || Boolean(skipIntro), [])
   const [stage, setStage] = useState<IntroStage>(reduce ? 4 : 0)
   const cancelIntro = useRef<(() => void) | null>(null)
   const paddingRef = useRef(padding)
   paddingRef.current = padding
   const colors = useMemo(() => readColors(), [])
-  // Карта загружена — для линейки масштаба: она сама слушает движение карты (ScaleBar), а не через состояние
-  // MapView — иначе вся карта перерисовывалась бы React на каждом кадре пролёта
+  // ScaleBar listens to the map itself: keeping the scale in MapView state re-rendered the whole map every
+  // frame.
   const [mapInstance, setMapInstance] = useState<MapLibreMap | null>(null)
   const stageRef = useRef(stage)
   stageRef.current = stage
   const [hoverDistrict, setHoverDistrict] = useState<string | null>(null)
-  // Пришёл хоть один тайл OpenFreeMap — при приближении настоящие русла есть, грубые реки Natural Earth можно гасить
   const [detailLoaded, setDetailLoaded] = useState(false)
   const { tip, tipHandlers, closeTip, keepTip, closeTipSoon } = useMapTip()
-  // Окно поста уровня: из подсказки («развернуть») или щелчком по посту; данные — свежие из levelPosts
   const [dialogPostId, setDialogPostId] = useState<string | null>(null)
   const dialogPost = levelPosts.find((p) => p.post.id === dialogPostId) ?? null
-  // Окно монтируется с первого открытия и остаётся: иначе не отыграло бы закрытие
+  // Stays mounted after the first open, otherwise the close animation wouldn't play.
   const [dialogUsed, setDialogUsed] = useState(false)
   if (dialogPost && !dialogUsed) setDialogUsed(true)
   const openPostDialog = (postId: string) => {
@@ -358,8 +326,7 @@ function MapView({
     [colors],
   )
 
-  // Районы с одним городом воздуха — один контур: Гомель и Гомельский район показывают данные одной точки,
-  // поэтому город внутри района не выделяется — «дырка» района заливается, сам город не рисуется
+  // Gomel and Gomel district share one air point: fill the district's hole and don't draw the city.
   const districtData = useMemo(() => {
     const groups = new Map<string, DistrictWithGeometry[]>()
     for (const d of districts) {
@@ -370,7 +337,6 @@ function MapView({
     return {
       type: "FeatureCollection" as const,
       features: [...groups.values()].map((group) => {
-        // Главный — район, в «дырках» которого лежат остальные: у него внешнее кольцо больше всех
         const main = group.reduce((a, b) => (ringSpan(a.geometry!) >= ringSpan(b.geometry!) ? a : b))
         return {
           type: "Feature" as const,
@@ -381,7 +347,6 @@ function MapView({
     }
   }, [districts, districtTown])
 
-  // Район выбранного города: на карте он подсвечен так же, как район под курсором
   const selectedDistrict = districtData.features.find((f) => districtTown.get(f.properties.id) === selectedId)
     ?.properties.id
 
@@ -408,23 +373,20 @@ function MapView({
   const fitOblast = () =>
     mapRef.current?.fitBounds(text.bounds, { padding, duration: reducedMotion() ? 0 : 600 })
 
-  // Отступы зависят от ширины (панели на десктопе) — при их смене заново вписываем область. Только при смене
-  // отступов, не при окончании сцены (повторное вписывание в конце сдвигало карту); пока идёт сцена, камерой
-  // управляет она
+  // Refit only when paddings change, not when the intro ends (refitting then shifted the map); during the
+  // intro the camera belongs to it.
   const introPadding = useRef(padding)
   useEffect(() => {
     if (stageRef.current < 4) return
     mapRef.current?.fitBounds(text.bounds, { padding, duration: 0 })
   }, [padding])
 
-  // Сцена закончилась: линии без градиентов, ограничения камеры — как обычно
   useEffect(() => {
     const map = mapRef.current?.getMap()
     if (stage < 4 || !map || reduce) return
     clearDrawn(map, { ...drawLayers.outline, ...drawLayers.rivers })
     map.setMinZoom(MIN_ZOOM)
     map.setMaxBounds(text.maxBounds)
-    // Отступы сменились посреди сцены (повернули экран) — вписываем заново
     if (introPadding.current !== paddingRef.current) {
       map.fitBounds(text.bounds, { padding: paddingRef.current, duration: 0 })
     }
@@ -432,7 +394,6 @@ function MapView({
   }, [stage])
   useEffect(() => () => cancelIntro.current?.(), [])
 
-  // Граница области линиями — для «рисования» на старте (у полигона нет line-progress)
   const oblastLines = useMemo(
     () =>
       oblast && {
@@ -451,20 +412,17 @@ function MapView({
     outline: { "oblast-draw": colors.outline },
     rivers: { "rivers-major": colors.river, "rivers-minor": colors.river },
   }
-  // Города «выстреливают» волной от Гомеля: чем дальше, тем позже (до ~0,7 с)
   const origin = towns.find((t) => t.name === "Гомель") ?? towns[0]
   const reach = Math.max(1e-6, ...towns.map((t) => Math.hypot(t.lon - origin.lon, t.lat - origin.lat)))
   const popDelay = (lon: number, lat: number) =>
     Math.round((Math.hypot(lon - origin.lon, lat - origin.lat) / reach) * 700)
 
-  // Сменился город (стрелки в карточке, клик по району, выбор в разделе «Воздух»): если карта приближена или город
-  // вне видимой части — плавно ведём к нему, сохраняя масштаб. На обзоре всей области все города и так видны.
   const centeredId = useRef(selectedId)
   useEffect(() => {
     const m = mapRef.current
     if (!m || selectedId === centeredId.current) return
     centeredId.current = selectedId
-    // Во время сцены старта камерой управляет она: easeTo прервал бы пролёт
+    // The intro owns the camera: easeTo would interrupt the flight.
     if (stageRef.current < 4) return
     const town = towns.find((t) => t.id === selectedId)
     if (!town) return
@@ -486,8 +444,6 @@ function MapView({
     if (id !== hoverDistrict) setHoverDistrict(id)
   }
 
-  // Двойной щелчок — сразу к точке: она встаёт в центр свободной части карты (с учётом панелей), масштаб
-  // меняется на ZOOM_STEP, а не на 1, как у MapLibre. Shift — отдалить. Город — сразу до масштаба улиц
   const zoomTo = (lon: number, lat: number, zoom: number) => {
     const m = mapRef.current
     if (!m) return
@@ -504,7 +460,7 @@ function MapView({
     if (!m) return
     const zoom = m.getZoom() + (e.originalEvent.shiftKey ? -ZOOM_STEP : ZOOM_STEP)
     const { lng, lat } = e.lngLat
-    // На следующем кадре: перелёт, начатый прямо в обработчике dblclick, MapLibre тут же останавливает
+    // Next frame: MapLibre immediately stops a flight started inside the dblclick handler.
     requestAnimationFrame(() => zoomTo(lng, lat, zoom))
   }
   const zoomToTown = (t: MapTown) => {
@@ -519,17 +475,12 @@ function MapView({
     if (town) onSelectTown(town)
   }
 
-  // Реки Natural Earth — схема 1:10 млн: в приближении их линия уходит от русла. Есть детали OpenFreeMap — гаснут,
-  // нет (офлайн) — остаются
   const riverFade = (opacity: number): number | ExpressionSpecification =>
     detailLoaded ? ["interpolate", ["linear"], ["zoom"], 9.5, opacity, 10.5, 0] : opacity
 
-  // Маркеры и подписи (HTML) — только после пролёта: MapLibre двигает каждый HTML-маркер на каждом кадре
-  // движения карты, даже скрытый (~60 штук), — во время пролёта это заметная доля кадра на слабом ноутбуке.
-  // Две волны: сначала города (они «выстреливают» первыми), через REST_WAVE_MS — остальное, с задержкой
-  // анимаций на столько же меньше: на экране тот же ритм, а работа браузера делится на два кадра.
-  // Маркеры — в useMemo: наведение, район под курсором, такты сцены и окно поста их не перерисовывают.
-  // Обработчики внутри используют только сеттеры состояния и ref — в зависимостях их нет намеренно
+  // HTML markers mount only after the flight: MapLibre repositions every marker on every frame of movement,
+  // even hidden ones. Markers are memoized; handlers use only state setters and refs, so they're
+  // intentionally left out of the deps.
   const townsOn = stage >= 3
   const [restOn, setRestOn] = useState(reduce)
   useEffect(() => {
@@ -556,7 +507,6 @@ function MapView({
                 anchor={left ? "right" : "left"}
                 style={left ? { marginRight: -6, zIndex: Z.towns } : { marginLeft: -6, zIndex: Z.towns }}
               >
-                {/* С мышью — название, AQI и как приблизить; на телефоне — нативный title */}
                 <Tooltip
                   text={text.controls.dblClickTown}
                   delayDuration={400}
@@ -600,7 +550,6 @@ function MapView({
                       )}
                       style={category ? { background: category.color } : undefined}
                     >
-                      {/* Кольцо на старте — как пинг радара, цветом AQI города */}
                       {category && !reduce && (
                         <span
                           aria-hidden="true"
@@ -653,7 +602,6 @@ function MapView({
               </Marker>
             ))}
 
-          {/* Города соседей — тише наших: серая точка и мелкая подпись, без данных и без клика */}
           {shown.labels &&
             text.neighbourTowns.map((t) => (
               <Marker
@@ -717,7 +665,6 @@ function MapView({
             </Marker>
           ))}
 
-          {/* Участки рек рядом с городами — рисуем раньше городов, чтобы подписи городов были сверху */}
           {waterSections.map((w) => (
             <Marker
               key={w.name}
@@ -747,8 +694,6 @@ function MapView({
             </Marker>
           ))}
 
-          {/* Посты уровня — под городами: пост часто в самом городе, и подпись города должна читаться поверх
-              треугольника. Треугольник — над точкой поста, как у Белгидромета */}
           {levelPosts.map((s) => (
             <Marker
               key={s.post.id}
@@ -763,7 +708,6 @@ function MapView({
                 type="button"
                 aria-label={`${s.post.river}, ${s.post.name}: ${s.latest.level} см, ${waterText.levels.status[s.status]}`}
                 {...tipHandlers({ kind: "level", item: s })}
-                // Наведение — подсказка, щелчок (и касание на телефоне) — сразу окно с подробностями
                 onClick={(e) => {
                   e.stopPropagation()
                   openPostDialog(s.post.id)
@@ -809,8 +753,6 @@ function MapView({
         "eco-map relative size-full transition-opacity duration-500 ease-out",
         stage >= 1 ? "opacity-100" : "opacity-0",
       )}
-      // На обзоре всей области на телефоне видны только города: остальные маркеры (map-extra) в панели
-      // шириной с экран слипались в кашу. Появляются при приближении (правило — в index.css)
       data-far=""
       ref={rootRef}
     >
@@ -834,12 +776,12 @@ function MapView({
         onMouseLeave={() => setHoverDistrict(null)}
         onClick={onClick}
         onDblClick={onDblClick}
-        // Колесо с Ctrl — вдвое быстрее, чем у MapLibre по умолчанию (1/450): к району — за пару щелчков колеса
         onLoad={(e) => {
           const map = e.target
           map.scrollZoom.setWheelZoomRate(1 / 200)
           setMapInstance(map)
-          // Атрибут меняется только при переходе через порог — без состояния React: карта не перерисовывается
+          // Toggle the attribute only when crossing the threshold — no React state, so the map doesn't
+          // re-render.
           const markFar = () => {
             const root = rootRef.current
             if (!root) return
@@ -852,10 +794,9 @@ function MapView({
             onReady?.()
             return
           }
-          // Итоговый план — область с отступами под панели, вписанная ещё с ограничением maxBounds: если лететь
-          // к «чистому» вписыванию, в конце, когда ограничение возвращается, MapLibre подтягивал бы карту
-          // в границы — заметный сдвиг. Стартовый план — вся Беларусь; ограничения по области и масштабу
-          // на время сцены снимаем (страна шире maxBounds области)
+          // Fly to the fit computed with maxBounds applied: flying to an unconstrained fit made MapLibre snap
+          // the map when the constraints came back. Constraints are lifted during the intro (the country is
+          // wider than maxBounds).
           map.fitBounds(text.bounds, { padding: paddingRef.current, duration: 0 })
           introPadding.current = paddingRef.current
           const final = { center: map.getCenter(), zoom: map.getZoom() }
@@ -863,7 +804,6 @@ function MapView({
           map.setMaxBounds(null)
           map.jumpTo(introCamera(map))
           setDrawn(map, { ...drawLayers.outline, ...drawLayers.rivers }, 0)
-          // Сцена — когда всё нарисовано (idle), но не позже чем через 1,5 с, если что-то грузится долго
           let started = false
           const start = () => {
             if (started) return
@@ -881,8 +821,7 @@ function MapView({
         }}
         aria-label={text.ariaLabel}
       >
-        {/* Заливки — под деталями OpenFreeMap (лес и дороги ложатся поверх). Беларусь и область в одном источнике:
-            слои создаются вместе, и область всегда над страной, какой бы файл ни загрузился первым */}
+        {/* Belarus and the oblast share one source, so the oblast always renders above the country whichever file loads first. */}
         <Source id="land" type="geojson" data={landData}>
           <Layer
             id="belarus-land"
@@ -897,8 +836,6 @@ function MapView({
             beforeId="detail-wood"
             filter={["==", ["get", "kind"], "oblast"]}
             paint={{
-              // На обзоре всей Беларуси (такт 1) область подсвечена оттенком рек — видно, куда летим;
-              // к посадке (такт 2) остывает до обычной заливки
               "fill-color": stage === 1 ? mixHex(colors.land, colors.river, 0.32) : colors.land,
               "fill-color-transition": { duration: 1200, delay: 0 },
               "fill-opacity": stage >= 1 ? 1 : 0,
@@ -909,8 +846,7 @@ function MapView({
 
         {borders && (
           <Source id="borders" type="geojson" data={borders}>
-            {/* Области соседних стран — проявляются к посадке: на старте видна только Беларусь.
-                Отдельными слоями: у выражений по свойствам MapLibre не делает плавных переходов */}
+            {/* Separate layers: MapLibre doesn't animate transitions of data-driven expressions. */}
             <Layer
               id="borders-region-near"
               type="line"
@@ -928,7 +864,6 @@ function MapView({
               type="line"
               filter={["all", ["==", ["get", "kind"], "region"], ["get", "blr"]]}
               layout={{ "line-join": "round" }}
-              // На обзоре всей Беларуси (сцена старта) области разделены заметнее; к посадке — как обычно
               paint={{
                 "line-color":
                   stage <= 1 ? mixHex(colors.borderRegion, colors.outline, 0.3) : colors.borderRegion,
@@ -948,7 +883,6 @@ function MapView({
                 "line-dasharray": [4, 3],
               }}
             />
-            {/* Границы между соседними странами (Россия — Украина) — к посадке */}
             <Layer
               id="borders-country-near"
               type="line"
@@ -990,7 +924,6 @@ function MapView({
               "line-opacity-transition": { duration: 900, delay: 0 },
             }}
           />
-          {/* Приблизили город — границы районов нужны для ориентира, даже если выключены */}
           <Layer
             id="district-line-zoomed"
             type="line"
@@ -1023,8 +956,6 @@ function MapView({
           </Source>
         )}
 
-        {/* Подписи деревень и микрорайонов OpenFreeMap — встроенные подписи MapLibre сами не налезают друг на друга.
-            Города и посёлки из OSM не подписываем: у 21 города свои подписи */}
         <Layer
           id="detail-places"
           type="symbol"
@@ -1066,7 +997,6 @@ function MapView({
             />
           </Source>
         )}
-        {/* Сцена старта: граница рисуется сплошной линией по краю области, потом гаснет под пунктиром */}
         {oblastLines && stage < 4 && (
           <Source id="oblast-draw" type="geojson" data={oblastLines} lineMetrics>
             <Layer
@@ -1094,13 +1024,12 @@ function MapView({
             offset={TIP_OFFSET[tip.kind]}
             closeButton={false}
             closeOnClick={false}
-            // Без автофокуса на ссылке: иначе маркер теряет фокус, и подсказка закрывается сама
+            // No autofocus on the link: the marker would lose focus and the tip would close.
             focusAfterOpen={false}
             onClose={closeTip}
             className="eco-popup"
             maxWidth="300px"
           >
-            {/* Курсор можно увести с маркера на подсказку (до ссылки «Подробнее») — она не закроется */}
             <div className="px-3.5 py-3" onPointerEnter={keepTip} onPointerLeave={closeTipSoon}>
               <MapTipContent
                 tip={tip}
@@ -1125,7 +1054,6 @@ function MapView({
         </Suspense>
       )}
 
-      {/* Низ карты: линейка и атрибуция по центру, «Вся область» и зум справа (§10.4) */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4">
         <div className="pointer-events-auto flex min-w-0 flex-col gap-1.5 lg:ml-[300px]">
           <ScaleBar map={mapInstance} />
@@ -1167,13 +1095,9 @@ function MapView({
   )
 }
 
-// memo: панели вокруг карты (MapSection) перерисовываются, когда заезжают, — карте это ни к чему
+// memo: the surrounding panels re-render while sliding in; the map doesn't need to.
 export default memo(MapView)
 
-/**
- * Линейка масштаба: сама слушает движение карты (не чаще кадра) и перерисовывает только себя. Раньше масштаб
- * жил в состоянии MapView, и вся карта перерисовывалась React на каждом кадре движения — пролёт рвался
- */
 function ScaleBar({ map }: { map: MapLibreMap | null }) {
   const [scale, setScale] = useState(() => scaleBar(7, 52.3))
   useEffect(() => {

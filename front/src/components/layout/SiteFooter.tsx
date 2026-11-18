@@ -18,11 +18,6 @@ const exactTime = new Intl.DateTimeFormat("ru-RU", { dateStyle: "long", timeStyl
 const navLink =
   "font-heading text-[17px] font-medium tracking-[-0.01em] underline decoration-transparent decoration-2 underline-offset-[5px] transition-colors hover:decoration-current md:text-[19px]"
 
-/**
- * Футер (§10.9) — последний экран страницы и последний шанс зацепить. Цвет — худший AQI в области прямо сейчас
- * (data-aqi-footer, токены --footer-*): станет хуже где-то в области — футер пожелтеет. Сверху — призыв сообщить
- * о проблеме и ссылки, ниже «пульс» живыми цифрами, внизу во всю ширину — «Гомельщина», буквы выезжают волной.
- */
 export function SiteFooter() {
   const { data: latest } = useLatestAir()
   const { data: points } = useAirPoints()
@@ -38,16 +33,12 @@ export function SiteFooter() {
   const worstName = worst ? points?.find((p) => p.id === worst.point)?.name : undefined
 
   return (
-    // Если страница кончается тёмной секцией во всю ширину («Предприятия» на главной) — футер вплотную к ней
     <footer
       data-aqi-footer={category?.level ?? "none"}
-      // На главной (main кончается секцией) — тот же промежуток, что между секциями: 40 / 32 px нижнего отступа
-      // секции + столько же здесь; на остальных страницах — свой отступ
       className="mt-24 overflow-hidden bg-(--footer-bg) text-(--footer-ink) transition-colors duration-700 [main:has(>section:last-child)+&]:mt-8 md:[main:has(>section:last-child)+&]:mt-10"
     >
       <Container className="pt-14 md:pt-20">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
-          {/* Призыв */}
           <div className="lg:col-span-7">
             <h2 className="max-w-[16ch] font-heading text-[clamp(36px,5vw,76px)] leading-[0.98] font-semibold tracking-[-0.045em]">
               {footer.hook}
@@ -73,7 +64,6 @@ export function SiteFooter() {
             </div>
           </div>
 
-          {/* Ссылки */}
           <nav
             aria-label="Разделы сайта"
             className="grid grid-cols-2 gap-8 lg:col-span-4 lg:col-start-9 lg:pt-3"
@@ -98,7 +88,6 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        {/* Пульс: живые цифры о воздухе — то, ради чего сайт открывают снова */}
         {category && worst && (
           <section
             aria-label={footer.pulse.label}
@@ -130,7 +119,6 @@ export function SiteFooter() {
           </section>
         )}
 
-        {/* Служебная строка */}
         <div
           className={cn(
             "flex flex-wrap items-center justify-between gap-x-8 gap-y-4 text-[13px]",
@@ -141,7 +129,6 @@ export function SiteFooter() {
             © {year} {site.name}
           </span>
           <div className="flex items-center gap-4">
-            {/* Капсула темы — в цветах футера: полупрозрачная подложка и активный пункт цвета текста */}
             <ThemeSwitch className="[--background:var(--footer-ink)] [--foreground:var(--footer-bg)] [--input:var(--footer-ink)] [--muted-foreground:var(--footer-ink)] [--muted:color-mix(in_oklab,var(--footer-ink)_14%,transparent)]" />
             <Tooltip content={footer.toTop.label} side="top">
               <button
@@ -182,10 +169,6 @@ function Pulse({ value, caption }: { value: ReactNode; caption: string }) {
   )
 }
 
-/**
- * «Гомельщина» во всю ширину: размер шрифта — в единицах ширины контейнера (cqw), слово ровно заполняет строку.
- * Буквы выезжают снизу волной, когда футер показался; под курсором буква подпрыгивает.
- */
 function Wordmark({ text }: { text: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const shown = useInView(ref, { once: true, margin: "0px 0px -15% 0px" })

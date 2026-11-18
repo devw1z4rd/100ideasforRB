@@ -4,9 +4,7 @@ import { useFinePointer } from "@/lib/useMediaQuery"
 import { cn } from "@/lib/utils"
 
 /**
- * Подсказка. С мышью — своя тёмная плашка (Radix Tooltip, как подсказки графиков): открывается наведением
- * и фокусом с клавиатуры. На телефоне и планшете — нативный title у самого элемента.
- * content — что показать; text — строка для title, если content не строка.
+ * With a mouse — Radix tooltip (hover and keyboard focus); on touch devices — a native title on the element.
  */
 function Tooltip({
   content,

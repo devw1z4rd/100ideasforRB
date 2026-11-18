@@ -10,7 +10,6 @@ import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
 const backLink = "text-[13px] font-medium text-link transition-colors hover:text-link-hover"
 
-/** Новость (§11 /news/:slug): текст из админки через DOMPurify, обложка справа, источник внизу. */
 export function NewsArticlePage() {
   const { slug = "" } = useParams()
   const item = useNewsItem(slug)

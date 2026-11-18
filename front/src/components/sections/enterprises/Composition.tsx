@@ -7,12 +7,6 @@ import { NoData, Panel } from "./ui"
 
 const t = text.composition
 
-/**
- * Что выбрасывают предприятия страны (§10.7) — по областям Белстат по веществам не публикует. У каждого
- * вещества — тонны, доля от всех выбросов предприятий страны и пояснение простыми словами. Шкала у всех полос
- * одна и видна: дорожка во всю ширину — все выбросы (100 %), заливка — доля вещества. Последняя строка —
- * «другие вещества»: итог минус выделенные Белстатом, поэтому строки складываются в 100 %.
- */
 export function Composition({
   rows,
   year,
@@ -22,7 +16,6 @@ export function Composition({
 }: {
   rows: readonly Stat[]
   year: number
-  /** Все выбросы предприятий страны за год, тыс. т — шкала полос */
   countryEmitted: number
   grown: boolean
   className?: string
@@ -93,7 +86,6 @@ function Row({
           {text.unit} · {pct(share)}
         </span>
       </span>
-      {/* Дорожка — все выбросы предприятий страны (100 %), заливка — доля вещества */}
       <span aria-hidden className="col-span-2 block h-1.5 overflow-hidden rounded-full bg-bar-faint">
         <span
           className={cn(

@@ -11,8 +11,8 @@ import "./index.css"
 
 const router = createBrowserRouter(routes)
 
-// В сборке стили подключены в конце <body> (vite.config.ts, stylesAfterShell), чтобы не задерживать заглушку
-// из index.html. Рендер — когда они загрузились: иначе страница мелькнула бы без оформления
+// In builds CSS is moved to the end of <body> (stylesAfterShell in vite.config.ts) so it doesn't block the
+// index.html shell; render only once it has loaded, otherwise the page flashes unstyled.
 const stylesReady = Promise.all(
   [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].map(
     (link) =>
@@ -34,5 +34,4 @@ void stylesReady.then(() =>
   ),
 )
 
-// На главной код карты начинает качаться сразу, ещё до первого рендера; service worker — после него
 registerServiceWorker(location.pathname === "/" ? loadMapView() : undefined)

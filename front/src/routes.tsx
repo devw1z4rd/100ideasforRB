@@ -7,13 +7,11 @@ import { NotFoundPage } from "@/pages/NotFoundPage"
 import { RootLayout } from "@/pages/RootLayout"
 import { RouteErrorPage } from "@/pages/RouteErrorPage"
 
-// Новости, база знаний и сравнение районов — отдельными чанками: главной они не нужны
 const page = (title: string, load: () => Promise<{ Component: ComponentType }>): RouteObject => ({
   lazy: load,
   handle: { title } satisfies RouteHandle,
 })
 
-// Обращения, вход, профиль и модерация (CLAUDE.md §4 M3–M6, §11) — отдельными чанками
 const accountPages: RouteObject[] = [
   {
     path: "reports",
@@ -50,11 +48,10 @@ const accountPages: RouteObject[] = [
 export const routes: RouteObject[] = [
   {
     element: <RootLayout />,
-    // Страховка на случай, если упал сам layout; обычные ошибки страниц ловит дочерний errorElement
     errorElement: <RouteErrorPage />,
     children: [
       {
-        // Безпутевой маршрут: ошибка страницы рендерится внутри layout — шапка и футер остаются
+        // Pathless route: page errors render inside the layout, so header and footer stay.
         errorElement: <RouteErrorPage />,
         children: [
           { index: true, element: <HomePage /> },
@@ -89,7 +86,7 @@ export const routes: RouteObject[] = [
               import("@/pages/KbArticlePage").then((m) => ({ Component: m.KbArticlePage })),
             ),
           },
-          // PROTOTYPE — только в dev-сборке: в продакшен маршрут и его код не попадают
+          // PROTOTYPE — dev builds only: neither the route nor its code reaches production.
           ...(import.meta.env.DEV
             ? [
                 {

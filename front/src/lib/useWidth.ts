@@ -1,9 +1,5 @@
 import { useLayoutEffect, useState, type RefObject } from "react"
 
-/**
- * Ширина элемента, px; следит за изменением размера (окно, поворот телефона). SVG-графики рисуются
- * в настоящих пикселях по этой ширине — подписи и пунктиры остаются чёткими. 0 — пока не измерено.
- */
 export function useWidth(ref: RefObject<HTMLElement | null>): number {
   const [width, setWidth] = useState(0)
   useLayoutEffect(() => {

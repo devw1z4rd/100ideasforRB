@@ -7,14 +7,9 @@ import { RiversArt } from "./RiversArt"
 
 const r = text.report
 
-/** Цвет обложки и форзаца — по сезону квартала: переопределяет --book-cover у книжки */
 export const seasonStyle = (quarter: string) =>
   ({ "--book-cover": `var(--book-${quarterSeason(quarter)})` }) as CSSProperties
 
-/**
- * Лицо обложки: заголовок, квартал, реки области с участками из обзора и главное число.
- * size="shelf" — книжка на полке, "book" — обложка в окне перед открытием (крупнее).
- */
 export function CoverFront({
   label,
   sections,
@@ -36,7 +31,6 @@ export function CoverFront({
         book ? "py-8 pr-8 pl-12" : "py-5 pr-5 pl-8",
       )}
     >
-      {/* Корешок: тень сгиба и линия переплёта */}
       <span
         className={cn(
           "absolute inset-y-0 left-0 bg-[linear-gradient(90deg,rgb(0_0_0/0.4),rgb(255_255_255/0.07)_55%,rgb(0_0_0/0.18))]",
@@ -44,7 +38,6 @@ export function CoverFront({
         )}
       />
       <span className={cn("absolute inset-y-0 w-px bg-black/30", book ? "left-6" : "left-4")} />
-      {/* Блик — чуть ярче при наведении */}
       <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgb(255_255_255/0.08),transparent_40%)] opacity-60 transition-opacity group-hover:opacity-100" />
 
       <span className="relative flex items-start justify-between gap-2">
@@ -65,7 +58,7 @@ export function CoverFront({
       <span
         className={cn(
           "relative block font-heading font-semibold tracking-[-0.045em]",
-          // Межстрочный — после размера: tailwind-merge выкидывает leading-*, если text-* идёт позже
+          // leading-* after text-*: tailwind-merge drops leading-* when text-* comes later.
           book
             ? "mt-4 text-[clamp(44px,5vw,68px)] leading-[0.9]"
             : "mt-3 text-[clamp(28px,2.6vw,40px)] leading-[0.9]",
@@ -120,9 +113,8 @@ export function CoverFront({
   )
 }
 
-/** Изнанка обложки — форзац: волнистые линии, как течение */
 export function Endpaper() {
-  // Своя id узора у каждого экземпляра: форзац есть и на изнанке обложки, и на левой странице
+  // Unique pattern id per instance: the endpaper appears both on the cover's back and on the left page.
   const id = useId()
   return (
     <svg aria-hidden="true" className="absolute inset-0 size-full opacity-[0.12]" preserveAspectRatio="none">
@@ -141,10 +133,6 @@ export function Endpaper() {
   )
 }
 
-/**
- * Тень приоткрытой обложки на первой странице: темнее у края обложки, светлее к обрезу. Одна и та же на полке
- * (наведение) и в окне (пока книжка летит приоткрытой) — летящая совпадает с полкой
- */
 export function CoverShade({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
     <span
@@ -158,7 +146,6 @@ export function CoverShade({ className, style }: { className?: string; style?: C
   )
 }
 
-/** Обрез страниц справа от обложки: два листа чуть выступают — книжка выглядит толстой */
 export function PageEdges({ thin = false }: { thin?: boolean }) {
   return (
     <span aria-hidden="true" className="pointer-events-none absolute inset-0">

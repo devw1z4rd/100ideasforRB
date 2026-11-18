@@ -3,9 +3,6 @@ import { CheckIcon } from "lucide-react"
 import { Select as SelectPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 
-// Выпадающий список на Radix Select — для десктопа (на телефоне фильтры остаются нативными <select>).
-// Список открывается под кнопкой (position="popper"), ширина — не уже кнопки.
-
 const Select = SelectPrimitive.Root
 const SelectValue = SelectPrimitive.Value
 const SelectTrigger = SelectPrimitive.Trigger

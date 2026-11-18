@@ -1,7 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Гражданские обращения (CLAUDE.md §4 M3/M6, §8): кто какие поля меняет, допустимые переходы статусов,
-// район по полигонам districts и история статусов в report_events.
-// API rules пускают к записи (кто вообще может создать/изменить), хуки решают, что именно можно изменить.
+// API rules decide who may write; these hooks decide which fields each role may change, valid status
+// transitions, the district and the report_events history.
 
 onRecordCreateRequest((e) => {
   const lib = require(`${__hooks}/lib/reports.js`)
@@ -9,12 +8,12 @@ onRecordCreateRequest((e) => {
   const r = e.record
 
   if (role !== "superuser") {
-    // Автор и стартовый статус — только от сервера; служебные поля из запроса пользователя игнорируются.
-    // Аноним (вход по желанию) — без автора; его обращение открывается по access_key, который придумал браузер
+    // Author and initial status come only from the server. Anonymous reports have no author and are opened
+    // via the browser-generated access_key.
     r.set("author", e.auth ? e.auth.id : "")
     if (e.auth) r.set("access_key", "")
     else {
-      // Скрытое поле PocketBase вырезает из тела запроса — ключ приходит заголовком X-Report-Key
+      // PocketBase strips hidden fields from the request body, so the key arrives in the X-Report-Key header.
       const sent = String(e.request.header.get("X-Report-Key") || "")
       r.set("access_key", /^[A-Za-z0-9_-]{16,64}$/.test(sent) ? sent : $security.randomString(32))
     }
@@ -25,7 +24,6 @@ onRecordCreateRequest((e) => {
   }
   lib.assignDistrict(e.app, r)
 
-  // Автопроверка: мат (с обходами) — сразу отказ с ошибкой у описания; правдоподобность — подсказка модератору
   const check = require(`${__hooks}/lib/autocheck.js`)
   if (check.findProfanity(r.getString("description")).length) {
     throw new BadRequestError("Уберите, пожалуйста, нецензурные слова.", {
@@ -37,14 +35,14 @@ onRecordCreateRequest((e) => {
     id: r.id,
     category: r.getString("category"),
     description: r.getString("description"),
-    // Загружаемые сейчас файлы ещё не имена — считаем их отдельно
+    // Files being uploaded aren't names yet — count them separately.
     photos: r.getUnsavedFiles("photos").length || r.getStringSlice("photos").length,
     lat: location.lat,
     lon: location.lon,
     authorId: r.getString("author"),
   })
   r.set("auto_check", result)
-  r.set("ai_confidence", result.score / 100) // поле — доля 0–1
+  r.set("ai_confidence", result.score / 100)
 
   e.app.runInTransaction((txApp) => {
     e.app = txApp
@@ -53,7 +51,7 @@ onRecordCreateRequest((e) => {
   })
 }, "reports")
 
-// Автопроверку видят только модераторы и админы
+// Only moderators and admins see the auto-check.
 onRecordEnrich((e) => {
   const auth = e.requestInfo && e.requestInfo.auth
   const staff = auth && auth.collection().name === "users" && ["moderator", "admin"].includes(auth.getString("role"))
@@ -76,7 +74,7 @@ onRecordUpdateRequest((e) => {
       throw new BadRequestError(`Недопустимый переход статуса: ${fromStatus} → ${toStatus}.`)
     }
   } else if (role !== "admin" && role !== "superuser") {
-    // API rule уже ограничил автора его же обращением в статусе new
+    // The API rule already limits the author to their own report in status new.
     lib.assertOnlyFields(e, lib.AUTHOR_FIELDS)
   }
   if (r.getString("duplicate_of") === r.id) {
@@ -96,8 +94,7 @@ onRecordUpdateRequest((e) => {
   })
 }, "reports")
 
-// Обращение по личной ссылке анонима: /api/eco/reports/{id}?key=… — само обращение (без скрытых полей),
-// название района и история статусов. Чужой или неверный ключ — 404, как будто обращения нет.
+// Anonymous personal link /api/eco/reports/{id}?key=…; a wrong key returns 404, as if there were no report.
 routerAdd("GET", "/api/eco/reports/{id}", (e) => {
   const id = e.request.pathValue("id")
   const key = e.request.url.query().get("key")

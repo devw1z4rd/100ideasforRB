@@ -3,9 +3,6 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { XIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// Модальное окно (Radix Dialog) в стиле shadcn: затемнение с лёгким размытием, окно по центру появляется
-// с увеличением от 95% и проявлением; Esc и щелчок мимо закрывают, фокус заперт внутри окна.
-
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }

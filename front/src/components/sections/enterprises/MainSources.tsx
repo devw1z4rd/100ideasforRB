@@ -3,11 +3,6 @@ import { cn } from "@/lib/utils"
 
 const s = text.sources
 
-/**
- * Основные источники загрязнения в области (§10.7) — перечень из стратегии области, без долей (они не
- * публикуются) и без смены по годам. Поэтому не карточкой в сетке, а тихой строкой под ней: на десктопе шесть
- * колонок в одну линию, на телефоне — по две.
- */
 export function MainSources({ className }: { className?: string }) {
   return (
     <div className={cn("flex flex-col gap-3", className)}>

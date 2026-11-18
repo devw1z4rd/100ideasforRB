@@ -1,5 +1,5 @@
-// Уровни воды в реках (CLAUDE.md §10.8): ежедневные наблюдения Белгидромета на 8:00.
-// Уровень — см над нулём графика поста: у каждого поста свой ноль, поэтому сравниваем только с порогами того же поста.
+// Levels are cm above each post's gauge zero: every post has its own zero, so compare only with that post's
+// thresholds. A threshold of 0 means the post has none.
 
 export type RiverPost = {
   id: string
@@ -9,25 +9,19 @@ export type RiverPost = {
   district: string
   lat: number
   lon: number
-  /** Ниже — неблагоприятно для судоходства; 0 — порога у поста нет */
   low_level: number
-  /** Выше — вода выходит на пойму; 0 — порога нет */
   flood_level: number
-  /** Опасный уровень; 0 — порога нет */
   danger_level: number
 }
 
 export type RiverLevel = {
   post: string
-  /** "YYYY-MM-DD" — день наблюдения (8:00 по Минску) */
   day: string
   level: number
-  /** Изменение за сутки, см */
   change: number
   ice: string
 }
 
-/** Как у Белгидромета на карте уровенного режима: жёлтый, зелёный, синий, красный */
 export type RiverStatus = "low" | "normal" | "flood" | "danger"
 export type RiverTrend = "up" | "flat" | "down"
 
@@ -36,13 +30,10 @@ export type PostSummary = {
   latest: RiverLevel
   status: RiverStatus
   trend: RiverTrend
-  /** Уровни по дням, от старых к новым */
   series: RiverLevel[]
-  /** Сколько дней ряда уровень был ниже судоходного; null — порога нет */
   daysLow: number | null
 }
 
-/** Положение уровня относительно порогов поста; пороги 0 не учитываются */
 export function riverStatus(
   level: number,
   post: Pick<RiverPost, "low_level" | "flood_level" | "danger_level">,
@@ -55,20 +46,13 @@ export function riverStatus(
 
 export const trendOf = (change: number): RiverTrend => (change > 0 ? "up" : change < 0 ? "down" : "flat")
 
-/** Судоходный пост — у него есть порог судоходства */
 export const navigable = (post: RiverPost) => post.low_level > 0
 
-/** У поста есть хоть один порог — уровень можно оценить словами; без порогов — только сравнить с его прошлыми */
 export const hasThresholds = (post: RiverPost) =>
   post.low_level > 0 || post.flood_level > 0 || post.danger_level > 0
 
 const severity: Record<RiverStatus, number> = { danger: 0, flood: 1, low: 2, normal: 3 }
 
-/**
- * Сводка по постам: последний уровень, статус, ряд за период. Посты без наблюдений пропускаются.
- * Хуже всего — сверху: опасный, пойма (и на малых реках), маловодье по доле от порога; затем обычный уровень —
- * сначала судоходные, потом с порогами поймы, в конце посты без порогов; дальше по реке и посту.
- */
 export function summarizePosts(posts: readonly RiverPost[], levels: readonly RiverLevel[]): PostSummary[] {
   const byPost = new Map<string, RiverLevel[]>()
   for (const l of levels) {
@@ -104,12 +88,10 @@ export function summarizePosts(posts: readonly RiverPost[], levels: readonly Riv
   )
 }
 
-/** Самый свежий день наблюдений среди постов */
 export function latestDay(summaries: readonly PostSummary[]): string | null {
   return summaries.reduce<string | null>((max, s) => (!max || s.latest.day > max ? s.latest.day : max), null)
 }
 
-/** Пороги, которые стоит показать на мини-графике: судоходный — всегда, пойма и опасный — когда уровень к ним близок */
 export function chartThresholds(s: PostSummary): Array<{ kind: "low" | "flood" | "danger"; value: number }> {
   const max = Math.max(...s.series.map((l) => l.level))
   const out: Array<{ kind: "low" | "flood" | "danger"; value: number }> = []
@@ -123,11 +105,6 @@ export function chartThresholds(s: PostSummary): Array<{ kind: "low" | "flood" |
 
 export type LevelZone = { kind: "low" | "flood" | "danger"; from: number; to: number }
 
-/**
- * Шкала графика уровня поста: ряд и показанные пороги (chartThresholds) с запасом 15 %, не меньше 4 см, и зоны
- * порогов в её пределах — «мелко» под судоходным, «пойма» от поймы до опасного, «опасно» выше опасного.
- * Общая для мини-графика карточки (и подсказки на карте) и графика в окне поста.
- */
 export function levelScale(s: PostSummary): { lo: number; hi: number; zones: LevelZone[] } {
   const thresholds = chartThresholds(s)
   const values = [...s.series.map((l) => l.level), ...thresholds.map((t) => t.value)]

@@ -1,13 +1,14 @@
-// Проверка API rules и хуков (CLAUDE.md §8): запросы от анонима, пользователя, модератора и админа.
-// Нужен запущенный PocketBase с миграциями, хуками и справочниками из back/ (`pocketbase seed`):
-//   PB_URL=http://127.0.0.1:8090 PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… node --test back/tests/rules.test.mjs
-// Тест создаёт свои записи с уникальными именами и удаляет их в конце.
+// API rules and hooks as anonymous / user / moderator / admin. Needs a running PocketBase with migrations,
+// hooks and seed data:
+//   PB_URL=http://127.0.0.1:8090 PB_SUPERUSER_EMAIL=… PB_SUPERUSER_PASSWORD=… node --test
+//   back/tests/rules.test.mjs
+// Creates its own records and deletes them at the end.
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 
 const PB = process.env.PB_URL ?? "http://127.0.0.1:8090";
 const RUN = Date.now().toString(36);
-const created = []; // [collection, id] для очистки суперпользователем
+const created = [];
 
 async function call(token, method, path, body) {
   const headers = token ? { Authorization: token } : {};

@@ -1,18 +1,14 @@
 /**
- * Шкала US AQI — US EPA, «Technical Assistance Document for the Reporting of Daily Air Quality — the AQI»,
- * EPA-403/B-26-003 (май 2026).
- * Open-Meteo отдаёт us_aqi по этой же шкале (CLAUDE.md §9). Цвета — токены --aqi-* в tokens.css.
+ * US AQI breakpoints per US EPA "Technical Assistance Document for the Reporting of Daily Air Quality — the
+ * AQI" (EPA-403/B-26-003, May 2026). Open-Meteo's us_aqi uses the same scale.
  */
 export type AqiLevel = "good" | "moderate" | "usg" | "unhealthy" | "very-unhealthy" | "hazardous"
 
 export type AqiCategory = {
   level: AqiLevel
-  /** Подпись в интерфейсе */
   label: string
-  /** Границы категории включительно, целые значения индекса; у «опасный» верхней границы нет (Infinity) */
   min: number
   max: number
-  /** CSS-переменная цвета */
   color: `var(--aqi-${AqiLevel})`
 }
 
@@ -31,10 +27,6 @@ export const AQI_SCALE: readonly AqiCategory[] = [
   },
 ]
 
-/**
- * Категория для значения индекса. Дробные значения (средние за период) округляются до целого, как в шкале EPA.
- * null — для отсутствующего или некорректного значения.
- */
 export function aqiCategory(value: number | null | undefined): AqiCategory | null {
   if (value == null || !Number.isFinite(value) || value < 0) return null
   const aqi = Math.round(value)

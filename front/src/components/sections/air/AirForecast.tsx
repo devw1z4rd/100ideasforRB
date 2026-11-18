@@ -15,15 +15,8 @@ const dayFormat = new Intl.DateTimeFormat("ru-RU", {
   month: "short",
   timeZone: "UTC",
 })
-// Шкала AQI до «вредного»: выше в области почти не бывает, легенда короче
 const legend = AQI_SCALE.slice(0, 4)
 
-/**
- * «Прогноз» (CLAUDE.md §10.6, S1): почасовой AQI выбранного города на ~5 дней. Сверху — лучшее время для
- * прогулки завтра и сегодня (три часа подряд между 8 и 22 с самым низким AQI) и худший час ближайших суток;
- * ниже — сетка «сутки × часы» цветами шкалы AQI, окна для прогулки обведены, прошедшие часы бледнее.
- * Клетки появляются волной (CSS forecast-cell в index.css).
- */
 export function AirForecast({ pointId, townName }: { pointId: string; townName: string }) {
   const forecast = useAirForecast(pointId)
   const [hovered, setHovered] = useState<{ day: string; hour: number } | null>(null)
@@ -48,7 +41,6 @@ export function AirForecast({ pointId, townName }: { pointId: string; townName: 
       : null
   const headCategory = headline ? aqiCategory(headline.w.aqi) : null
 
-  // Худший час ближайших двух суток — среди будущих часов
   const upcoming = days
     .filter((d) => d.day === today || d.day === tomorrow)
     .flatMap((d) => d.hours.flatMap((s, hour) => (s && !s.past ? [{ day: d.day, hour, s }] : [])))
@@ -71,7 +63,6 @@ export function AirForecast({ pointId, townName }: { pointId: string; townName: 
 
   return (
     <div className="mt-2">
-      {/* Главное — словами: лучшее окно завтра (или сегодня, если завтра прогноза нет) */}
       <div className="flex flex-col gap-4 border-b border-border py-6 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-[13px] font-medium text-muted-foreground">{text.eyebrow(townName)}</p>
@@ -206,7 +197,6 @@ function Row({
             }}
           />
         ))}
-        {/* Окно для прогулки — рамкой поверх клеток */}
         {window && (
           <span
             aria-hidden="true"
@@ -217,7 +207,6 @@ function Row({
             }}
           />
         )}
-        {/* Текущий час — тонкой вертикалью */}
         {today && (
           <span
             aria-hidden="true"

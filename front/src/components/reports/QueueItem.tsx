@@ -8,10 +8,6 @@ import { Button } from "@/components/ui/button"
 import { categoryLabels, moderationPage as text, statusActions, statusTransitions } from "@/content/reports"
 import { cn } from "@/lib/utils"
 
-/**
- * Обращение в очереди модерации — всё для решения без перехода: фото (размыто до «показать»), вид, место,
- * время, описание, автопроверка с причинами и кнопки допустимых переходов. Комментарий — в карточке обращения.
- */
 export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
   const change = useChangeReportStatus()
   const [revealed, setRevealed] = useState(r.status !== "new")

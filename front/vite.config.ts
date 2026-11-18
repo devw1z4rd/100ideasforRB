@@ -6,13 +6,11 @@ import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig, type Plugin } from "vite"
 
-// Локальная PocketBase (CLAUDE.md §12): API и админка идут через прокси — один origin, без CORS
 const pocketbase = "http://127.0.0.1:8090"
 
 /**
- * Стили — из <head> в конец <body>: таблица в <head> блокирует отрисовку, и заглушка первого экрана из
- * index.html ждала бы CSS (на Slow 4G — лишние ~1,5 с пустого экрана). React стартует только после загрузки
- * стилей (main.tsx), так что страница без оформления не мелькает.
+ * Moves stylesheets from <head> to the end of <body>: a <head> stylesheet blocks rendering, so the index.html
+ * shell would wait for CSS (~1.5 s on Slow 4G). main.tsx starts React only after the styles load.
  */
 const stylesAfterShell = (): Plugin => ({
   name: "styles-after-shell",
@@ -31,9 +29,8 @@ const stylesAfterShell = (): Plugin => ({
 })
 
 /**
- * Service worker (sw/sw.js): в сборке к нему дописываются версия и список файлов для кэша — весь JS и CSS,
- * шрифты кириллицы и латиницы, слои карты и сама страница. Версия — хэш списка: изменился любой файл —
- * браузер ставит новый worker и докачивает только новое (остальное берёт из HTTP-кэша).
+ * Service worker (sw/sw.js): the build prepends VERSION and the precache list. VERSION is a hash of the list,
+ * so any changed file installs a new worker.
  */
 const serviceWorker = (): Plugin => ({
   name: "service-worker",
@@ -59,8 +56,8 @@ const serviceWorker = (): Plugin => ({
 })
 
 /**
- * Рядом с каждым текстовым файлом сборки — его .br и .gz: Caddy отдаёт их готовыми (`precompressed br gzip`).
- * Brotli максимального уровня на 15–20 % меньше gzip, а сжимать так на лету слишком дорого.
+ * Writes .br and .gz next to each text asset; Caddy serves them as is (`precompressed br gzip`). Max-level
+ * brotli is 15–20 % smaller than gzip but too slow to compress on the fly.
  */
 const precompress = (): Plugin => {
   let dist = ""
@@ -97,11 +94,9 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "./src") } },
   server: { proxy: { "/api": pocketbase, "/_/": pocketbase } },
   build: {
-    // MapLibre (~1 МБ, ~300 КБ gzip) — отдельный ленивый чанк карты, грузится при подходе к ней; остальное заметно меньше
     chunkSizeWarningLimit: 1200,
     rolldownOptions: {
       output: {
-        // Вендорные библиотеки — отдельными чанками: кэшируются между деплоями, главный чанк < 500 kB
         advancedChunks: {
           groups: [
             {

@@ -1,7 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Лимит анонимных обращений: 10 за 10 минут с одного IP. Считаются и неудачные попытки — человеку, у которого
-// отклонили текст (мат), нужно пару раз переписать; 5 было впритык.
-// На проде за Caddy: Settings → Trusted proxy → заголовок X-Forwarded-For, иначе все гости — один IP (CLAUDE.md §12).
+// Guest report limit: 10 per 10 minutes per IP (failed attempts count too). Behind Caddy, set Settings →
+// Trusted proxy → X-Forwarded-For, otherwise all guests share one IP.
 migrate(
   (app) => {
     const settings = app.settings()

@@ -1,8 +1,6 @@
 import type { GeoPoint, ReportsCategoryOptions } from "@/api/pocketbase-types"
 
-// Черновик обращения на этом устройстве (CLAUDE.md §10.15): перезагрузили страницу или закрыли вкладку —
-// введённое не пропадает. Текст и точка — в localStorage, фото — в IndexedDB (там хранятся файлы).
-// Хранилище может быть недоступно (приватный режим) — тогда форма просто работает без черновика.
+// Storage may be unavailable (private mode): then the form works without a draft.
 
 export type ReportDraft = {
   point: GeoPoint | null
@@ -25,9 +23,7 @@ export function loadDraft(): ReportDraft {
 export function saveDraft(draft: ReportDraft) {
   try {
     localStorage.setItem(KEY, JSON.stringify(draft))
-  } catch {
-    // нет хранилища — без черновика
-  }
+  } catch {}
 }
 
 function photoStore(mode: IDBTransactionMode): Promise<IDBObjectStore> {
@@ -42,9 +38,7 @@ function photoStore(mode: IDBTransactionMode): Promise<IDBObjectStore> {
 export async function savePhotos(files: readonly File[]) {
   try {
     ;(await photoStore("readwrite")).put([...files], "photos")
-  } catch {
-    // нет IndexedDB — фото не переживут перезагрузку
-  }
+  } catch {}
 }
 
 export async function loadPhotos(): Promise<File[]> {
@@ -60,12 +54,9 @@ export async function loadPhotos(): Promise<File[]> {
   }
 }
 
-/** Обращение отправлено — черновик больше не нужен */
 export function clearDraft() {
   try {
     localStorage.removeItem(KEY)
-  } catch {
-    // нечего чистить
-  }
+  } catch {}
   void savePhotos([])
 }

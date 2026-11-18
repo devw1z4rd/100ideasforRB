@@ -9,8 +9,6 @@ import type { Section } from "@/lib/water"
 
 const WIDTH = 400
 
-// Пути считаются один раз на данные: обложки на полке, страницы книжки и их отпечатки на перелистываемом
-// листе (по копии на полоску) рисуют одну и ту же область
 type Art = {
   projection: Projection
   outline: string
@@ -48,10 +46,6 @@ function getArt(geometry: PolygonGeometry, rivers: GeoCollection<LineFeature>): 
   return art
 }
 
-/**
- * Контур области, реки (Natural Earth, обрезаны по контуру) и участки рек из обзора точками: цвет — худшее
- * отклонение за квартал. tone="cover" — на обложке книжки (светлые линии на тёмном), "paper" — на странице.
- */
 export function RiversArt({
   sections,
   tone,
@@ -60,7 +54,6 @@ export function RiversArt({
 }: {
   sections: readonly Section[]
   tone: "cover" | "paper"
-  /** Подсказки у точек (на странице книжки; на обложке — нет, вся обложка — одна кнопка) */
   interactive?: boolean
   className?: string
 }) {

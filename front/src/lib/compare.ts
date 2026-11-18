@@ -1,17 +1,13 @@
-// Сравнение районов (CLAUDE.md §10.14): показатели по районам из данных, которые уже есть на сайте, — воздух,
-// реки, качество воды, обращения. Без сводного индекса: каждый показатель отдельно.
-
 import { minskDay } from "@/api/dates"
 import type { Period, Pollutant, Range } from "./airStats"
 import { districtAt, type PolygonGeometry } from "./geo"
 
 export type RankMetric = Pollutant | "reports"
 
-// У Гомельского района отдельной точки воздуха нет: его райцентр — сам Гомель (CLAUDE.md §8, air_points)
+// Gomel district has no air point of its own: its center is Gomel city.
 export const GOMEL_DISTRICT = "Гомельский"
 export const GOMEL_TOWN = "Гомель"
 
-/** Район → точка воздуха в его райцентре */
 export function districtPoints(
   districts: readonly { id: string; name: string }[],
   points: readonly { id: string; name: string; district?: string }[],
@@ -26,7 +22,6 @@ export function districtPoints(
   return result
 }
 
-/** Значения по точкам воздуха → по районам */
 export function perDistrict<T>(
   perPoint: ReadonlyMap<string, T>,
   points: ReadonlyMap<string, string>,
@@ -41,7 +36,6 @@ export function perDistrict<T>(
 
 export type Ranked = { id: string; value: number; rank: number }
 
-/** От большего к меньшему; равные делят место (1, 2, 2, 4) и идут по алфавиту */
 export function rankDesc(values: ReadonlyMap<string, number>, names: ReadonlyMap<string, string>): Ranked[] {
   const sorted = [...values]
     .sort(([a, x], [b, y]) => y - x || (names.get(a) ?? "").localeCompare(names.get(b) ?? "", "ru"))
@@ -54,10 +48,6 @@ export function rankDesc(values: ReadonlyMap<string, number>, names: ReadonlyMap
 
 export type ReportCounts = { total: number; open: number; resolved: number }
 
-/**
- * Публичные обращения по районам, созданные в период (минские сутки).
- * В работе — принятые и переданные; отклонённые и новые сюда не попадают — их не видно посетителям.
- */
 export function countReports(
   reports: readonly { district?: string; created: string; status: string }[],
   range: Range,
@@ -77,7 +67,6 @@ export function countReports(
   return result
 }
 
-/** Объекты с координатами → по районам, в чей полигон они попали; вне области — пропускаются */
 export function groupByDistrict<T>(
   items: readonly T[],
   locate: (item: T) => { lat: number; lon: number },
@@ -96,10 +85,6 @@ export type CompareState = { metric: RankMetric; period: Period; a: string; b: s
 
 const METRICS: readonly RankMetric[] = ["pm2_5", "pm10", "no2", "so2", "reports"]
 
-/**
- * Состояние страницы из адреса (?m=no2&p=ytd&a=Мозырский&b=Лельчицкий). Районы — по названию, как ?town= на главной;
- * неизвестные значения — по умолчанию. Если оба района совпали, второй — первый другой из списка.
- */
 export function readCompareParams(
   params: URLSearchParams,
   names: readonly string[],

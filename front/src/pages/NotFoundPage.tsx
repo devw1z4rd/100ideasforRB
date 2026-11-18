@@ -4,11 +4,6 @@ import { Button } from "@/components/ui/button"
 import { notFound as text } from "@/content/notFound"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
-/**
- * 404: «4 0 4», где ноль — спил дерева с годичными кольцами и трещиной. Дерево «растёт»: кольца по очереди
- * от сердцевины к коре расширяются из центра и проявляются, потом проступает трещина (CSS `ring-grow`
- * в index.css, при prefers-reduced-motion — сразу целиком).
- */
 export function NotFoundPage() {
   useDocumentTitle(text.title)
 
@@ -39,7 +34,6 @@ export function NotFoundPage() {
   )
 }
 
-// Кольца спила: ширина колец неровная, как у настоящего дерева; внешние — чуть кривее. Всё детерминировано
 const SIZE = 200
 const CENTER = { x: 104, y: 98 }
 const rings = (() => {
@@ -65,7 +59,6 @@ const rings = (() => {
   })
 })()
 
-// Кольца растут из сердцевины: центр масштабирования — в координатах viewBox
 const grow = { transformBox: "view-box", transformOrigin: `${CENTER.x}px ${CENTER.y}px` } as const
 
 function TreeRings({ className }: { className?: string }) {
@@ -76,14 +69,12 @@ function TreeRings({ className }: { className?: string }) {
         <path
           key={i}
           d={d}
-          // Кора — толще, внутренние кольца — тонкие; растут от сердцевины наружу
           strokeWidth={i === last ? 7 : i % 4 === 3 ? 2.2 : 1.3}
           strokeLinejoin="round"
           className="ring-grow"
           style={{ ...grow, animationDelay: `${120 + i * 75}ms` }}
         />
       ))}
-      {/* Сердцевина и трещина от неё к коре */}
       <circle
         cx={CENTER.x}
         cy={CENTER.y}
