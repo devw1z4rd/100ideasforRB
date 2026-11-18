@@ -1,0 +1,42 @@
+# Прод (CLAUDE.md §6, §12). Caddy отдаёт собранный фронт сам — готовыми .br / .gz, которые делает сборка
+# (front/vite.config.ts, precompress), — а /api и админку проксирует в PocketBase, сжимая ответы на лету
+# (сам PocketBase API не сжимает: без этого главная тянет ~550 КБ JSON вместо ~110).
+#
+# Переменные окружения:
+#   SITE_ADDRESS — домен (по умолчанию localhost: локальная проверка с самоподписанным сертификатом)
+#   PB_UPSTREAM  — адрес PocketBase (в docker-compose — pocketbase:8090)
+#   SITE_ROOT    — каталог со сборкой фронта (front/dist, он же pb_public)
+
+{$SITE_ADDRESS:localhost} {
+	# До 5 фото по 8 МБ в одном обращении
+	request_body {
+		max_size 45MB
+	}
+
+	@backend path /api/* /_/*
+	handle @backend {
+		encode zstd gzip
+		reverse_proxy {$PB_UPSTREAM:127.0.0.1:8090} {
+			# Realtime (SSE) держит соединение открытым
+			transport http {
+				read_timeout 360s
+			}
+		}
+	}
+
+	handle {
+		root * {$SITE_ROOT:/srv/site}
+
+		# Файлы сборки с хэшем в имени не меняются; страница и service worker проверяются каждый раз
+		@hashed path /assets/*
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		@fresh not path /assets/*
+		header @fresh Cache-Control "no-cache"
+
+		# SPA: любой адрес без файла — index.html
+		try_files {path} /index.html
+		file_server {
+			precompressed br gzip
+		}
+	}
+}

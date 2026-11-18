@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import type { PolygonGeometry } from "@/lib/geo"
+import { takeHome } from "./home"
 import { pb } from "./pb"
 import type { DistrictsResponse } from "./pocketbase-types"
 
@@ -24,10 +25,11 @@ export const districtsQuery = () =>
 export const districtGeometryQuery = () =>
   queryOptions({
     queryKey: ["districts", "geometry"],
-    queryFn: () =>
-      pb
+    queryFn: async () =>
+      (await takeHome("districts")) ??
+      (await pb
         .collection("districts")
-        .getFullList<DistrictWithGeometry>({ sort: "name", fields: "id,name,geometry" }),
+        .getFullList<DistrictWithGeometry>({ sort: "name", fields: "id,name,geometry" })),
     staleTime: Infinity,
   })
 
@@ -41,7 +43,9 @@ export const sourcesQuery = () =>
 export const airPointsQuery = () =>
   queryOptions({
     queryKey: ["air", "points"],
-    queryFn: () => pb.collection("air_points").getFullList({ filter: "active = true", sort: "name" }),
+    queryFn: async () =>
+      (await takeHome("points")) ??
+      (await pb.collection("air_points").getFullList({ filter: "active = true", sort: "name" })),
     staleTime: REFERENCE_STALE,
   })
 
