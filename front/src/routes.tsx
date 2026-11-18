@@ -6,22 +6,45 @@ import { HomePage } from "@/pages/HomePage"
 import { NotFoundPage } from "@/pages/NotFoundPage"
 import { RootLayout } from "@/pages/RootLayout"
 import { RouteErrorPage } from "@/pages/RouteErrorPage"
-import { StubPage } from "@/pages/StubPage"
 
-// Новости, база знаний, калькулятор и сравнение районов — отдельными чанками: главной они не нужны
+// Новости, база знаний и сравнение районов — отдельными чанками: главной они не нужны
 const page = (title: string, load: () => Promise<{ Component: ComponentType }>): RouteObject => ({
   lazy: load,
   handle: { title } satisfies RouteHandle,
 })
 
-// Страницы CLAUDE.md §11, которые появятся в следующих подпроектах
-const stubs: ReadonlyArray<readonly [path: string, title: string]> = [
-  ["reports", "Обращения"],
-  ["reports/new", "Сообщить о проблеме"],
-  ["reports/:id", "Обращение"],
-  ["login", "Вход"],
-  ["me", "Профиль"],
-  ["moderation", "Модерация"],
+// Обращения, вход, профиль и модерация (CLAUDE.md §4 M3–M6, §11) — отдельными чанками
+const accountPages: RouteObject[] = [
+  {
+    path: "reports",
+    ...page("Обращения", () => import("@/pages/ReportsPages").then((m) => ({ Component: m.ReportsPage }))),
+  },
+  {
+    path: "reports/new",
+    ...page("Сообщить о проблеме", () =>
+      import("@/pages/ReportNewPage").then((m) => ({ Component: m.ReportNewPage })),
+    ),
+  },
+  {
+    path: "reports/:id",
+    ...page("Обращение", () => import("@/pages/ReportPage").then((m) => ({ Component: m.ReportPage }))),
+  },
+  {
+    path: "results",
+    ...page("Результаты", () => import("@/pages/ResultsPage").then((m) => ({ Component: m.ResultsPage }))),
+  },
+  {
+    path: "login",
+    ...page("Вход", () => import("@/pages/LoginPage").then((m) => ({ Component: m.LoginPage }))),
+  },
+  {
+    path: "me",
+    ...page("Профиль", () => import("@/pages/ReportsPages").then((m) => ({ Component: m.MePage }))),
+  },
+  {
+    path: "moderation",
+    ...page("Модерация", () => import("@/pages/ReportsPages").then((m) => ({ Component: m.ModerationPage }))),
+  },
 ]
 
 export const routes: RouteObject[] = [
@@ -51,12 +74,6 @@ export const routes: RouteObject[] = [
             ),
           },
           {
-            path: "calculator",
-            ...page("Калькулятор углеродного следа", () =>
-              import("@/pages/CalculatorPage").then((m) => ({ Component: m.CalculatorPage })),
-            ),
-          },
-          {
             path: "compare",
             ...page("Сравнение районов", () =>
               import("@/pages/ComparePage").then((m) => ({ Component: m.ComparePage })),
@@ -72,11 +89,20 @@ export const routes: RouteObject[] = [
               import("@/pages/KbArticlePage").then((m) => ({ Component: m.KbArticlePage })),
             ),
           },
-          ...stubs.map(([path, title]) => ({
-            path,
-            element: <StubPage />,
-            handle: { title } satisfies RouteHandle,
-          })),
+          // PROTOTYPE — только в dev-сборке: в продакшен маршрут и его код не попадают
+          ...(import.meta.env.DEV
+            ? [
+                {
+                  path: "prototype/air-kids",
+                  ...page("Прототип: воздух для детей", () =>
+                    import("@/pages/prototype/air-kids/AirKidsPrototypePage").then((m) => ({
+                      Component: m.AirKidsPrototypePage,
+                    })),
+                  ),
+                },
+              ]
+            : []),
+          ...accountPages,
           { path: "*", element: <NotFoundPage /> },
         ],
       },

@@ -1,7 +1,23 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { pb } from "./pb"
-import type { GeoPoint, ReportsCategoryOptions, ReportsStatusOptions } from "./pocketbase-types"
+import { ClientResponseError } from "pocketbase"
+import type {
+  DistrictsResponse,
+  ReportEventsResponse,
+  GeoPoint,
+  ReportsCategoryOptions,
+  ReportsResponse,
+  ReportsStatusOptions,
+} from "./pocketbase-types"
+
+/** Обращение с названием района (expand) — для списков и карточки */
+/** Автопроверка (back/pb_hooks/lib/autocheck.js) — приходит только модераторам */
+export type AutoCheck = { score: number; reasons: { delta: number; text: string }[] }
+export type ReportWithDistrict = ReportsResponse<
+  AutoCheck,
+  { district?: Pick<DistrictsResponse, "id" | "name"> }
+>
 
 // Гражданские обращения (CLAUDE.md §4 M3–M6). Что кому видно и кто что меняет, решают API rules и
 // back/pb_hooks/reports.pb.js; здесь только запросы. Ошибки сервера (ClientResponseError) показывает вызывающий.
@@ -25,14 +41,24 @@ export function reportsFilter({ status, district, author }: ReportsFilter): stri
 export const reportsQuery = (filter: ReportsFilter = {}) =>
   queryOptions({
     queryKey: ["reports", "list", filter],
-    queryFn: () => pb.collection("reports").getFullList({ filter: reportsFilter(filter), sort: "-created" }),
+    queryFn: () =>
+      pb.collection("reports").getFullList<ReportWithDistrict>({
+        filter: reportsFilter(filter),
+        sort: "-created",
+        expand: "district",
+        fields: "*,expand.district.id,expand.district.name",
+      }),
     staleTime: 30_000,
   })
 
 export const reportQuery = (id: string) =>
   queryOptions({
     queryKey: ["reports", id],
-    queryFn: () => pb.collection("reports").getOne(id),
+    queryFn: () =>
+      pb.collection("reports").getOne<ReportWithDistrict>(id, {
+        expand: "district",
+        fields: "*,expand.district.id,expand.district.name",
+      }),
     staleTime: 30_000,
   })
 
@@ -76,10 +102,86 @@ export type NewReport = {
   photos: readonly File[]
 }
 
-/** Автора, статус и район проставляет сервер; точка вне области вернёт 400 с ошибкой у поля location. */
-export function createReport({ location, category, description, photos }: NewReport) {
-  return pb.collection("reports").create({ location, category, description, photos: [...photos] })
+const randomString = (length: number, alphabet: string) =>
+  Array.from(crypto.getRandomValues(new Uint8Array(length)), (b) => alphabet[b % alphabet.length]).join("")
+
+/**
+ * Отправить обращение — с входом или без (вход по желанию). Id и личный ключ придумывает браузер: аноним
+ * без права просмотра всё равно узнаёт, куда идти, — ссылка /reports/{id}?key=… и есть его «квитанция».
+ * Автора, статус и район ставит сервер; точка вне области вернёт 400 с ошибкой у поля location.
+ */
+export async function createReport({ location, category, description, photos }: NewReport) {
+  const id = randomString(15, "abcdefghijklmnopqrstuvwxyz0123456789")
+  const key = pb.authStore.isValid
+    ? ""
+    : randomString(32, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+  // Ключ — заголовком: скрытое поле access_key PocketBase из тела запроса не принимает
+  await pb
+    .collection("reports")
+    .create(
+      { id, location, category, description, photos: [...photos] },
+      key ? { headers: { "X-Report-Key": key } } : {},
+    )
+  if (key) rememberReport(id, key)
+  return { id, key }
 }
+
+// Обращения анонима на этом устройстве — чтобы найти их без ссылки (вкладка «Мои»)
+const DEVICE_KEY = "eco-reports"
+type DeviceReport = { id: string; key: string }
+export function deviceReports(): DeviceReport[] {
+  try {
+    const list: unknown = JSON.parse(localStorage.getItem(DEVICE_KEY) ?? "[]")
+    return Array.isArray(list) ? (list as DeviceReport[]) : []
+  } catch {
+    return []
+  }
+}
+function rememberReport(id: string, key: string) {
+  try {
+    localStorage.setItem(DEVICE_KEY, JSON.stringify([{ id, key }, ...deviceReports()].slice(0, 50)))
+  } catch {
+    // Хранилище недоступно (приватный режим) — останется ссылка
+  }
+}
+
+/** Обращение по личной ссылке анонима (back/pb_hooks/reports.pb.js, /api/eco/reports/{id}) */
+async function fetchKeyed(id: string, key: string) {
+  const res = await pb.send<{
+    report: ReportsResponse<AutoCheck>
+    district: string
+    events: ReportEventsResponse[]
+  }>(`/api/eco/reports/${encodeURIComponent(id)}`, { query: { key } })
+  const report: ReportWithDistrict = {
+    ...res.report,
+    expand: res.report.district ? { district: { id: res.report.district, name: res.district } } : {},
+  }
+  return { report, events: res.events }
+}
+
+/** Аноним без realtime — статус перезапрашивается раз в минуту */
+export const keyedReportQuery = (id: string, key: string) =>
+  queryOptions({
+    queryKey: ["reports", id, "key", key],
+    queryFn: () => fetchKeyed(id, key),
+    refetchInterval: 60_000,
+  })
+export const useKeyedReport = (id: string, key: string | null) =>
+  useQuery({ ...keyedReportQuery(id, key ?? ""), enabled: Boolean(key) })
+
+/** Обращения анонима с этого устройства; удалённые и чужие пропускаются */
+export const useDeviceReports = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["reports", "device"],
+    enabled,
+    queryFn: async () => {
+      const results = await Promise.allSettled(deviceReports().map((r) => fetchKeyed(r.id, r.key)))
+      return results.flatMap((r) => (r.status === "fulfilled" ? [r.value.report] : []))
+    },
+  })
+
+/** Ключ обращения с этого устройства — чтобы в списке «Мои» ссылка вела на карточку с ключом */
+export const deviceKey = (id: string) => deviceReports().find((r) => r.id === id)?.key ?? null
 
 export type StatusChange = { id: string; status: ReportsStatusOptions; comment?: string }
 
@@ -105,3 +207,42 @@ export function useChangeReportStatus() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["reports"] }),
   })
 }
+
+/** Ссылка на фото обращения (файлы отдаёт PocketBase) */
+export const reportPhotoUrl = (report: ReportsResponse, file: string) => pb.files.getURL(report, file)
+
+/** Сообщение сервера для поля (ошибка валидации PocketBase) или null */
+export function fieldError(error: unknown, field: string): string | null {
+  if (!(error instanceof ClientResponseError)) return null
+  const data = error.response?.data as Record<string, { message?: string }> | undefined
+  return data?.[field]?.message ?? null
+}
+
+/** Статус ответа сервера (0 — нет связи) или null, если ошибка не от PocketBase */
+export const errorStatus = (error: unknown) => (error instanceof ClientResponseError ? error.status : null)
+
+export type ShowcaseReport = ReportWithDistrict & { resolvedAt: string | null }
+
+/**
+ * Витрина (/results): опубликованные обращения и когда каждое устранили (событие → resolved в истории).
+ * История устранённых видна всем — правило report_events пускает к опубликованным обращениям.
+ */
+export const showcaseQuery = () =>
+  queryOptions({
+    queryKey: ["reports", "showcase"],
+    queryFn: async (): Promise<ShowcaseReport[]> => {
+      const [reports, resolved] = await Promise.all([
+        pb.collection("reports").getFullList<ReportWithDistrict>({
+          filter: reportsFilter({ status: ["accepted", "forwarded", "resolved"] }),
+          sort: "-created",
+          expand: "district",
+          fields: "*,expand.district.id,expand.district.name",
+        }),
+        pb.collection("report_events").getFullList({ filter: 'to_status = "resolved"', sort: "created" }),
+      ])
+      const resolvedAt = new Map(resolved.map((e) => [e.report, e.created]))
+      return reports.map((r) => ({ ...r, resolvedAt: resolvedAt.get(r.id) ?? null }))
+    },
+    staleTime: 60_000,
+  })
+export const useShowcase = () => useQuery(showcaseQuery())

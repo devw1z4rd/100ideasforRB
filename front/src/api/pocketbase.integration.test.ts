@@ -136,7 +136,7 @@ describe.skipIf(!url)("api against PocketBase", () => {
       photos: [],
     })
     created.push(["reports", report.id])
-    expect(report.status).toBe("new")
+    expect((await fetchQuery(reportQuery(report.id))).status).toBe("new")
     expect((await fetchQuery(reportsQuery({ author: author.record.id }))).map((r) => r.id)).toEqual([
       report.id,
     ])

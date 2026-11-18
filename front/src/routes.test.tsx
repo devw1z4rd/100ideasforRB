@@ -1,7 +1,7 @@
 import { matchRoutes } from "react-router"
 import { describe, expect, it } from "vitest"
 import { footer, cta, login, pages } from "@/content/nav"
-import { hero } from "@/content/hero"
+// import { hero } from "@/content/hero" — мета-блок hero скрыт
 import { routes } from "./routes"
 
 // CLAUDE.md §11
@@ -10,7 +10,6 @@ const claudeMdPaths = [
   "/reports/new",
   "/reports/123",
   "/compare",
-  "/calculator",
   "/news",
   "/news/x",
   "/kb",
@@ -26,7 +25,7 @@ const navTargets = [
   cta.to,
   login.to,
   footer.data.to,
-  ...hero.meta.flatMap((m) => (m.to ? [m.to] : [])),
+  // ...hero.meta.flatMap((m) => (m.to ? [m.to] : [])),
 ]
 
 describe("routes", () => {

@@ -5,10 +5,17 @@ import type { UsersResponse } from "./pocketbase-types"
 // Аккаунты и роли (CLAUDE.md §4 M5, §8). Токен хранит authStore SDK (localStorage); роль решает только то,
 // что показать в интерфейсе — права проверяют API rules на сервере.
 
-const subscribe = (onChange: () => void) => pb.authStore.onChange(onChange)
 // Суперпользователь из админки (/_/) — не пользователь сайта
-const getUser = () =>
+const readUser = () =>
   pb.authStore.isValid && pb.authStore.record?.collectionName === "users" ? pb.authStore.record : null
+// Снимок кэшируется: authStore.record читает localStorage и каждый раз отдаёт новый объект, а
+// useSyncExternalStore требует один и тот же объект, пока ничего не поменялось (иначе бесконечный цикл)
+let current = readUser()
+pb.authStore.onChange(() => {
+  current = readUser()
+})
+const subscribe = (onChange: () => void) => pb.authStore.onChange(onChange)
+const getUser = () => current
 
 export function useAuth() {
   const user = useSyncExternalStore(subscribe, getUser) as UsersResponse | null

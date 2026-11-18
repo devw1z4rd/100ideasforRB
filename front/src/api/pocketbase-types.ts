@@ -317,13 +317,15 @@ export const ReportsStatusOptions = {
 	"rejected": "rejected",
 } as const
 export type ReportsStatusOptions = typeof ReportsStatusOptions[keyof typeof ReportsStatusOptions]
-export type ReportsRecord = {
+export type ReportsRecord<Tauto_check = unknown> = {
+	access_key?: string
 	ai_category?: string
 	ai_confidence?: number
-	author: RecordIdString
+	author?: RecordIdString
+	auto_check?: null | Tauto_check
 	category: ReportsCategoryOptions
 	created: IsoAutoDateString
-	description: string
+	description?: string
 	district?: RecordIdString
 	duplicate_of?: RecordIdString
 	id: string
@@ -415,6 +417,8 @@ export const WaterReadingsRiverOptions = {
 	"Уборть": "Уборть",
 	"Птичь": "Птичь",
 	"Ипуть": "Ипуть",
+	"Ведрич": "Ведрич",
+	"Добысна": "Добысна",
 } as const
 export type WaterReadingsRiverOptions = typeof WaterReadingsRiverOptions[keyof typeof WaterReadingsRiverOptions]
 
@@ -481,7 +485,7 @@ export type EnterprisesResponse<Texpand = unknown> = Required<EnterprisesRecord>
 export type NewsResponse<Texpand = unknown> = Required<NewsRecord> & BaseSystemFields<Texpand>
 export type PlacesResponse<Texpand = unknown> = Required<PlacesRecord> & BaseSystemFields<Texpand>
 export type ReportEventsResponse<Texpand = unknown> = Required<ReportEventsRecord> & BaseSystemFields<Texpand>
-export type ReportsResponse<Texpand = unknown> = Required<ReportsRecord> & BaseSystemFields<Texpand>
+export type ReportsResponse<Tauto_check = unknown, Texpand = unknown> = Required<ReportsRecord<Tauto_check>> & BaseSystemFields<Texpand>
 export type RiverLevelsResponse<Texpand = unknown> = Required<RiverLevelsRecord> & BaseSystemFields<Texpand>
 export type RiverPostsResponse<Texpand = unknown> = Required<RiverPostsRecord> & BaseSystemFields<Texpand>
 export type SourcesResponse<Texpand = unknown> = Required<SourcesRecord> & BaseSystemFields<Texpand>
