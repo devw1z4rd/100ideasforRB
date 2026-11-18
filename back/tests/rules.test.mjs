@@ -248,3 +248,17 @@ describe("rivers", () => {
     }
   });
 });
+
+describe("health", () => {
+  test("свежесть данных открыта всем; 503, если данные устарели", async () => {
+    const res = await call(null, "GET", "/api/eco/health");
+    assert.equal(res.status, res.data.ok ? 200 : 503);
+    for (const key of ["air", "rivers"]) {
+      const part = res.data[key];
+      assert.equal(typeof part.ok, "boolean");
+      assert.equal(typeof part.limitHours, "number");
+      if (!part.at) assert.equal(part.ok, false);
+    }
+    assert.equal(res.data.ok, res.data.air.ok && res.data.rivers.ok);
+  });
+});
