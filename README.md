@@ -135,6 +135,7 @@ All schedules are in UTC.
 |---|---|
 | `GET /api/eco/home` | First-screen data in one response. It returns the same records and fields as the corresponding collection queries. |
 | `GET /api/eco/reports/{id}?key=…` | A report opened through an anonymous author's personal link. A wrong key returns 404. |
+| `GET /api/eco/health` | Data freshness for an uptime monitor: the newest actual air hour and river level with their age. Returns 503 when air data is older than 3 h or river levels older than 48 h, i.e. when a scheduled job has stopped delivering. |
 
 ## 4. Data sources and methodology
 
@@ -181,7 +182,7 @@ The schema is defined in PocketBase and versioned as migrations in `back/pb_migr
 
 | Layer | Technology |
 |---|---|
-| Backend | **PocketBase 0.41.1**: SQLite, auth, REST, realtime over SSE, file storage, admin UI; JavaScript hooks run on the embedded goja engine |
+| Backend | **PocketBase 0.42.3**: SQLite, auth, REST, realtime over SSE, file storage, admin UI; JavaScript hooks run on the embedded goja engine |
 | Frontend | **React 19**, **TypeScript** (strict), **Vite 8** |
 | Routing and data | React Router 8, TanStack Query 5, PocketBase JS SDK |
 | UI | Tailwind CSS 4, shadcn/ui on Radix primitives, Lucide icons, Motion |
@@ -222,7 +223,7 @@ The schema is defined in PocketBase and versioned as migrations in `back/pb_migr
 ### 8.1 Prerequisites
 
 - **Node.js** 20.19+ or 22.12+ (required by Vite 8) and npm.
-- **PocketBase 0.41.1.** Download the archive for your OS from the [PocketBase releases](https://github.com/pocketbase/pocketbase/releases/tag/v0.41.1) and put the binary into `back/`. PocketBase looks for `pb_hooks/`, `pb_migrations/` and `pb_data/` next to the binary. The hooks are written against the 0.41 JSVM API, so use this version.
+- **PocketBase 0.42.3.** Download the archive for your OS from the [PocketBase docs page](https://pocketbase.io/docs/) and put the binary into `back/`. New releases are no longer published on GitHub (the last one there is 0.40.6); the docs page links to the author's download site, which also has `checksums.txt`. PocketBase looks for `pb_hooks/`, `pb_migrations/` and `pb_data/` next to the binary. The hooks and tests are checked against 0.42.3, so use this version.
 
 On Windows the binary is `pocketbase.exe`. Replace `./pocketbase` with `.\pocketbase.exe` in the commands below.
 
@@ -306,6 +307,8 @@ Behind a proxy, prefix the network-bound scripts with `NODE_USE_ENV_PROXY=1`. Af
 
 The integration suites create their own records and delete them at the end. Without `PB_TEST_URL`, the frontend integration tests are skipped.
 
+The schema enables PocketBase's default rate limits, including 2 sign-ins per 3 s per IP, and the suites sign in several users in a row. Locally, exclude `127.0.0.1` from rate limiting for the test run (`rateLimits.excludedIPs` in the settings, e.g. via `PATCH /api/settings` as a superuser) and clear it afterwards, and run the two suites one after the other, not in parallel.
+
 ## 10. Production deployment
 
 The target is a small Linux VPS: 1 vCPU, 1–2 GB RAM, Ubuntu 24.04.
@@ -313,7 +316,7 @@ The target is a small Linux VPS: 1 vCPU, 1–2 GB RAM, Ubuntu 24.04.
 1. **Build the frontend:** `cd front && npm ci && npm run build`.
 2. **Copy to the server:**
    - `back/pb_hooks/`, `back/pb_migrations/` and `back/seed/`;
-   - the PocketBase 0.41.1 binary for Linux, placed next to them;
+   - the PocketBase 0.42.3 binary for Linux, placed next to them;
    - `front/dist/`, which becomes `SITE_ROOT`.
 3. **Run PocketBase as a service**, listening on localhost only. Migrations are applied automatically on `serve`. A minimal systemd unit:
 
@@ -338,10 +341,10 @@ The target is a small Linux VPS: 1 vCPU, 1–2 GB RAM, Ubuntu 24.04.
    SITE_ADDRESS=eco.example.by PB_UPSTREAM=127.0.0.1:8090 SITE_ROOT=/srv/eco/site caddy run --config Caddyfile
    ```
 
-6. **Set the trusted proxy.** In the admin UI, under *Settings → Application → Trusted proxy*, set the `X-Forwarded-For` header. Otherwise PocketBase sees every guest as Caddy's IP, and the guest rate limit becomes global.
-7. **Set up backups.** Enable the built-in scheduled backups (*Settings → Backups*), for example daily with 7 copies kept. Also copy them off the server, to S3-compatible storage or another host.
+6. **Trusted proxy and backups are set by a migration** (`1795039674_settings_proxy_backups.js`). PocketBase takes the client IP from `X-Forwarded-For`, which Caddy overwrites with the real one; without this, every guest would have Caddy's IP and the per-IP rate limits would apply to the whole site. Backups run daily at 02:30 Minsk and the last 7 are kept in `pb_data/backups`. **Copy them off the server** yourself, to S3-compatible storage (*Settings → Backups*) or another host.
+7. **Set up an uptime monitor** on `https://<domain>/api/eco/health`, with an alert on any non-2xx response, in any external service that can notify Telegram or e-mail. The endpoint returns 503 when air data or river levels stop arriving.
 
-Alternatively, the content of `front/dist` can be placed into `back/pb_public/` and served by PocketBase directly. The site works this way, but without brotli and without immutable caching of assets.
+Alternatively, the content of `front/dist` can be placed into `back/pb_public/` and served by PocketBase directly. The site works this way, but without brotli and without immutable caching of assets. In this mode PocketBase faces clients directly, so remove the `X-Forwarded-For` header under *Settings → Application → Trusted proxy*: otherwise a client can send the header itself and get around the rate limits.
 
 ## 11. Performance
 
@@ -372,9 +375,9 @@ The map intro animation was profiled separately on a throttled CPU. The flight f
 - **Modelled air data.** CAMS values describe a ~10–40 km grid cell, not a measurement at a station. Integrating official monitoring data from Belhydromet depends on its availability in machine-readable form.
 - **No enterprise- or district-level emissions.** These figures are not published, so the industry section stays at the regional level.
 - **Manual quarterly extraction.** Water-quality data is extracted from Belhydromet's reviews by hand each quarter.
-- **Photos are not yet processed.** Uploaded photos are not compressed and their EXIF metadata, including location, is not stripped.
+- **Photos are processed in the browser only.** Before upload the report form re-encodes each photo as JPEG of at most 2048 px, which also removes EXIF metadata, including location. A browser that cannot decode the format (HEIC outside Safari) uploads the original as is, and the server does not re-check it, because PocketBase hooks have no image library.
 - **Open items before production:**
-  - the `Caddyfile` has not yet been validated on a production host;
+  - the `Caddyfile` has been checked locally with Caddy 2.11.9 (compression, caching, SPA fallback, realtime, client IP), but not yet on a production host;
   - docker-compose and CI/CD are not part of the repository yet.
 - **Planned:**
   - a Telegram bot for reports and AQI alerts;
