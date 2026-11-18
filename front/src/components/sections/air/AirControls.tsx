@@ -1,29 +1,185 @@
-import { LocateFixed } from "lucide-react"
-import { useState } from "react"
+import {
+  CalendarDays,
+  ChartSpline,
+  ChevronDown,
+  Clock3,
+  CloudSun,
+  LocateFixed,
+  MapPin,
+  Table2,
+  type LucideIcon,
+} from "lucide-react"
+import { useRef, useState, type KeyboardEvent } from "react"
+import { useLatestAir } from "@/api/air"
+import {
+  Select,
+  SelectContent,
+  SelectIcon,
+  SelectItem,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Tooltip } from "@/components/ui/tooltip"
 import { air, periods } from "@/content/air"
+import { aqiCategory } from "@/lib/aqi"
 import { nearestPoint, type Period } from "@/lib/airStats"
+import { useIndicator } from "@/lib/useIndicator"
+import { useFinePointer } from "@/lib/useMediaQuery"
 import { cn } from "@/lib/utils"
 
 type Town = { id: string; name: string; lat: number; lon: number }
 
-const control =
-  "h-9 rounded-md border border-input bg-background px-3 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+// Фильтры раздела (город, период) — тихие «чипы» без рамки: не спорят с вкладками видов
+const chip =
+  "h-9 rounded-full bg-muted text-sm font-medium transition-colors hover:bg-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+
+type ChipOption = {
+  value: string
+  label: string
+  /** Цветная точка слева в своём списке (десктоп) */
+  dot?: string
+  /** Тихая подпись справа в своём списке (десктоп) */
+  aside?: string
+}
+
+/**
+ * Фильтр-чип: значок слева, стрелка справа. На десктопе — свой выпадающий список (Radix Select: клавиатура,
+ * поиск по первым буквам, точка и подпись у пунктов), на телефоне — нативный select с системным списком.
+ */
+function ChipSelect({
+  id,
+  label,
+  icon: Icon,
+  value,
+  onChange,
+  options,
+  header,
+  className,
+}: {
+  id: string
+  label: string
+  icon: LucideIcon
+  value: string
+  onChange: (value: string) => void
+  options: readonly ChipOption[]
+  /** Подпись над пунктами своего списка */
+  header?: { left: string; right?: string }
+  className?: string
+}) {
+  const fine = useFinePointer()
+
+  if (fine)
+    return (
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger
+          id={id}
+          aria-label={label}
+          className={cn(
+            chip,
+            "group inline-flex min-w-0 cursor-pointer items-center gap-2 pr-3 pl-3 text-left data-[state=open]:bg-border",
+            className,
+          )}
+        >
+          <Icon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+          <span className="truncate">
+            <SelectValue />
+          </span>
+          <SelectIcon asChild>
+            <ChevronDown
+              aria-hidden="true"
+              className="ml-auto size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180"
+            />
+          </SelectIcon>
+        </SelectTrigger>
+        <SelectContent align="end" className="min-w-56">
+          {header && (
+            <div className="flex justify-between gap-4 px-2.5 pt-1.5 pb-1 text-[11px] text-muted-foreground">
+              <span>{header.left}</span>
+              {header.right && <span className="pr-5.5">{header.right}</span>}
+            </div>
+          )}
+          {options.map((o) => (
+            <SelectItem key={o.value} value={o.value}>
+              {o.dot && (
+                <span
+                  aria-hidden="true"
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ background: o.dot }}
+                />
+              )}
+              <SelectItemText>{o.label}</SelectItemText>
+              {o.aside && (
+                <span className="ml-auto pl-4 text-[13px] text-muted-foreground tabular-nums">{o.aside}</span>
+              )}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+
+  return (
+    <span className={cn("relative inline-flex min-w-0", className)}>
+      <label className="sr-only" htmlFor={id}>
+        {label}
+      </label>
+      <Icon
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+      />
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(chip, "w-full min-w-0 cursor-pointer appearance-none truncate pr-8 pl-9")}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+      />
+    </span>
+  )
+}
 
 /** Выбор города: список + «Рядом со мной» (координаты остаются в браузере, на сервер не уходят). */
 export function TownPicker({
   points,
   value,
   onChange,
+  className,
 }: {
   points: readonly Town[]
   value: string
   onChange: (id: string) => void
+  className?: string
 }) {
   const [locating, setLocating] = useState(false)
   const [geoError, setGeoError] = useState(false)
   const canLocate = typeof navigator !== "undefined" && "geolocation" in navigator
+  // В своём списке у города — точка категории и AQI сейчас: видно, куда переключиться
+  const { data: latest } = useLatestAir()
+  const options = [...points]
+    .sort((a, b) => a.name.localeCompare(b.name, "ru"))
+    .map((p): ChipOption => {
+      const aqi = latest?.get(p.id)?.us_aqi
+      const category = aqiCategory(aqi)
+      return {
+        value: p.id,
+        label: p.name,
+        dot: category?.color,
+        aside: category ? String(Math.round(aqi!)) : undefined,
+      }
+    })
 
   const locate = () => {
+    // aria-disabled вместо disabled: выключенная кнопка не получает наведение и подсказка бы не открылась
+    if (locating) return
     setLocating(true)
     setGeoError(false)
     navigator.geolocation.getCurrentPosition(
@@ -41,38 +197,56 @@ export function TownPicker({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <label className="sr-only" htmlFor="air-town">
-        {air.townLabel}
-      </label>
-      <select
+    <div className={cn("flex min-w-0 items-center gap-1.5", className)}>
+      <ChipSelect
         id="air-town"
+        label={air.townLabel}
+        icon={MapPin}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={cn(control, "pr-8 font-medium")}
-      >
-        {[...points]
-          .sort((a, b) => a.name.localeCompare(b.name, "ru"))
-          .map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-      </select>
-      {canLocate && (
-        <button
-          type="button"
-          onClick={locate}
-          disabled={locating}
-          className={cn(control, "inline-flex cursor-pointer items-center gap-1.5 disabled:opacity-60")}
-          title={geoError ? air.nearMeError : undefined}
-        >
-          <LocateFixed aria-hidden="true" className="size-4" />
-          {air.nearMe}
-        </button>
-      )}
+        onChange={onChange}
+        options={options}
+        header={{ left: air.townLabel, right: air.townAqi }}
+        className="flex-1 md:flex-none"
+      />
+      {canLocate &&
+        (() => {
+          const button = (
+            <button
+              type="button"
+              onClick={locate}
+              aria-disabled={locating}
+              aria-label={geoError ? `${air.nearMe}: ${air.nearMeError}` : air.nearMe}
+              className={cn(
+                chip,
+                "grid size-9 shrink-0 cursor-pointer place-items-center hover:text-foreground aria-disabled:opacity-60",
+                geoError ? "text-destructive" : "text-muted-foreground",
+                locating && "animate-pulse",
+              )}
+            >
+              <LocateFixed aria-hidden="true" className="size-4" />
+            </button>
+          )
+          return (
+            <Tooltip
+              text={geoError ? air.nearMeError : air.nearMe}
+              content={
+                geoError ? (
+                  air.nearMeError
+                ) : (
+                  <>
+                    <span className="font-medium">{air.nearMe}</span>
+                    <br />
+                    <span className="opacity-75">{air.nearMeHint}</span>
+                  </>
+                )
+              }
+            >
+              {button}
+            </Tooltip>
+          )
+        })()}
       {geoError && (
-        <span role="status" className="text-xs text-muted-foreground">
+        <span role="status" className="sr-only">
           {air.nearMeError}
         </span>
       )}
@@ -80,18 +254,54 @@ export function TownPicker({
   )
 }
 
-/** Сегмент периода (§10.6): активный — чёрный. options — подмножество периодов (сравнение районов — без 7 дней). */
+/** Период раздела «Воздух» — чип-список «За 30 дней»: второстепенный фильтр рядом с городом. */
+export function PeriodSelect({
+  value,
+  onChange,
+  className,
+}: {
+  value: Period
+  onChange: (p: Period) => void
+  className?: string
+}) {
+  return (
+    <ChipSelect
+      id="air-period"
+      label={air.periodLabel}
+      icon={CalendarDays}
+      value={value}
+      onChange={(v) => onChange(v as Period)}
+      options={periods.map((p) => ({ value: p.key, label: p.short[0].toUpperCase() + p.short.slice(1) }))}
+      className={className}
+    />
+  )
+}
+
+/** Сегмент периода (сравнение районов): активный — чёрный. options — подмножество периодов (сравнение районов — без 7 дней). */
 export function PeriodSwitch({
   value,
   onChange,
   options,
+  stretch = false,
+  className,
 }: {
   value: Period
   onChange: (p: Period) => void
   options?: readonly Period[]
+  /** На мобиле — во всю ширину, сегменты поровну */
+  stretch?: boolean
+  className?: string
 }) {
   return (
-    <div role="radiogroup" aria-label="Период" className="inline-flex rounded-md border border-input p-0.5">
+    <div
+      role="radiogroup"
+      aria-label="Период"
+      className={cn(
+        "rounded-md border border-input p-0.5",
+        stretch ? "flex w-full md:inline-flex md:w-auto" : "inline-flex",
+        className,
+      )}
+    >
       {periods
         .filter((p) => !options || options.includes(p.key))
         .map((p) => (
@@ -103,6 +313,7 @@ export function PeriodSwitch({
             onClick={() => onChange(p.key)}
             className={cn(
               "h-8 cursor-pointer rounded-[5px] px-3 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+              stretch && "max-md:flex-1 max-md:px-1",
               value === p.key
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground",
@@ -111,6 +322,95 @@ export function PeriodSwitch({
             {p.label}
           </button>
         ))}
+    </div>
+  )
+}
+
+export type AirView = "town" | "table" | "forecast" | "hours"
+
+const viewOptions: ReadonlyArray<{ key: AirView; label: string; Icon: typeof Table2 }> = [
+  { key: "town", label: air.views.town, Icon: ChartSpline },
+  { key: "table", label: air.views.table, Icon: Table2 },
+  { key: "forecast", label: air.views.forecast, Icon: CloudSun },
+  { key: "hours", label: air.views.hours, Icon: Clock3 },
+]
+
+/**
+ * Вкладки вида раздела «Воздух»: город на графике, все города таблицей, прогноз, время суток.
+ * Подчёркивание переезжает к выбранной (useIndicator); стрелки ← → / Home / End переключают вкладки.
+ */
+export function ViewTabs({
+  value,
+  onChange,
+  controls,
+  className,
+}: {
+  value: AirView
+  onChange: (view: AirView) => void
+  /** id области с содержимым вида */
+  controls: string
+  className?: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const bar = useIndicator(ref, value)
+  const keys = viewOptions.map((v) => v.key)
+
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const i = keys.indexOf(value)
+    const next =
+      e.key === "ArrowRight"
+        ? keys[(i + 1) % keys.length]
+        : e.key === "ArrowLeft"
+          ? keys[(i - 1 + keys.length) % keys.length]
+          : e.key === "Home"
+            ? keys[0]
+            : e.key === "End"
+              ? keys[keys.length - 1]
+              : null
+    if (!next) return
+    e.preventDefault()
+    onChange(next)
+    ref.current?.querySelector<HTMLElement>(`[data-nav-key="${next}"]`)?.focus()
+  }
+
+  return (
+    <div
+      ref={ref}
+      role="tablist"
+      aria-label={air.views.label}
+      onKeyDown={onKeyDown}
+      className={cn("relative flex sm:gap-7", className)}
+    >
+      {viewOptions.map(({ key, label, Icon }) => {
+        const active = value === key
+        return (
+          <button
+            key={key}
+            data-nav-key={key}
+            type="button"
+            role="tab"
+            id={`air-tab-${key}`}
+            aria-selected={active}
+            aria-controls={controls}
+            tabIndex={active ? 0 : -1}
+            onClick={() => onChange(key)}
+            className={cn(
+              "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-sm text-[13px] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:flex-none sm:text-[15px]",
+              active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Icon aria-hidden="true" className="hidden size-4 sm:block" />
+            {label}
+          </button>
+        )
+      })}
+      {bar && (
+        <span
+          aria-hidden="true"
+          className="absolute -bottom-px left-0 h-0.5 rounded-full bg-foreground transition-[translate,width] duration-300 ease-out motion-reduce:transition-none"
+          style={{ translate: `${bar.x}px 0`, width: bar.w }}
+        />
+      )}
     </div>
   )
 }

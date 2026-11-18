@@ -1,9 +1,17 @@
-import { memo, useMemo, useState, type PointerEvent } from "react"
+import { useMemo, useRef, useState, type PointerEvent } from "react"
 import { air, levelLabels, type PollutantInfo } from "@/content/air"
-import { normLevel, type DailyRow, type NormLevel, type PointSummary } from "@/lib/airStats"
+import {
+  buckets as toBuckets,
+  normLevel,
+  type DailyRow,
+  type NormLevel,
+  type PointSummary,
+  type Range,
+} from "@/lib/airStats"
 import { formatNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import { formatDayLong, levelColor } from "./format"
+import { useWidth } from "@/lib/useWidth"
+import { formatDay, formatDayLong, levelColor } from "./format"
 
 type Props = {
   rows: readonly DailyRow[]
@@ -13,15 +21,30 @@ type Props = {
   summaries: ReadonlyMap<string, PointSummary>
   selected: string
   onSelect: (id: string) => void
-  hoveredDay: string | null
-  onHoverDay: (day: string | null) => void
+  /** Подсвеченные сутки или неделя — общие с графиком */
+  hover: Range | null
+  onHover: (range: Range | null) => void
 }
 
 const levels: readonly NormLevel[] = ["ok", "elevated", "high"]
+const ROW_H = 20
+const CELL_H = 14
+const GAP = 2
+// Дни в норме — бледным, чтобы считались и бросались в глаза дни выше нормы (как полоса в карточке города)
+const cellFill = (level: NormLevel | null) =>
+  level === null
+    ? "var(--muted)"
+    : level === "ok"
+      ? `color-mix(in oklab, ${levelColor.ok} 35%, transparent)`
+      : levelColor[level]
+
+type Cell = { worst: number | null; worstDay: string | null; over: number; total: number }
 
 /**
- * «Где и когда было выше нормы»: строка — город, клетка — сутки, цвет — уровень относительно нормы ВОЗ.
- * Все города и все дни сразу, ничего не усреднено. Строки — от города с наибольшим числом плохих дней.
+ * «Где и когда было выше нормы»: строка — город, клетка — сутки (до 92 дней) или неделя (дольше: иначе клетки
+ * в 2 px и месиво), цвет — уровень худших суток клетки относительно нормы ВОЗ. Строки — от города
+ * с наибольшим числом плохих дней. Клетки — одна SVG-сетка, нарисованная один раз: наведение двигает только
+ * подсветку столбца, поэтому даже «с начала года» (21 × 46 недель) ничего не тормозит.
  */
 export function TownStrip({
   rows,
@@ -31,39 +54,102 @@ export function TownStrip({
   summaries,
   selected,
   onSelect,
-  hoveredDay,
-  onHoverDay,
+  hover,
+  onHover,
 }: Props) {
   const [hoveredPoint, setHoveredPoint] = useState<string | null>(null)
+  const box = useRef<HTMLDivElement>(null)
+  const width = useWidth(box)
+  const cols = useMemo(() => toBuckets(days), [days])
+  const weekly = cols.length < days.length
 
-  const values = useMemo(() => {
+  const order = useMemo(
+    () =>
+      [...summaries.entries()]
+        .sort(
+          ([a, x], [b, y]) =>
+            y.daysOver - x.daysOver || (names.get(a) ?? "").localeCompare(names.get(b) ?? "", "ru"),
+        )
+        .map(([id]) => id),
+    [summaries, names],
+  )
+
+  // Город → клетка → худшие сутки и сколько суток выше нормы
+  const cells = useMemo(() => {
     const byPoint = new Map<string, Map<string, number>>()
     for (const r of rows) {
       const m = byPoint.get(r.point) ?? new Map<string, number>()
       m.set(r.day, r[`${pollutant.key}_avg`])
       byPoint.set(r.point, m)
     }
-    return byPoint
-  }, [rows, pollutant.key])
-
-  const order = [...summaries.entries()]
-    .sort(
-      ([a, x], [b, y]) =>
-        y.daysOver - x.daysOver || (names.get(a) ?? "").localeCompare(names.get(b) ?? "", "ru"),
+    return new Map(
+      order.map((id) => {
+        const values = byPoint.get(id)
+        return [
+          id,
+          cols.map((col): Cell => {
+            let worst: number | null = null
+            let worstDay: string | null = null
+            let over = 0
+            let total = 0
+            for (const d of col.days) {
+              const v = values?.get(d)
+              if (v == null) continue
+              total++
+              if (v > pollutant.norm) over++
+              if (worst === null || v > worst) {
+                worst = v
+                worstDay = d
+              }
+            }
+            return { worst, worstDay, over, total }
+          }),
+        ]
+      }),
     )
-    .map(([id]) => id)
+  }, [rows, order, cols, pollutant.key, pollutant.norm])
 
-  const dayIndex = hoveredDay ? days.indexOf(hoveredDay) : -1
-  const overOnDay = hoveredDay
-    ? order.filter((id) => (values.get(id)?.get(hoveredDay) ?? 0) > pollutant.norm).length
-    : 0
-  const hoveredValue = hoveredDay && hoveredPoint ? values.get(hoveredPoint)?.get(hoveredDay) : undefined
+  const cellW = width / Math.max(cols.length, 1)
+  const gap = cellW > 6 ? GAP : cellW > 3 ? 1 : 0
+  const gridH = order.length * ROW_H
 
-  const track = (e: PointerEvent<HTMLDivElement>, point: string) => {
-    const day = (e.target as HTMLElement).dataset.day
-    if (!day) return
-    setHoveredPoint(point)
-    onHoverDay(day)
+  // Сетка рисуется один раз на данные и ширину; наведение её не перерисовывает
+  const grid = useMemo(
+    () =>
+      width > 0 &&
+      order.map((id, r) =>
+        (cells.get(id) ?? []).map((c, k) => (
+          <rect
+            key={`${id}-${k}`}
+            x={k * cellW + gap / 2}
+            y={r * ROW_H + (ROW_H - CELL_H) / 2}
+            width={Math.max(cellW - gap, 0.5)}
+            height={CELL_H}
+            rx={cellW > 6 ? 2 : 0}
+            fill={cellFill(c.worst === null ? null : normLevel(c.worst, pollutant.norm))}
+          />
+        )),
+      ),
+    [width, order, cells, cellW, gap, pollutant.norm],
+  )
+
+  const hoverCol = hover ? cols.findIndex((c) => c.to >= hover.from && c.from <= hover.to) : -1
+  const col = hoverCol >= 0 ? cols[hoverCol] : null
+  const overTowns =
+    hoverCol >= 0 ? order.filter((id) => (cells.get(id)?.[hoverCol]?.over ?? 0) > 0).length : 0
+  const hoveredCell = hoverCol >= 0 && hoveredPoint ? cells.get(hoveredPoint)?.[hoverCol] : undefined
+  const months = monthMarks(cols)
+
+  const track = (e: PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const k = Math.min(
+      cols.length - 1,
+      Math.max(0, Math.floor(((e.clientX - rect.left) / rect.width) * cols.length)),
+    )
+    const r = Math.min(order.length - 1, Math.max(0, Math.floor((e.clientY - rect.top) / ROW_H)))
+    setHoveredPoint(order[r] ?? null)
+    const c = cols[k]
+    if (!hover || hover.from !== c.from || hover.to !== c.to) onHover({ from: c.from, to: c.to })
   }
 
   return (
@@ -71,7 +157,9 @@ export function TownStrip({
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h3 className="font-heading text-xl font-semibold tracking-[-0.02em]">{air.strip.title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{air.strip.lead}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {weekly ? air.strip.leadWeeks : air.strip.lead}
+          </p>
         </div>
         <ul className="flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
           {levels.map((level) => (
@@ -79,7 +167,7 @@ export function TownStrip({
               <span
                 aria-hidden="true"
                 className="size-2.5 rounded-sm"
-                style={{ background: levelColor[level] }}
+                style={{ background: cellFill(level) }}
               />
               {levelLabels[level]}
             </li>
@@ -88,60 +176,120 @@ export function TownStrip({
       </div>
 
       <p className="mt-4 min-h-5 text-[13px] tabular-nums" aria-live="polite">
-        {hoveredDay ? (
+        {col ? (
           <>
-            <span className="font-medium">{formatDayLong(hoveredDay)}</span>: выше нормы в {overOnDay} из{" "}
-            {order.length} городов
-            {hoveredPoint && hoveredValue != null && (
+            <span className="font-medium">
+              {weekly ? air.strip.week(formatDay(col.from), formatDay(col.to)) : formatDayLong(col.from)}
+            </span>
+            : {air.strip.overTowns(overTowns, order.length, weekly)}
+            {hoveredPoint && hoveredCell?.worst != null && (
               <>
-                {" "}
-                · {names.get(hoveredPoint)} — {formatNumber(hoveredValue, 1)} {air.chart.unit}
+                {" · "}
+                {weekly
+                  ? air.strip.townWeek(
+                      names.get(hoveredPoint) ?? "",
+                      hoveredCell.over,
+                      hoveredCell.total,
+                      formatNumber(hoveredCell.worst, 1),
+                    )
+                  : air.strip.townDay(names.get(hoveredPoint) ?? "", formatNumber(hoveredCell.worst, 1))}
               </>
             )}
           </>
         ) : (
-          <span className="text-muted-foreground">
-            {pollutant.label}, норма ВОЗ {pollutant.norm} {air.chart.unit} в сутки
-          </span>
+          <span className="text-muted-foreground">{air.strip.hint(pollutant.label, pollutant.norm)}</span>
         )}
       </p>
 
-      {/* Строки с отступом 8px по бокам (фон выбранной строки) — сам скролл-контейнер шире колонки на эти 8px,
-          иначе строки вылезают за него и на десктопе появляется горизонтальный скролл */}
-      <div className="-mx-4 mt-2 overflow-x-auto px-2 md:-mx-2 md:px-0">
-        {/* --labels — ширина колонок «город» и «дни» вместе с зазорами: от неё считается позиция подсветки дня */}
-        <div
-          className="relative flex flex-col gap-0.5 [--labels:152px] md:[--labels:192px]"
-          style={{ minWidth: 160 + days.length * 3 }}
-          onPointerLeave={() => {
-            setHoveredPoint(null)
-            onHoverDay(null)
-          }}
-        >
+      <div className="mt-2 grid grid-cols-[100px_48px_1fr] gap-x-2 md:grid-cols-[128px_48px_1fr]">
+        {/* Подписи месяцев над сеткой — только у длинных периодов */}
+        <div className="col-span-2" />
+        <div className="relative h-4 text-[11px] text-muted-foreground">
+          {width > 0 &&
+            months.map((m) => (
+              <span key={m.k} className="absolute top-0" style={{ left: m.k * cellW }}>
+                {m.label}
+              </span>
+            ))}
+        </div>
+
+        <ul className="col-span-2 flex flex-col">
           {order.map((id) => (
-            <StripRow
+            <li
               key={id}
-              id={id}
-              name={names.get(id) ?? ""}
-              daysOver={summaries.get(id)?.daysOver ?? 0}
-              values={values.get(id)}
-              days={days}
-              norm={pollutant.norm}
-              selected={id === selected}
-              onSelect={onSelect}
-              onTrack={track}
-            />
+              className={cn(
+                "grid grid-cols-[100px_48px] items-center gap-x-2 rounded-l-md md:grid-cols-[128px_48px]",
+                id === selected && "bg-muted",
+              )}
+              style={{ height: ROW_H }}
+            >
+              <button
+                type="button"
+                aria-pressed={id === selected}
+                aria-label={`${names.get(id)}: ${air.strip.days(summaries.get(id)?.daysOver ?? 0)} ${air.daysOverCaption}`}
+                onClick={() => onSelect(id)}
+                className={cn(
+                  "cursor-pointer truncate rounded-sm pl-2 text-left text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+                  id === selected
+                    ? "font-semibold text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {names.get(id)}
+              </button>
+              <span
+                className={cn(
+                  "text-right text-[13px] whitespace-nowrap tabular-nums",
+                  id === selected ? "font-semibold text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {air.strip.days(summaries.get(id)?.daysOver ?? 0)}
+              </span>
+            </li>
           ))}
-          {/* Подсветка дня — поверх клеток и вне потока, сетку строк не трогает */}
-          {dayIndex >= 0 && (
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 rounded-[2px] bg-foreground/20"
-              style={{
-                left: `calc(8px + var(--labels) + (100% - var(--labels) - 16px) * ${dayIndex / days.length})`,
-                width: `calc((100% - var(--labels) - 16px) / ${days.length})`,
-              }}
-            />
+        </ul>
+
+        <div
+          ref={box}
+          aria-hidden="true"
+          className="relative cursor-pointer touch-pan-y"
+          style={{ height: gridH }}
+          onPointerMove={track}
+          onPointerDown={track}
+          onPointerLeave={(e) => {
+            if (e.pointerType !== "mouse") return
+            setHoveredPoint(null)
+            onHover(null)
+          }}
+          onClick={() => hoveredPoint && onSelect(hoveredPoint)}
+        >
+          {width > 0 && (
+            <svg width={width} height={gridH} className="absolute inset-0">
+              {/* Строка выбранного города — тем же фоном, что подпись слева */}
+              {order.indexOf(selected) >= 0 && (
+                <rect
+                  x={0}
+                  y={order.indexOf(selected) * ROW_H}
+                  width={width}
+                  height={ROW_H}
+                  fill="var(--muted)"
+                  rx={4}
+                />
+              )}
+              {grid}
+              {hoverCol >= 0 && (
+                <rect
+                  x={hoverCol * cellW}
+                  y={0}
+                  width={cellW}
+                  height={gridH}
+                  fill="var(--foreground)"
+                  opacity={0.12}
+                  rx={2}
+                  className="pointer-events-none"
+                />
+              )}
+            </svg>
           )}
         </div>
       </div>
@@ -149,81 +297,18 @@ export function TownStrip({
   )
 }
 
-type RowProps = {
-  id: string
-  name: string
-  daysOver: number
-  values: ReadonlyMap<string, number> | undefined
-  days: readonly string[]
-  norm: number
-  selected: boolean
-  onSelect: (id: string) => void
-  onTrack: (e: PointerEvent<HTMLDivElement>, point: string) => void
-}
+const monthFormat = new Intl.DateTimeFormat("ru-RU", { month: "short", timeZone: "UTC" })
 
-// memo: наведение двигает только подсветку дня, тысячи клеток (с начала года — 21 × 300) не перерисовываются
-const StripRow = memo(function StripRow({
-  id,
-  name,
-  daysOver,
-  values,
-  days,
-  norm,
-  selected,
-  onSelect,
-  onTrack,
-}: RowProps) {
-  return (
-    // Выбранный город — мягкий фон строки и жирное название, без рамки вокруг клеток
-    <div
-      className={cn(
-        "grid grid-cols-[96px_40px_1fr] items-center gap-x-2 rounded-md px-2 py-0.5 md:grid-cols-[128px_48px_1fr]",
-        selected && "bg-muted",
-      )}
-    >
-      <button
-        type="button"
-        aria-pressed={selected}
-        aria-label={`${name}: ${air.strip.days(daysOver)} ${air.daysOverCaption}`}
-        onClick={() => onSelect(id)}
-        className={cn(
-          "cursor-pointer truncate rounded-sm text-left text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-ring",
-          selected ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        {name}
-      </button>
-      <span
-        className={cn(
-          "text-right text-[13px] tabular-nums",
-          selected ? "font-semibold text-foreground" : "text-muted-foreground",
-        )}
-      >
-        {air.strip.days(daysOver)}
-      </span>
-      <div
-        className={cn(
-          // Больше 90 дней — без зазоров: при 300 клетках зазоры съели бы треть ширины
-          "grid h-4 overflow-hidden rounded-[2px]",
-          days.length <= 90 && "gap-px",
-        )}
-        style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
-        onPointerMove={(e) => onTrack(e, id)}
-        onPointerDown={(e) => onTrack(e, id)}
-        onClick={() => onSelect(id)}
-      >
-        {days.map((day) => {
-          const v = values?.get(day)
-          return (
-            <span
-              key={day}
-              data-day={day}
-              className="h-full"
-              style={{ background: v == null ? "var(--muted)" : levelColor[normLevel(v, norm)] }}
-            />
-          )
-        })}
-      </div>
-    </div>
-  )
-})
+/** Где начинается каждый месяц — подписи над сеткой; для периода в пределах месяца не нужны */
+function monthMarks(cols: ReadonlyArray<{ from: string }>): Array<{ k: number; label: string }> {
+  if (cols.length < 2 || cols[0].from.slice(0, 7) === cols[cols.length - 1].from.slice(0, 7)) return []
+  const out: Array<{ k: number; label: string }> = []
+  let prev = ""
+  cols.forEach((c, k) => {
+    const month = c.from.slice(0, 7)
+    if (month !== prev) out.push({ k, label: monthFormat.format(new Date(`${c.from}T00:00:00Z`)) })
+    prev = month
+  })
+  // Первая подпись в середине месяца налезла бы на следующую — убираем, если до следующей меньше 3 клеток
+  return out.filter((m, i) => !(i === 0 && out[1] && out[1].k - m.k < 3))
+}
