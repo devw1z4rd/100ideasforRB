@@ -21,6 +21,7 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
   }
   body {
     @apply bg-background text-[15px] leading-[1.6] text-foreground antialiased;
@@ -38,6 +39,12 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* The gutter stays reserved while Radix locks scroll, but react-remove-scroll-bar still adds a margin of the
+   scrollbar's width: without this the page shifts left whenever a dialog or select opens */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
 }
 
 /* MapLibre popups in the site style; padding lives on MapView's inner block, which keeps the tip open under

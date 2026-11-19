@@ -34,6 +34,10 @@
     <!-- Static shell painted before JS loads (header, plus the dark map panel on the home page).
          Sizes and colors must match SiteHeader and MapSection; React replaces it on start. -->
     <style>
+      /* Same as index.css: without it the long page's scrollbar appears with React and shifts the header */
+      html {
+        scrollbar-gutter: stable;
+      }
       body {
         margin: 0;
         background: #fff;
@@ -52,12 +56,18 @@
         color: #f4f4f5;
       }
       .shell-bar {
+        border-bottom: 1px solid #ececea;
+      }
+      /* Container: 1600 px centered; box-sizing set explicitly, Tailwind's preflight lands mid-shell */
+      .shell-in {
         display: flex;
         align-items: center;
         gap: 10px;
+        box-sizing: border-box;
+        max-width: 1600px;
         height: 56px;
+        margin: 0 auto;
         padding: 0 16px;
-        border-bottom: 1px solid #ececea;
       }
       html.dark .shell-bar {
         border-color: #2a2a2e;
@@ -86,7 +96,7 @@
         box-sizing: border-box;
       }
       @media (min-width: 768px) {
-        .shell-bar {
+        .shell-in {
           padding: 0 40px;
         }
         .shell-map {
@@ -129,7 +139,9 @@
   <body>
     <div id="root">
       <div class="shell" aria-hidden="true">
-        <div class="shell-bar"><span class="shell-logo"></span>Экология Гомельской области</div>
+        <div class="shell-bar">
+          <div class="shell-in"><span class="shell-logo"></span>Экология Гомельской области</div>
+        </div>
         <div class="shell-map"><div></div></div>
       </div>
     </div>
