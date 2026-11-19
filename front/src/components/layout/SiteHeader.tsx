@@ -22,6 +22,10 @@ import { cn } from "@/lib/utils"
 
 const MORE_KEY = "more"
 
+const NAV_DELAY_MS = 140
+const NAV_STEP_MS = 50
+const navDelay = (i: number) => ({ animationDelay: `${NAV_DELAY_MS + i * NAV_STEP_MS}ms` })
+
 // No transition-colors; the indicator animates only translate (GPU). The active section changes mid-scroll,
 // and main-thread animations relayout the long page every frame — janky on battery.
 const navItem =
@@ -57,20 +61,21 @@ export function SiteHeader() {
         <nav
           ref={navRef}
           aria-label="Основная навигация"
-          className="relative col-start-2 hidden items-center rounded-xl bg-muted p-1 lg:flex"
+          className="header-pop relative col-start-2 hidden items-center rounded-xl bg-muted p-1 lg:flex"
+          style={{ animationDelay: "60ms" }}
         >
           {pill && (
             <span
               aria-hidden="true"
               className={cn(
-                "absolute top-1 left-0 h-8 rounded-lg bg-background shadow-sm transition-[translate] duration-300 ease-out will-change-[translate] motion-reduce:transition-none dark:bg-input",
+                "header-fade absolute top-1 left-0 h-8 rounded-lg bg-background shadow-sm transition-[translate] duration-300 ease-out will-change-[translate] motion-reduce:transition-none dark:bg-input",
                 !activeKey && "opacity-0",
               )}
-              style={{ translate: `${pill.x}px 0`, width: pill.w }}
+              style={{ translate: `${pill.x}px 0`, width: pill.w, animationDelay: "220ms" }}
             />
           )}
 
-          {anchors.map((a) => {
+          {anchors.map((a, i) => {
             const current = activeKey === a.id
             return (
               <Link
@@ -78,7 +83,8 @@ export function SiteHeader() {
                 data-nav-key={a.id}
                 to={{ pathname: "/", hash: a.id }}
                 aria-current={current ? "location" : undefined}
-                className={cn(navItem, current ? "text-foreground" : "text-muted-foreground")}
+                className={cn(navItem, "header-rise", current ? "text-foreground" : "text-muted-foreground")}
+                style={navDelay(i)}
                 onClick={(event) => {
                   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
                   setTarget(a.id)
@@ -94,9 +100,10 @@ export function SiteHeader() {
               data-nav-key={MORE_KEY}
               className={cn(
                 navItem,
-                "group gap-1 data-[state=open]:text-foreground",
+                "header-rise group gap-1 data-[state=open]:text-foreground",
                 currentPage ? "text-foreground" : "text-muted-foreground",
               )}
+              style={navDelay(anchors.length)}
             >
               {more.label}
               <ChevronDown
@@ -137,7 +144,10 @@ export function SiteHeader() {
           </DropdownMenu>
         </nav>
 
-        <div className="col-start-3 flex items-center gap-2 justify-self-end">
+        <div
+          className="header-slide col-start-3 flex items-center gap-2 justify-self-end"
+          style={{ animationDelay: "260ms" }}
+        >
           <ModerationLink />
           <Button asChild size="lg" className="hidden sm:inline-flex">
             <Link to={cta.to}>

@@ -65,6 +65,62 @@ html body[data-scroll-locked] {
 .eco-map .maplibregl-canvas-container {
   isolation: isolate;
 }
+/* Header entrance (SiteHeader, Logo), once when React replaces the index.html shell: the logo square and the
+   site name are already in the shell and stay put, only what the shell lacks animates in. Fill backwards, not
+   both: a held keyframe would override the buttons' active:translate. Delays are inline. Under reduced motion
+   nothing runs: the global rule shortens durations but keeps delays, items would stay hidden. */
+@media (prefers-reduced-motion: no-preference) {
+  .header-wave {
+    animation: header-wave 700ms cubic-bezier(0.35, 0.6, 0.2, 1) backwards;
+  }
+  .header-pop {
+    animation: header-pop 450ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+  .header-rise {
+    animation: header-rise 380ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+  .header-slide {
+    animation: header-slide 450ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+  .header-fade {
+    animation: header-fade 300ms ease-out backwards;
+  }
+}
+/* Dash slightly past the start: a zero-length dash with round caps would leave a dot there */
+@keyframes header-wave {
+  from {
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 1.05;
+  }
+  to {
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes header-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes header-rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes header-slide {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
+@keyframes header-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Map intro (MapView, components/map/intro.ts) */
 .map-pop {
   animation: map-pop 650ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
