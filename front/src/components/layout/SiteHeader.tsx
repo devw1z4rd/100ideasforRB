@@ -53,9 +53,7 @@ export function SiteHeader() {
           className="col-start-1 flex items-center gap-2.5 justify-self-start"
         >
           <LogoMark />
-          <span className="font-heading text-base font-semibold tracking-[-0.02em] whitespace-nowrap">
-            {site.name}
-          </span>
+          <SiteTitle section={onHome ? activeKey : null} />
         </Link>
 
         <nav
@@ -162,6 +160,37 @@ export function SiteHeader() {
         </div>
       </Container>
     </header>
+  )
+}
+
+// The first home section (the map) is the top of the page: there the full name stays
+const TITLE_TAILS = [site.region, ...anchors.slice(1).map((a) => `· ${a.label}`)]
+
+/**
+ * On the home page the tail of the name rolls, like a departures board, to the section in view: down the page
+ * the old line leaves upward, back up it leaves downward. All tails share one grid cell, so the width stays that
+ * of the full name and the nav capsule never shifts.
+ */
+function SiteTitle({ section }: { section: string | null }) {
+  const index = Math.max(
+    0,
+    anchors.findIndex((a) => a.id === section),
+  )
+  return (
+    <span className="flex items-baseline font-heading text-base font-semibold tracking-[-0.02em] whitespace-nowrap">
+      {site.brand}&nbsp;
+      <span className="grid overflow-hidden">
+        {TITLE_TAILS.map((tail, i) => (
+          <span
+            key={tail}
+            className="col-start-1 row-start-1 transition-[translate,opacity] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+            style={{ translate: `0 ${Math.sign(i - index) * 100}%`, opacity: i === index ? 1 : 0 }}
+          >
+            {tail}
+          </span>
+        ))}
+      </span>
+    </span>
   )
 }
 

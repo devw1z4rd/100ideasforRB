@@ -3,8 +3,13 @@ import { homeSections, type SectionId } from "./home"
 export type AnchorItem = { id: SectionId; label: string }
 export type PageItem = { to: string; label: string }
 
+const brand = "Экология"
+const region = "Гомельской области"
+
 export const site = {
-  name: "Экология Гомельской области",
+  brand,
+  region,
+  name: `${brand} ${region}`,
   title: "Экологический профиль Гомельщины",
 } as const
 
