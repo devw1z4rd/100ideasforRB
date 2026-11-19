@@ -16,11 +16,7 @@ export function WaterSection(section: Props) {
 
   return (
     <HomeSectionShell {...section}>
-      <p className="max-w-[62ch] text-base leading-[1.55] text-fg-secondary">{text.lead}</p>
-
-      <div className="mt-10">
-        <RiverLevels />
-      </div>
+      <RiverLevels />
 
       <div className="mt-16 border-t border-border pt-10 md:pt-14">
         {readings.isError ? (

@@ -89,13 +89,11 @@ export function AirSection(section: Props) {
 
   return (
     <HomeSectionShell {...section}>
-      <p className="max-w-[60ch] text-base leading-[1.55] text-fg-secondary">{air.lead}</p>
-
       <div ref={sentinel} aria-hidden="true" />
       {/* Phone: wrappers are display: contents, so only the filter row sticks, within the whole section. */}
-      <div className="z-20 bg-background max-md:contents md:sticky md:top-(--header-h) md:-mx-10 md:mt-4 md:px-10">
+      <div className="z-20 bg-background max-md:contents md:sticky md:top-(--header-h) md:-mx-10 md:px-10">
         <div className="max-md:contents md:flex md:items-center md:justify-between md:gap-6 md:border-b md:border-border">
-          <div className="max-md:mt-4 max-md:border-b max-md:border-border md:contents">
+          <div className="max-md:border-b max-md:border-border md:contents">
             <ViewTabs value={view} onChange={setView} controls={PANEL_ID} />
           </div>
           <div className="flex min-w-0 items-center gap-1.5 max-md:sticky max-md:top-(--header-h) max-md:z-20 max-md:-mx-4 max-md:border-b max-md:border-border max-md:bg-background max-md:px-4 max-md:py-2">
