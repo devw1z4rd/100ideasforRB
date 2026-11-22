@@ -27,6 +27,26 @@ export function daysBetween(from: string, to: string): string[] {
 
 export type Range = { from: string; to: string }
 
+type CalendarDay = { day: string; aqi: number | null }
+type CalendarMonth = { month: string; leadingBlanks: number; days: CalendarDay[] }
+
+export function buildAqiCalendar(rows: readonly DailyRow[], pointId: string, range: Range): CalendarMonth[] {
+  const byDay = new Map(rows.filter((row) => row.point === pointId).map((row) => [row.day, row.aqi_max]))
+  const months: CalendarMonth[] = []
+  for (const day of daysBetween(range.from, range.to)) {
+    const month = day.slice(0, 7)
+    let group = months.at(-1)
+    if (group?.month !== month) {
+      const weekday = new Date(`${day}T00:00:00Z`).getUTCDay()
+      group = { month, leadingBlanks: (weekday + 6) % 7, days: [] }
+      months.push(group)
+    }
+    const aqi = byDay.get(day)
+    group.days.push({ day, aqi: aqi != null && Number.isFinite(aqi) && aqi >= 0 ? Math.round(aqi) : null })
+  }
+  return months
+}
+
 export function periodRange(period: Period, today: string): { current: Range; previous: Range | null } {
   const to = addDays(today, -1)
   if (period === "ytd") return { current: { from: `${to.slice(0, 4)}-01-01`, to }, previous: null }

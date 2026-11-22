@@ -22,6 +22,7 @@ import {
 import { useSelectedTown } from "@/lib/useSelectedTown"
 import { useStuck } from "@/lib/useStuck"
 import { AirForecast } from "./AirForecast"
+import { AirCalendar } from "./AirCalendar"
 import { AirHours } from "./AirHours"
 import { PeriodSelect, TownPicker, ViewTabs, type AirView } from "./AirControls"
 import { AirSummary } from "./AirSummary"
@@ -120,7 +121,7 @@ export function AirSection(section: Props) {
             <Skeleton className="h-24 w-full rounded-xl" />
             <Skeleton className={`${CHART_H} w-full rounded-xl`} />
           </div>
-        ) : rows && rows.length === 0 ? (
+        ) : rows && rows.length === 0 && view !== "calendar" ? (
           <p className="mt-8 text-sm text-muted-foreground">{air.empty}</p>
         ) : (
           <div aria-busy={stale} className={stale ? "opacity-50 transition-opacity" : "transition-opacity"}>
@@ -138,6 +139,8 @@ export function AirSection(section: Props) {
                   onPollutant={setPollutant}
                 />
               </PlayInView>
+            ) : view === "calendar" ? (
+              <AirCalendar rows={rows ?? []} pointId={selected} townName={names.get(selected) ?? ""} range={current} />
             ) : view === "table" ? (
               <AirTable
                 rows={rows ?? []}

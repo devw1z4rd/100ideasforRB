@@ -313,13 +313,14 @@ export function PeriodSwitch({
   )
 }
 
-export type AirView = "town" | "table" | "forecast" | "hours"
+export type AirView = "town" | "table" | "forecast" | "hours" | "calendar"
 
 const viewOptions: ReadonlyArray<{ key: AirView; label: string; Icon: typeof Table2 }> = [
   { key: "town", label: air.views.town, Icon: ChartSpline },
   { key: "table", label: air.views.table, Icon: Table2 },
   { key: "forecast", label: air.views.forecast, Icon: CloudSun },
   { key: "hours", label: air.views.hours, Icon: Clock3 },
+  { key: "calendar", label: air.calendar.tab, Icon: CalendarDays },
 ]
 
 export function ViewTabs({
@@ -361,7 +362,7 @@ export function ViewTabs({
       role="tablist"
       aria-label={air.views.label}
       onKeyDown={onKeyDown}
-      className={cn("relative flex sm:gap-7", className)}
+      className={cn("relative flex sm:gap-3 lg:gap-5 xl:gap-7", className)}
     >
       {viewOptions.map(({ key, label, Icon }) => {
         const active = value === key
@@ -377,11 +378,11 @@ export function ViewTabs({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(key)}
             className={cn(
-              "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-sm text-[13px] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:flex-none sm:text-[15px]",
+              "inline-flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-sm text-[12px] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:flex-none sm:text-[15px]",
               active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Icon aria-hidden="true" className="hidden size-4 sm:block" />
+            <Icon aria-hidden="true" className="hidden size-4 lg:block" />
             {label}
           </button>
         )

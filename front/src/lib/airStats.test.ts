@@ -5,6 +5,7 @@ import {
   aqiRange,
   buckets,
   firstDataDay,
+  buildAqiCalendar,
   buildSeries,
   daysBetween,
   minskToday,
@@ -55,6 +56,26 @@ describe("periodRange", () => {
       current: { from: "2026-01-01", to: "2026-10-29" },
       previous: null,
     })
+  })
+})
+
+describe("buildAqiCalendar", () => {
+  it("groups local days by month and preserves missing readings and valid zero AQI", () => {
+    const range = { from: "2026-10-31", to: "2026-11-02" }
+    const rows = [
+      { ...row("gomel", "2026-10-30", 0), aqi_max: 175 },
+      row("gomel", "2026-10-31", 0),
+      { ...row("mozyr", "2026-11-01", 0), aqi_max: 162 },
+      { ...row("gomel", "2026-11-02", 0), aqi_max: 101.6 },
+    ]
+    expect(buildAqiCalendar(rows, "gomel", range)).toEqual([
+      { month: "2026-10", leadingBlanks: 5, days: [{ day: "2026-10-31", aqi: 0 }] },
+      {
+        month: "2026-11",
+        leadingBlanks: 6,
+        days: [{ day: "2026-11-01", aqi: null }, { day: "2026-11-02", aqi: 102 }],
+      },
+    ])
   })
 })
 

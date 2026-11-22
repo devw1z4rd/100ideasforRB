@@ -60,11 +60,12 @@ The objectives are:
 **Home page (regional profile)**
 
 - **Interactive map** (MapLibre GL). It shows the oblast with district boundaries, rivers and neighbouring regions from local GeoJSON layers, so it also works offline. On zoom it adds vector detail from OpenFreeMap. Every town is coloured by its current AQI. The map also shows citizen reports in real time, gauging stations with their level trend, and river sections with water-quality exceedances. An intro animation flies the camera from all of Belarus to the oblast.
-- **Air section**, with four views:
+- **Air section**, with five views:
   - *By town*: days above the WHO guideline for each pollutant, plus a daily chart of the selected town against the min–max spread of all towns;
   - *Table*: all towns at once;
   - *Forecast*: hourly AQI for ~5 days and the best three-hour window for a walk;
-  - *Hourly profile*: the average diurnal cycle of a pollutant.
+  - *Hourly profile*: the average diurnal cycle of a pollutant;
+  - *AQI calendar*: each day's highest hourly US AQI for the selected town, with missing days marked separately.
 - **Water section**:
   - cards for all gauging stations, worst first, each with a 30-day level chart and threshold zones;
   - a dialog per station;
