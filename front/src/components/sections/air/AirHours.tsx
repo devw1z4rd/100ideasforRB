@@ -1,15 +1,14 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useAirHourly } from "@/api/air"
 import { Skeleton } from "@/components/ui/skeleton"
 import { air, pollutants, type PollutantInfo } from "@/content/air"
 import { hourProfile, hourRange, profileExtremes, type DayFilter, type HourStat } from "@/lib/airHourly"
-import { addDays, minskToday, normLevel, type Pollutant, type Range } from "@/lib/airStats"
+import { normLevel, type Pollutant, type Range } from "@/lib/airStats"
 import { formatNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { levelColor } from "./format"
 
 const text = air.hours
-const HOURLY_DAYS = 90
 const filters: readonly DayFilter[] = ["all", "weekdays", "weekends"]
 
 export function AirHours({
@@ -27,11 +26,12 @@ export function AirHours({
 }) {
   const [filter, setFilter] = useState<DayFilter>("all")
   const [hovered, setHovered] = useState<number | null>(null)
-  const earliest = addDays(minskToday(), -HOURLY_DAYS)
-  const from = range.from < earliest ? earliest : range.from
-  const hourly = useAirHourly(pointId, from, range.to)
+  const hourly = useAirHourly(pointId, range.from, range.to)
 
-  const profile = hourProfile(hourly.data ?? [], pollutant.key, pollutant.norm, filter)
+  const profile = useMemo(
+    () => hourProfile(hourly.data ?? [], pollutant.key, pollutant.norm, filter),
+    [hourly.data, pollutant.key, pollutant.norm, filter],
+  )
   const extremes = profileExtremes(profile)
   const known = profile.filter((s) => s.mean !== null)
   const dayMean = known.length ? known.reduce((a, s) => a + s.mean!, 0) / known.length : null
@@ -57,8 +57,6 @@ export function AirHours({
           />
         </div>
       </div>
-      {from > range.from && <p className="mt-2 text-[13px] text-muted-foreground">{text.capped}</p>}
-
       {hourly.isPending ? (
         <Skeleton className="mt-6 h-80 w-full rounded-xl" />
       ) : !known.length ? (
@@ -72,7 +70,7 @@ export function AirHours({
           )}
         >
           <Clock
-            key={`${pointId}-${pollutant.key}-${filter}-${from}-${range.to}`}
+            key={`${pointId}-${pollutant.key}-${filter}-${range.from}-${range.to}`}
             profile={profile}
             norm={pollutant.norm}
             dayMean={dayMean}

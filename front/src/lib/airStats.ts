@@ -49,7 +49,7 @@ export function buildAqiCalendar(rows: readonly DailyRow[], pointId: string, ran
 
 export function periodRange(period: Period, today: string): { current: Range; previous: Range | null } {
   const to = addDays(today, -1)
-  if (period === "ytd") return { current: { from: `${to.slice(0, 4)}-01-01`, to }, previous: null }
+  if (period === "ytd") return { current: { from: `${today.slice(0, 4)}-01-01`, to }, previous: null }
   const length = { "7d": 7, "30d": 30, "90d": 90 }[period]
   const from = addDays(to, -(length - 1))
   return { current: { from, to }, previous: { from: addDays(from, -length), to: addDays(from, -1) } }

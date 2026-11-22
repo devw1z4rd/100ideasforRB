@@ -127,7 +127,7 @@ All schedules are in UTC.
 | Job | Schedule | Purpose |
 |---|---|---|
 | `air_fetch` | `5 * * * *` | Hourly Open-Meteo request for all active points: recent values plus a 5-day forecast. Backfills automatically after downtime. |
-| `air_daily` | `20 21 * * *` | Daily aggregates for the previous local (Minsk, UTC+3) days. Removes hourly rows older than 90 days. |
+| `air_daily` | `20 21 * * *` | Daily aggregates for the previous Minsk days. Keeps hourly data for the current year and at least the past 90 completed days. |
 | `river_fetch` | `40 6,14 * * *` | Gauging stations in the oblast and their levels for the last 30 days. |
 | `hydro_news` | `15 9,15 * * *` | Imports new Belhydromet river-situation reviews as news items. |
 | `catch_up` | once after start | PocketBase does not re-run missed jobs, so this job catches up air, rivers and news after the server was down. |
@@ -238,13 +238,14 @@ Run from `back/`:
 ./pocketbase migrate up                                   # create the schema
 ./pocketbase superuser upsert admin@example.com 'change-me-please'
 ./pocketbase seed                                         # reference data from back/seed (idempotent)
-./pocketbase air-backfill 2026-01-01                      # air history from a date (default: last 90 days), ~1 min
+./pocketbase air-backfill                                 # model history for the current year and at least the past 90 days
 ./pocketbase river-fetch                                  # gauging stations and 30 days of levels (after seed)
 ./pocketbase hydro-news                                   # latest Belhydromet river reviews
 ./pocketbase serve --http 127.0.0.1:8090
 ```
 
 - The custom commands do not apply migrations themselves, so `migrate up` comes first.
+- Run `air-backfill` once on installations with only 90 days of air history. An explicit `YYYY-MM-DD` argument can backfill older daily aggregates too.
 - `seed` can be re-run after any change in `back/seed/`.
 - The admin UI is available at <http://127.0.0.1:8090/_/>. Scheduled jobs can be triggered manually under *Settings → Crons*.
 

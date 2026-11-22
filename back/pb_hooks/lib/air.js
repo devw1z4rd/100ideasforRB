@@ -14,7 +14,7 @@ const POLLUTANTS = ["pm2_5", "pm10", "no2", "so2", "o3", "co"];
 // Minsk is UTC+3 all year round.
 const MINSK_OFFSET_MS = 3 * 3600 * 1000;
 const MIN_HOURS_PER_DAY = 18;
-const KEEP_HOURLY_DAYS = 90;
+const MIN_HOURLY_DAYS = 90;
 
 const pbDate = (ms) => new Date(ms).toISOString().replace("T", " ");
 
@@ -152,7 +152,7 @@ function rollupDaily(app, fromDay, toDay) {
 }
 
 function pruneHourly(app) {
-  const cut = pbDate(Date.now() - KEEP_HOURLY_DAYS * 86400000);
+  const cut = pbDate(Date.parse(historyStartDay() + "T00:00:00Z") - MINSK_OFFSET_MS);
   return app
     .db()
     .newQuery("DELETE FROM air_readings WHERE ts < {:cut}")
@@ -225,7 +225,7 @@ function fetchLatest(app) {
     return Object.assign(r, { dailyFilled: rollupMissing(app) });
   }
   const day = new Date(lastMs + MINSK_OFFSET_MS).toISOString().slice(0, 10);
-  const floor = minskDay(-KEEP_HOURLY_DAYS);
+  const floor = historyStartDay();
   const since = day < floor ? floor : day;
   return Object.assign(backfill(app, since), { since });
 }
@@ -236,6 +236,13 @@ function minskDay(shiftDays) {
     .slice(0, 10);
 }
 
+// Keep year-to-date and the rolling 90-day view available, including just after New Year.
+function historyStartDay() {
+  const yearStart = minskDay(0).slice(0, 4) + "-01-01";
+  const rollingStart = minskDay(-MIN_HOURLY_DAYS);
+  return rollingStart < yearStart ? rollingStart : yearStart;
+}
+
 module.exports = {
   fetchReadings,
   fetchLatest,
@@ -244,5 +251,5 @@ module.exports = {
   rollupMissing,
   pruneHourly,
   minskDay,
-  KEEP_HOURLY_DAYS,
+  historyStartDay,
 };

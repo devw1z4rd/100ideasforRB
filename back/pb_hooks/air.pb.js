@@ -34,7 +34,7 @@ $app.rootCmd.addCommand(
     short: "Загрузить историю воздуха с даты и посчитать air_daily",
     run: (cmd, args) => {
       const air = require(`${__hooks}/lib/air.js`);
-      const since = args[0] || air.minskDay(-air.KEEP_HOURLY_DAYS);
+      const since = args[0] || air.historyStartDay();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(since))
         throw new Error("Дата в формате YYYY-MM-DD");
       const r = air.backfill($app, since);

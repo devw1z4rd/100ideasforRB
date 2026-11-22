@@ -57,6 +57,12 @@ describe("periodRange", () => {
       previous: null,
     })
   })
+
+  it("does not include the previous year while January 1 is still in progress", () => {
+    const { current } = periodRange("ytd", "2027-01-01")
+    expect(current.from).toBe("2027-01-01")
+    expect(daysBetween(current.from, current.to)).toEqual([])
+  })
 })
 
 describe("buildAqiCalendar", () => {
