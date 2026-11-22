@@ -251,6 +251,8 @@ To make a user a moderator, register them on the site first, then run:
 ./pocketbase set-role moderator@example.com moderator    # roles: user, moderator, admin
 ```
 
+Password recovery uses the PocketBase `users` email flow. In the PocketBase admin UI, set **Settings → Application → Application URL** to `http://localhost:5173` locally or the site's public HTTPS URL in production. Configure SMTP under **Settings → Mail settings**. For local testing, use a local mail catcher. The default reset email links to `/reset-password` on the frontend after the backend loads the reset hook.
+
 ### 8.3 Frontend
 
 Run from `front/`:

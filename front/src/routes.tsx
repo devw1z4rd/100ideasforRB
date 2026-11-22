@@ -36,6 +36,12 @@ const accountPages: RouteObject[] = [
     ...page("Вход", () => import("@/pages/LoginPage").then((m) => ({ Component: m.LoginPage }))),
   },
   {
+    path: "reset-password",
+    ...page("Восстановление пароля", () =>
+      import("@/pages/ResetPasswordPage").then((m) => ({ Component: m.ResetPasswordPage })),
+    ),
+  },
+  {
     path: "me",
     ...page("Профиль", () => import("@/pages/ReportsPages").then((m) => ({ Component: m.MePage }))),
   },

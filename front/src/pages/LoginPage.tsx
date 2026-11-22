@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { Navigate, useNavigate, useSearchParams } from "react-router"
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router"
 import { login, register, useAuth } from "@/api/auth"
 import { errorStatus, fieldError } from "@/api/reports"
 import { Container } from "@/components/layout/Container"
@@ -119,6 +119,11 @@ export function LoginPage() {
               </span>
             )}
           </label>
+          {mode === "login" && (
+            <Link to="/reset-password" className="self-start text-sm text-link hover:text-link-hover">
+              {text.forgotPassword}
+            </Link>
+          )}
           {error && (
             <p role="alert" className="text-[13px] text-destructive">
               {error}

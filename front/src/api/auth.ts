@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react"
+import { getTokenPayload } from "pocketbase"
 import { pb } from "./pb"
 import type { UsersResponse } from "./pocketbase-types"
 
@@ -42,4 +43,13 @@ export async function register({
 
 export function logout() {
   pb.authStore.clear()
+}
+
+export function requestPasswordReset(email: string) {
+  return pb.collection("users").requestPasswordReset(email)
+}
+
+export async function confirmPasswordReset(token: string, password: string, passwordConfirm: string) {
+  await pb.collection("users").confirmPasswordReset(token, password, passwordConfirm)
+  if (current?.id === getTokenPayload(token).id) logout()
 }

@@ -14,6 +14,7 @@ const routesToVerify = [
   "/kb/x",
   "/data",
   "/login",
+  "/reset-password",
   "/me",
   "/moderation",
 ]
