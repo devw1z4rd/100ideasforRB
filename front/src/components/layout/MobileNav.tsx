@@ -1,6 +1,8 @@
+import { switchLanguage, t } from "@/lib/locale"
 import { Menu } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router"
+import { LanguageOption } from "@/components/layout/LanguageOption"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -50,6 +52,7 @@ export function MobileNav({ className, activeSection }: Props) {
       </SheetTrigger>
       <SheetContent
         side="right"
+        className="overflow-y-auto"
         onCloseAutoFocus={(event) => {
           // Page scroll is locked while the Sheet is open — scroll to the section after it closes.
           if (!target) return
@@ -67,17 +70,22 @@ export function MobileNav({ className, activeSection }: Props) {
         }}
       >
         <SheetHeader>
-          <SheetTitle>Навигация</SheetTitle>
-          <SheetDescription className="sr-only">Разделы главной и страницы сайта</SheetDescription>
+          <SheetTitle>{t("Навигация", "Навігацыя")}</SheetTitle>
+          <SheetDescription className="sr-only">
+            {t("Разделы главной и страницы сайта", "Раздзелы галоўнай старонкі і старонкі сайта")}
+          </SheetDescription>
         </SheetHeader>
-        <nav aria-label="Навигация по сайту" className="flex flex-col gap-6 px-4 pb-6">
+        <nav
+          aria-label={t("Навигация по сайту", "Навігацыя па сайце")}
+          className="flex flex-col gap-6 px-4 pb-6"
+        >
           <SheetClose asChild>
             <Button asChild size="lg" className="sm:hidden">
               <Link to={cta.to}>{cta.label}</Link>
             </Button>
           </SheetClose>
           <div>
-            <p className={groupLabel}>На главной</p>
+            <p className={groupLabel}>{t("На главной", "На галоўнай")}</p>
             {anchors.map((a) => (
               <a
                 key={a.id}
@@ -97,7 +105,7 @@ export function MobileNav({ className, activeSection }: Props) {
             ))}
           </div>
           <div>
-            <p className={groupLabel}>Разделы</p>
+            <p className={groupLabel}>{t("Разделы", "Раздзелы")}</p>
             {pages.map((p) => (
               <SheetClose key={p.to} asChild>
                 <Link to={p.to} className={item}>
@@ -111,6 +119,9 @@ export function MobileNav({ className, activeSection }: Props) {
               {login.label}
             </Link>
           </SheetClose>
+          <button type="button" onClick={switchLanguage} className={cn(item, "w-full")}>
+            <LanguageOption />
+          </button>
         </nav>
       </SheetContent>
     </Sheet>

@@ -1,3 +1,5 @@
+import { intlLocale, t } from "@/lib/locale"
+import { townName } from "@/content/placeNames"
 import {
   CalendarDays,
   ChartSpline,
@@ -154,18 +156,18 @@ export function TownPicker({
   const [geoError, setGeoError] = useState(false)
   const canLocate = typeof navigator !== "undefined" && "geolocation" in navigator
   const { data: latest } = useLatestAir()
-  const options = [...points]
-    .sort((a, b) => a.name.localeCompare(b.name, "ru"))
+  const options = points
     .map((p): ChipOption => {
       const aqi = latest?.get(p.id)?.us_aqi
       const category = aqiCategory(aqi)
       return {
         value: p.id,
-        label: p.name,
+        label: townName(p.name),
         dot: category?.color,
         aside: category ? String(Math.round(aqi!)) : undefined,
       }
     })
+    .sort((a, b) => a.label.localeCompare(b.label, intlLocale))
 
   const locate = () => {
     // aria-disabled instead of disabled: a disabled button gets no hover, so the tooltip wouldn't open.
@@ -282,7 +284,7 @@ export function PeriodSwitch({
   return (
     <div
       role="radiogroup"
-      aria-label="Период"
+      aria-label={t("Период", "Перыяд")}
       className={cn(
         "rounded-md border border-input p-0.5",
         stretch ? "flex w-full md:inline-flex md:w-auto" : "inline-flex",

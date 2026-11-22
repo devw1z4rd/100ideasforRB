@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import { pb } from "./pb"
 import { useAuth } from "./auth"
 import { ClientResponseError } from "pocketbase"
+import { isBelarusian } from "@/lib/locale"
 import type {
   DistrictsResponse,
   ReportEventsResponse,
@@ -15,7 +16,7 @@ import type {
 export type AutoCheck = { score: number; reasons: { delta: number; text: string }[] }
 export type ReportWithDistrict = ReportsResponse<
   AutoCheck,
-  { district?: Pick<DistrictsResponse, "id" | "name"> }
+  { district?: Pick<DistrictsResponse, "id" | "name" | "name_be"> }
 >
 
 export type ReportsFilter = {
@@ -29,6 +30,7 @@ export type ReportsFilter = {
 
 // PocketBase can suppress the realtime event when an update makes the report private.
 const PUBLIC_REPORT_REFRESH_MS = 30_000
+const REPORT_DISTRICT_FIELDS = "*,expand.district.id,expand.district.name,expand.district.name_be"
 
 export function reportsFilter({ status, district, category, author, duplicates }: ReportsFilter): string {
   const parts: string[] = []
@@ -49,7 +51,7 @@ export const reportsQuery = (filter: ReportsFilter = {}) =>
         filter: reportsFilter(filter),
         sort: filter.order === "oldest" ? "created,id" : "-created,-id",
         expand: "district",
-        fields: "*,expand.district.id,expand.district.name",
+        fields: REPORT_DISTRICT_FIELDS,
       }),
     staleTime: 30_000,
     refetchInterval: filter.duplicates === "exclude" ? PUBLIC_REPORT_REFRESH_MS : undefined,
@@ -61,7 +63,7 @@ export const reportQuery = (id: string) =>
     queryFn: () =>
       pb.collection("reports").getOne<ReportWithDistrict>(id, {
         expand: "district",
-        fields: "*,expand.district.id,expand.district.name",
+        fields: REPORT_DISTRICT_FIELDS,
       }),
     staleTime: 30_000,
   })
@@ -141,11 +143,14 @@ async function fetchKeyed(id: string, key: string) {
   const res = await pb.send<{
     report: ReportsResponse<AutoCheck>
     district: string
+    districtNameBe?: string
     events: ReportEventsResponse[]
   }>(`/api/eco/reports/${encodeURIComponent(id)}`, { query: { key }, cache: "no-store" })
   const report: ReportWithDistrict = {
     ...res.report,
-    expand: res.report.district ? { district: { id: res.report.district, name: res.district } } : {},
+    expand: res.report.district
+      ? { district: { id: res.report.district, name: res.district, name_be: res.districtNameBe ?? "" } }
+      : {},
   }
   return { report, events: res.events }
 }
@@ -247,10 +252,26 @@ export const reportPhotoUrl = (
   access?: PhotoAccess,
 ) => pb.files.getURL(report, file, { ...(thumb ? { thumb } : {}), ...access })
 
+const validationMessagesBe = new Map([
+  ["outside_oblast", "Пункт па-за межамі Гомельскай вобласці."],
+  ["validation_profanity", "Прыбярыце нецэнзурныя словы: зварот убачаць усе."],
+  ["rejection_reason_required", "Пазначце прычыну адхілення."],
+  ["duplicate_self", "Выберыце іншы зварот."],
+  ["duplicate_has_children", "Спачатку скасуйце сувязь з дублікатамі гэтага звароту."],
+  ["duplicate_not_found", "Асноўны зварот не знойдзены."],
+  ["duplicate_invalid_parent", "Выберыце асноўны зварот, які не звязаны з іншым і не адхілены."],
+  ["validation_required", "Запоўніце гэтае поле."],
+  ["validation_length_out_of_range", "Праверце даўжыню ўведзенага значэння."],
+  ["validation_values_mismatch", "Значэнні не супадаюць."],
+  ["validation_file_size_limit", "Файл перавышае дапушчальны памер."],
+])
+
 export function fieldError(error: unknown, field: string): string | null {
   if (!(error instanceof ClientResponseError)) return null
-  const data = error.response?.data as Record<string, { message?: string }> | undefined
-  return data?.[field]?.message ?? null
+  const data = error.response?.data as Record<string, { code?: string; message?: string }> | undefined
+  const issue = data?.[field]
+  if (isBelarusian && issue?.code) return validationMessagesBe.get(issue.code) ?? issue.message ?? null
+  return issue?.message ?? null
 }
 
 export const errorStatus = (error: unknown) => (error instanceof ClientResponseError ? error.status : null)
@@ -266,7 +287,7 @@ export const showcaseQuery = () =>
           filter: reportsFilter({ status: ["accepted", "forwarded", "resolved"], duplicates: "exclude" }),
           sort: "-created",
           expand: "district",
-          fields: "*,expand.district.id,expand.district.name",
+          fields: REPORT_DISTRICT_FIELDS,
         }),
         pb.collection("report_events").getFullList({
           filter: 'to_status = "resolved" && from_status != "resolved" && report.duplicate_of = ""',

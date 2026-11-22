@@ -1,3 +1,4 @@
+import { t } from "@/lib/locale"
 import { ArrowUpRight } from "lucide-react"
 import { PageTip } from "./static"
 import { indicators, months, water as text } from "@/content/water"
@@ -19,7 +20,7 @@ export const indicatorInline = (key: string) => {
   const short = indicators[key]?.short ?? key
   return /^[А-ЯЁ][а-яё]/.test(short) ? short[0].toLowerCase() + short.slice(1) : short
 }
-const WATER_POST = "водность реки"
+const WATER_POST = t("водность реки", "воднасць ракі")
 
 export function ratioScale(maxRatio: number) {
   const max = Math.max(2, Math.ceil(maxRatio * 4) / 4 + 0.25)
@@ -132,7 +133,7 @@ export function ExceedancesPage({
           const detail = text.plot.value(
             fmt(e.value!),
             e.unit ?? "",
-            e.norm_type === "min" ? "не меньше" : "не больше",
+            e.norm_type === "min" ? t("не меньше", "не менш") : t("не больше", "не больш"),
             fmt(e.norm!),
             months[e.month - 1],
           )

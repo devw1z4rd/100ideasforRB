@@ -1,4 +1,5 @@
-"use client"
+import { t } from "@/lib/locale"
+;("use client")
 
 import * as React from "react"
 import { cn } from "cn"
@@ -63,7 +64,7 @@ function SheetContent({
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
             <Button variant="ghost" className="absolute top-3 right-3" size="icon-sm">
               <XIcon />
-              <span className="sr-only">Закрыть</span>
+              <span className="sr-only">{t("Закрыть", "Закрыць")}</span>
             </Button>
           </SheetPrimitive.Close>
         )}

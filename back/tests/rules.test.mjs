@@ -114,7 +114,10 @@ describe("reports", () => {
     assert.equal(anon.status, "new");
     assert.equal(anon.access_key, undefined);
     const link = `/api/eco/reports/${anon.id}`;
-    assert.equal((await must(null, "GET", `${link}?key=${key}`)).report.id, anon.id);
+    const keyed = await must(null, "GET", `${link}?key=${key}`);
+    assert.equal(keyed.report.id, anon.id);
+    assert.equal(keyed.district, "г. Гомель");
+    assert.equal(keyed.districtNameBe, "г. Гомель");
     assert.equal((await call(null, "GET", `${link}?key=x${key}`)).status, 404);
     assert.equal((await call(null, "GET", `${reportsUrl}/${anon.id}`)).status, 404);
   });

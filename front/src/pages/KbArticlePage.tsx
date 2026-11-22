@@ -5,7 +5,7 @@ import { DraftBadge } from "@/components/content/DraftBadge"
 import { RichText } from "@/components/content/RichText"
 import { Container } from "@/components/layout/Container"
 import { Skeleton } from "@/components/ui/skeleton"
-import { kb as text } from "@/content/kb"
+import { kb as text, kbCategoryLabel } from "@/content/kb"
 import { formatDate } from "@/lib/format"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
@@ -29,7 +29,7 @@ export function KbArticlePage() {
         <Link to="/kb" className={link}>
           {text.title}
         </Link>
-        {a && <span className="text-muted-foreground"> / {category}</span>}
+        {a && <span className="text-muted-foreground"> / {kbCategoryLabel(category)}</span>}
       </nav>
 
       {item.isError ? (
@@ -61,7 +61,7 @@ export function KbArticlePage() {
 
           {related.length > 0 && (
             <aside className="lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:self-start">
-              <h2 className="text-[13px] font-medium text-muted-foreground">{text.more(category)}</h2>
+              <h2 className="text-[13px] font-medium text-muted-foreground">{text.more(kbCategoryLabel(category))}</h2>
               <ul className="mt-3 divide-y divide-border border-y border-border">
                 {related.map((x) => (
                   <li key={x.id}>

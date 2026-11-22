@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/locale"
 import { useState } from "react"
 import { useAirForecast } from "@/api/air"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -9,7 +10,7 @@ import { formatNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 const text = air.forecast
-const dayFormat = new Intl.DateTimeFormat("ru-RU", {
+const dayFormat = new Intl.DateTimeFormat(intlLocale, {
   weekday: "short",
   day: "numeric",
   month: "short",

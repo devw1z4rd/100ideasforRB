@@ -1,3 +1,4 @@
+import { t } from "@/lib/locale"
 import { LazyMotion, MotionConfig, domAnimation } from "motion/react"
 import { useLayoutEffect } from "react"
 import { Outlet, ScrollRestoration, useLocation, useNavigationType, type Location } from "react-router"
@@ -35,7 +36,7 @@ export function RootLayout() {
           href="#content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
         >
-          К содержимому
+          {t("К содержимому", "Да змесціва")}
         </a>
         <SiteHeader />
         <main id="content" tabIndex={-1} className="outline-none">

@@ -1,5 +1,6 @@
+import { t } from "@/lib/locale"
 export const notFound = {
-  title: "Страница не найдена",
-  eyebrow: "Ошибка 404",
-  home: "На главную",
+  title: t("Страница не найдена", "Старонка не знойдзена"),
+  eyebrow: t("Ошибка 404", "Памылка 404"),
+  home: t("На главную", "На галоўную"),
 } as const

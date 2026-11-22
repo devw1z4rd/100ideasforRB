@@ -6,14 +6,14 @@ import { ReportIcon } from "@/components/map/ReportIcon"
 import { DuplicateReportDialog } from "@/components/reports/DuplicateReportDialog"
 import { RejectionReasonDialog } from "@/components/reports/RejectionReasonDialog"
 import {
-  districtLabel,
+  reportDistrictLabel,
   formatDateTime,
   ReportPhoto,
   ScoreBadge,
   StatusBadge,
 } from "@/components/reports/ReportBits"
 import { Button } from "@/components/ui/button"
-import { categoryLabels, duplicateReports, moderationPage as text, statusActions, statusTransitions } from "@/content/reports"
+import { autoCheckReasonLabel, categoryLabels, duplicateReports, moderationPage as text, statusActions, statusTransitions } from "@/content/reports"
 import { cn } from "@/lib/utils"
 
 export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
@@ -63,7 +63,7 @@ export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
           {r.auto_check && <ScoreBadge score={r.auto_check.score} />}
         </div>
         <p className="mt-1 text-[13px] text-muted-foreground tabular-nums">
-          {[districtLabel(r.expand?.district?.name), formatDateTime(r.created), !r.author && text.anonymous]
+          {[reportDistrictLabel(r.expand?.district), formatDateTime(r.created), !r.author && text.anonymous]
             .filter(Boolean)
             .join(" · ")}
         </p>
@@ -75,7 +75,7 @@ export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
         {r.auto_check && r.auto_check.reasons.length > 0 && (
           <p className="mt-2 text-[12px] text-muted-foreground">
             {r.auto_check.reasons
-              .map((x) => `${x.delta > 0 ? "+" : "−"}${Math.abs(x.delta)} ${x.text}`)
+              .map((x) => `${x.delta > 0 ? "+" : "−"}${Math.abs(x.delta)} ${autoCheckReasonLabel(x.text)}`)
               .join(" · ")}
           </p>
         )}

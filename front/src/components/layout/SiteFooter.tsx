@@ -1,3 +1,4 @@
+import { intlLocale, switchLanguage, t } from "@/lib/locale"
 import { ArrowRight, ArrowUp } from "lucide-react"
 import { useInView } from "motion/react"
 import { useRef, type ReactNode } from "react"
@@ -5,16 +6,18 @@ import { Link } from "react-router"
 import { useAirUpdatedAt, useLatestAir } from "@/api/air"
 import { useAirPoints } from "@/api/reference"
 import { Container } from "@/components/layout/Container"
+import { LanguageOption } from "@/components/layout/LanguageOption"
 import { ThemeSwitch } from "@/components/layout/ThemeSwitch"
 import { Tooltip } from "@/components/ui/tooltip"
 import { anchors, cta, footer, pages, site } from "@/content/nav"
+import { townName } from "@/content/placeNames"
 import { aqiCategory } from "@/lib/aqi"
 import { formatRelativeTime } from "@/lib/format"
 import { useNow } from "@/lib/useNow"
 import { cn } from "@/lib/utils"
 
 const year = new Date().getFullYear()
-const exactTime = new Intl.DateTimeFormat("ru-RU", { dateStyle: "long", timeStyle: "short" })
+const exactTime = new Intl.DateTimeFormat(intlLocale, { dateStyle: "long", timeStyle: "short" })
 const navLink =
   "font-heading text-[17px] font-medium tracking-[-0.01em] underline decoration-transparent decoration-2 underline-offset-[5px] transition-colors hover:decoration-current md:text-[19px]"
 
@@ -30,7 +33,7 @@ export function SiteFooter() {
   const worst = ranked[0]
   const category = aqiCategory(worst?.us_aqi)
   const good = ranked.filter((r) => aqiCategory(r.us_aqi)?.level === "good").length
-  const worstName = worst ? points?.find((p) => p.id === worst.point)?.name : undefined
+  const worstPoint = worst && points?.find((p) => p.id === worst.point)
 
   return (
     <footer
@@ -65,7 +68,7 @@ export function SiteFooter() {
           </div>
 
           <nav
-            aria-label="Разделы сайта"
+            aria-label={t("Разделы сайта", "Раздзелы сайта")}
             className="grid grid-cols-2 gap-8 lg:col-span-4 lg:col-start-9 lg:pt-3"
           >
             <FooterColumn title={footer.columns.home}>
@@ -97,7 +100,8 @@ export function SiteFooter() {
             <Pulse
               value={
                 <>
-                  {worstName ?? "—"} <span className="tabular-nums">· {Math.round(worst.us_aqi!)}</span>
+                  {worstPoint ? townName(worstPoint.name) : "—"}{" "}
+                  <span className="tabular-nums">· {Math.round(worst.us_aqi!)}</span>
                 </>
               }
               caption={footer.pulse.worstCaption(category.label)}
@@ -129,6 +133,13 @@ export function SiteFooter() {
             © {year} {site.name}
           </span>
           <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={switchLanguage}
+              className="inline-flex h-10 cursor-pointer items-center rounded-full border-2 border-(--footer-ink) px-3 transition-colors hover:bg-(--footer-ink) hover:text-(--footer-bg) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--footer-ink)"
+            >
+              <LanguageOption />
+            </button>
             <ThemeSwitch className="[--background:var(--footer-ink)] [--foreground:var(--footer-bg)] [--input:var(--footer-ink)] [--muted-foreground:var(--footer-ink)] [--muted:color-mix(in_oklab,var(--footer-ink)_14%,transparent)]" />
             <Tooltip content={footer.toTop.label} side="top">
               <button

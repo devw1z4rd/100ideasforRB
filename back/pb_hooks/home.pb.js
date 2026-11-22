@@ -24,7 +24,7 @@ routerAdd("GET", "/api/eco/home", (e) => {
   }));
 
   const districts = find("districts", "id != ''", "name").map((r) => ({
-    ...pick(r, ["id", "name"], []),
+    ...pick(r, ["id", "name", "name_be"], []),
     geometry: r.get("geometry"),
   }));
 

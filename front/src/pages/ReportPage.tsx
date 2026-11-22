@@ -1,3 +1,4 @@
+import { isBelarusian, t } from "@/lib/locale"
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 import { Link, useLocation, useParams, useSearchParams } from "react-router"
@@ -16,7 +17,7 @@ import { DuplicateReportDialog } from "@/components/reports/DuplicateReportDialo
 import { PointPicker } from "@/components/reports/PointPicker"
 import { RejectionReasonDialog } from "@/components/reports/RejectionReasonDialog"
 import {
-  districtLabel,
+  reportDistrictLabel,
   formatDateTime,
   ReportPhoto,
   ScoreBadge,
@@ -24,6 +25,7 @@ import {
 } from "@/components/reports/ReportBits"
 import { Button } from "@/components/ui/button"
 import {
+  autoCheckReasonLabel,
   categoryLabels,
   duplicateReports,
   publicStatuses,
@@ -48,7 +50,13 @@ export function ReportPage() {
   const [revealed, setRevealed] = useState(false)
   const r = key ? (keyed.data?.report ?? plain.data) : plain.data
   const events = { data: key && keyed.data ? keyed.data.events : plainEvents.data }
-  useDocumentTitle(r ? `${categoryLabels[r.category]} — обращение` : "Обращение")
+  useDocumentTitle(
+    r
+      ? isBelarusian
+        ? `${categoryLabels[r.category]} — зварот`
+        : `${categoryLabels[r.category]} — обращение`
+      : t("Обращение", "Зварот"),
+  )
 
   if (key ? keyed.isPending : plain.isPending)
     return <Container className="py-24 text-muted-foreground">Загружаем…</Container>
@@ -80,7 +88,7 @@ export function ReportPage() {
             <StatusBadge status={r.status} />
           </div>
           <p className="mt-3 text-sm text-muted-foreground tabular-nums">
-            {[districtLabel(r.expand?.district?.name), formatDateTime(r.created)].filter(Boolean).join(" · ")}
+            {[reportDistrictLabel(r.expand?.district), formatDateTime(r.created)].filter(Boolean).join(" · ")}
           </p>
           <p className="mt-2 text-sm text-fg-secondary">{statusHints[r.status]}</p>
 
@@ -222,7 +230,7 @@ function ModerationPanel({
                   {reason.delta > 0 ? "+" : "−"}
                   {Math.abs(reason.delta)}
                 </span>{" "}
-                {reason.text}
+                {autoCheckReasonLabel(reason.text)}
               </li>
             ))}
           </ul>

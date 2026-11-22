@@ -3,7 +3,7 @@ import { newsCoverUrl, newsDay, useNewsList, useNewsTags, type NewsItem } from "
 import { DraftBadge } from "@/components/content/DraftBadge"
 import { Container } from "@/components/layout/Container"
 import { Skeleton } from "@/components/ui/skeleton"
-import { news as text } from "@/content/news"
+import { news as text, newsTagLabel } from "@/content/news"
 import { formatDate, hostname } from "@/lib/format"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 import { cn } from "@/lib/utils"
@@ -39,7 +39,7 @@ export function NewsPage() {
                   : "border-input text-muted-foreground hover:text-foreground",
               )}
             >
-              {t ?? text.all}
+              {t ? newsTagLabel(t) : text.all}
             </button>
           ))}
         </div>
@@ -86,7 +86,7 @@ function NewsRow({ item: n }: { item: NewsItem }) {
     <article className="grid gap-x-8 gap-y-3 py-6 md:grid-cols-[9rem_minmax(0,1fr)_12rem] lg:grid-cols-[11rem_minmax(0,1fr)_16rem]">
       <p className="text-[13px] text-muted-foreground tabular-nums">
         <time dateTime={newsDay(n)}>{formatDate(newsDay(n))}</time>
-        {n.tag && <span className="ml-2 md:ml-0 md:block">{n.tag}</span>}
+        {n.tag && <span className="ml-2 md:ml-0 md:block">{newsTagLabel(n.tag)}</span>}
       </p>
       <div className="min-w-0">
         <h2 className="font-heading text-xl leading-snug font-semibold tracking-[-0.02em] md:text-2xl">

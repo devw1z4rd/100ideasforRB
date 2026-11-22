@@ -136,7 +136,12 @@ routerAdd("GET", "/api/eco/reports/{id}", (e) => {
   const stored = report.getString("access_key")
   if (!key || !stored || key !== stored) throw new NotFoundError("Обращение не найдено.")
   const districtId = report.getString("district")
-  const district = districtId ? e.app.findRecordById("districts", districtId).getString("name") : ""
+  const district = districtId ? e.app.findRecordById("districts", districtId) : null
   const events = e.app.findRecordsByFilter("report_events", "report = {:id}", "created", 0, 0, { id })
-  return e.json(200, { report, district, events })
+  return e.json(200, {
+    report,
+    district: district?.getString("name") ?? "",
+    districtNameBe: district?.getString("name_be") ?? "",
+    events,
+  })
 })

@@ -57,6 +57,8 @@ The objectives are:
 
 ## 2. Functionality
 
+The site interface is available in Russian and Belarusian. Switch languages in the navigation menu or footer. The preference is saved in the browser. Articles, news, report descriptions and text from external sources retain their original language.
+
 **Home page (regional profile)**
 
 - **Interactive map** (MapLibre GL). It shows the oblast with district boundaries, rivers and neighbouring regions from local GeoJSON layers, so it also works offline. On zoom it adds vector detail from OpenFreeMap. Every town is coloured by its current AQI. The map also shows citizen reports in real time, gauging stations with their level trend, and river sections with water-quality exceedances. An intro animation flies the camera from all of Belarus to the oblast.
@@ -397,7 +399,6 @@ The map intro animation was profiled separately on a throttled CPU. The flight f
   - a calendar heatmap of AQI;
   - a dashboard for authorities (response times by district);
   - a public API and CSV export;
-  - a Belarusian-language interface.
 
 ## 13. Licensing and attribution
 

@@ -1,7 +1,9 @@
+import { isBelarusian, switchLanguage, t } from "@/lib/locale"
 import { ChevronDown, ShieldCheck } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { Link, useLocation } from "react-router"
 import { Container } from "@/components/layout/Container"
+import { LanguageOption } from "@/components/layout/LanguageOption"
 import { LogoMark } from "@/components/layout/Logo"
 import { MobileNav } from "@/components/layout/MobileNav"
 import { Button } from "@/components/ui/button"
@@ -49,7 +51,7 @@ export function SiteHeader() {
       <Container className="grid h-14 grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] items-center gap-x-4">
         <Link
           to="/"
-          aria-label={`${site.name} — на главную`}
+          aria-label={isBelarusian ? `${site.name} — на галоўную` : `${site.name} — на главную`}
           className="col-start-1 flex items-center gap-2.5 justify-self-start"
         >
           <LogoMark />
@@ -58,7 +60,7 @@ export function SiteHeader() {
 
         <nav
           ref={navRef}
-          aria-label="Основная навигация"
+          aria-label={t("Основная навигация", "Асноўная навігацыя")}
           className="header-pop relative col-start-2 hidden items-center rounded-xl bg-muted p-1 lg:flex"
           style={{ animationDelay: "60ms" }}
         >
@@ -137,6 +139,13 @@ export function SiteHeader() {
                 className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground focus:bg-background focus:text-foreground xl:hidden dark:focus:bg-input"
               >
                 <Link to={login.to}>{login.label}</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="mx-2 bg-input" />
+              <DropdownMenuItem
+                onSelect={switchLanguage}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground focus:bg-background focus:text-foreground dark:focus:bg-input"
+              >
+                <LanguageOption />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

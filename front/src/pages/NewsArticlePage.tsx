@@ -4,7 +4,7 @@ import { DraftBadge } from "@/components/content/DraftBadge"
 import { RichText } from "@/components/content/RichText"
 import { Container } from "@/components/layout/Container"
 import { Skeleton } from "@/components/ui/skeleton"
-import { news as text } from "@/content/news"
+import { news as text, newsTagLabel } from "@/content/news"
 import { formatDate, hostname } from "@/lib/format"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
@@ -48,7 +48,7 @@ export function NewsArticlePage() {
                     to={{ pathname: "/news", search: `?tag=${encodeURIComponent(n.tag)}` }}
                     className="hover:text-foreground"
                   >
-                    {n.tag}
+                    {newsTagLabel(n.tag)}
                   </Link>
                 </>
               )}

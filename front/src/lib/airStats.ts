@@ -1,4 +1,5 @@
 import { aqiCategory, type AqiLevel } from "./aqi"
+import { intlLocale } from "./locale"
 
 export type Pollutant = "pm2_5" | "pm10" | "no2" | "so2"
 export type Period = "7d" | "30d" | "90d" | "ytd"
@@ -251,7 +252,7 @@ export type TownRow = {
 }
 
 export function sortTowns(towns: readonly TownRow[], key: TownSortKey, dir: SortDir): TownRow[] {
-  const byName = (a: TownRow, b: TownRow) => a.name.localeCompare(b.name, "ru")
+  const byName = (a: TownRow, b: TownRow) => a.name.localeCompare(b.name, intlLocale)
   const primary = (a: TownRow, b: TownRow): number => {
     if (key === "name") return byName(a, b)
     if (key === "aqi") {

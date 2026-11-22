@@ -1,3 +1,4 @@
+import { t } from "@/lib/locale"
 import type { ComponentType } from "react"
 import type { RouteObject } from "react-router"
 import type { RouteHandle } from "@/lib/routeTitle"
@@ -15,39 +16,49 @@ const page = (title: string, load: () => Promise<{ Component: ComponentType }>):
 const accountPages: RouteObject[] = [
   {
     path: "reports",
-    ...page("Обращения", () => import("@/pages/ReportsPages").then((m) => ({ Component: m.ReportsPage }))),
+    ...page(t("Обращения", "Звароты"), () =>
+      import("@/pages/ReportsPages").then((m) => ({ Component: m.ReportsPage })),
+    ),
   },
   {
     path: "reports/new",
-    ...page("Сообщить о проблеме", () =>
+    ...page(t("Сообщить о проблеме", "Паведаміць пра праблему"), () =>
       import("@/pages/ReportNewPage").then((m) => ({ Component: m.ReportNewPage })),
     ),
   },
   {
     path: "reports/:id",
-    ...page("Обращение", () => import("@/pages/ReportPage").then((m) => ({ Component: m.ReportPage }))),
+    ...page(t("Обращение", "Зварот"), () =>
+      import("@/pages/ReportPage").then((m) => ({ Component: m.ReportPage })),
+    ),
   },
   {
     path: "results",
-    ...page("Результаты", () => import("@/pages/ResultsPage").then((m) => ({ Component: m.ResultsPage }))),
+    ...page(t("Результаты", "Вынікі"), () =>
+      import("@/pages/ResultsPage").then((m) => ({ Component: m.ResultsPage })),
+    ),
   },
   {
     path: "login",
-    ...page("Вход", () => import("@/pages/LoginPage").then((m) => ({ Component: m.LoginPage }))),
+    ...page(t("Вход", "Уваход"), () => import("@/pages/LoginPage").then((m) => ({ Component: m.LoginPage }))),
   },
   {
     path: "reset-password",
-    ...page("Восстановление пароля", () =>
+    ...page(t("Восстановление пароля", "Аднаўленне пароля"), () =>
       import("@/pages/ResetPasswordPage").then((m) => ({ Component: m.ResetPasswordPage })),
     ),
   },
   {
     path: "me",
-    ...page("Профиль", () => import("@/pages/ReportsPages").then((m) => ({ Component: m.MePage }))),
+    ...page(t("Профиль", "Профіль"), () =>
+      import("@/pages/ReportsPages").then((m) => ({ Component: m.MePage })),
+    ),
   },
   {
     path: "moderation",
-    ...page("Модерация", () => import("@/pages/ModerationPage").then((m) => ({ Component: m.ModerationPage }))),
+    ...page(t("Модерация", "Мадэрацыя"), () =>
+      import("@/pages/ModerationPage").then((m) => ({ Component: m.ModerationPage })),
+    ),
   },
 ]
 
@@ -64,31 +75,35 @@ export const routes: RouteObject[] = [
           {
             path: "data",
             element: <DataPage />,
-            handle: { title: "Данные и методика" } satisfies RouteHandle,
+            handle: { title: t("Данные и методика", "Даныя і методыка") } satisfies RouteHandle,
           },
           {
             path: "news",
-            ...page("Новости", () => import("@/pages/NewsPage").then((m) => ({ Component: m.NewsPage }))),
+            ...page(t("Новости", "Навіны"), () =>
+              import("@/pages/NewsPage").then((m) => ({ Component: m.NewsPage })),
+            ),
           },
           {
             path: "news/:slug",
-            ...page("Новости", () =>
+            ...page(t("Новости", "Навіны"), () =>
               import("@/pages/NewsArticlePage").then((m) => ({ Component: m.NewsArticlePage })),
             ),
           },
           {
             path: "compare",
-            ...page("Сравнение районов", () =>
+            ...page(t("Сравнение районов", "Параўнанне раёнаў"), () =>
               import("@/pages/ComparePage").then((m) => ({ Component: m.ComparePage })),
             ),
           },
           {
             path: "kb",
-            ...page("База знаний", () => import("@/pages/KbPage").then((m) => ({ Component: m.KbPage }))),
+            ...page(t("База знаний", "База ведаў"), () =>
+              import("@/pages/KbPage").then((m) => ({ Component: m.KbPage })),
+            ),
           },
           {
             path: "kb/:slug",
-            ...page("База знаний", () =>
+            ...page(t("База знаний", "База ведаў"), () =>
               import("@/pages/KbArticlePage").then((m) => ({ Component: m.KbArticlePage })),
             ),
           },

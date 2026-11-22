@@ -27,7 +27,7 @@ export const districtGeometryQuery = () =>
       (await takeHome("districts")) ??
       (await pb
         .collection("districts")
-        .getFullList<DistrictWithGeometry>({ sort: "name", fields: "id,name,geometry" })),
+        .getFullList<DistrictWithGeometry>({ sort: "name", fields: "id,name,name_be,geometry" })),
     staleTime: Infinity,
   })
 

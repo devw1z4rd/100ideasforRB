@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/locale"
 import { useRef, type PointerEvent } from "react"
 import { air, levelLabels, type PollutantInfo } from "@/content/air"
 import { normLevel, type Range, type SeriesPoint, type TodayPoint } from "@/lib/airStats"
@@ -472,7 +473,7 @@ function findLastIndex<T>(items: readonly T[], pred: (item: T) => boolean): numb
   return -1
 }
 
-const monthFormat = new Intl.DateTimeFormat("ru-RU", { month: "short", timeZone: "UTC" })
+const monthFormat = new Intl.DateTimeFormat(intlLocale, { month: "short", timeZone: "UTC" })
 
 function dateTicks(days: readonly string[], width: number): Array<{ i: number; label: string }> {
   if (!days.length) return []

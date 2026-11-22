@@ -3,7 +3,7 @@ import { useArticles, type Article } from "@/api/articles"
 import { DraftBadge } from "@/components/content/DraftBadge"
 import { Container } from "@/components/layout/Container"
 import { Skeleton } from "@/components/ui/skeleton"
-import { kb as text } from "@/content/kb"
+import { kb as text, kbCategoryLabel } from "@/content/kb"
 import { groupByCategory } from "@/lib/kb"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
@@ -23,7 +23,7 @@ export function KbPage() {
         <nav aria-label={text.categoriesLabel} className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm">
           {groups.map((g, i) => (
             <a key={g.category} href={`#kb-${i}`} className="font-medium text-link hover:text-link-hover">
-              {g.category}
+              {kbCategoryLabel(g.category)}
             </a>
           ))}
         </nav>
@@ -46,7 +46,7 @@ export function KbPage() {
               id={`kb-${i}`}
               className="scroll-mt-[calc(var(--header-h)+1rem)] font-heading text-[clamp(22px,2.4vw,28px)] leading-tight font-semibold tracking-[-0.02em]"
             >
-              {g.category}
+              {kbCategoryLabel(g.category)}
             </h2>
             <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {g.articles.map((a) => (

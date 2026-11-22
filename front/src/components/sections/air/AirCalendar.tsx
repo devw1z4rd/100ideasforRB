@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/locale"
 import { useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { air } from "@/content/air"
 import { AQI_SCALE, aqiCategory } from "@/lib/aqi"
@@ -5,8 +6,8 @@ import { buildAqiCalendar, type DailyRow, type Range } from "@/lib/airStats"
 import { cn } from "@/lib/utils"
 
 const text = air.calendar
-const monthFormat = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric", timeZone: "UTC" })
-const dayFormat = new Intl.DateTimeFormat("ru-RU", { dateStyle: "long", timeZone: "UTC" })
+const monthFormat = new Intl.DateTimeFormat(intlLocale, { month: "long", year: "numeric", timeZone: "UTC" })
+const dayFormat = new Intl.DateTimeFormat(intlLocale, { dateStyle: "long", timeZone: "UTC" })
 const dateOf = (day: string) => new Date(`${day}T00:00:00Z`)
 const cell = "h-10 rounded-md text-sm tabular-nums"
 

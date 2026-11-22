@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/locale"
 import { useMemo, useRef, useState, type PointerEvent } from "react"
 import { air, levelLabels, type PollutantInfo } from "@/content/air"
 import {
@@ -286,7 +287,7 @@ export function TownStrip({
   )
 }
 
-const monthFormat = new Intl.DateTimeFormat("ru-RU", { month: "short", timeZone: "UTC" })
+const monthFormat = new Intl.DateTimeFormat(intlLocale, { month: "short", timeZone: "UTC" })
 
 function monthMarks(cols: ReadonlyArray<{ from: string }>): Array<{ k: number; label: string }> {
   if (cols.length < 2 || cols[0].from.slice(0, 7) === cols[cols.length - 1].from.slice(0, 7)) return []

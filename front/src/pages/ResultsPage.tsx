@@ -1,10 +1,11 @@
+import { intlLocale } from "@/lib/locale"
 import { ArrowRight } from "lucide-react"
 import { Link } from "react-router"
 import type { ReportsCategoryOptions } from "@/api/pocketbase-types"
 import { useReportsRealtime, useShowcase, type ShowcaseReport } from "@/api/reports"
 import { Container } from "@/components/layout/Container"
 import { ReportIcon } from "@/components/map/ReportIcon"
-import { districtLabel, ReportList, ReportPhoto } from "@/components/reports/ReportBits"
+import { reportDistrictLabel, ReportList, ReportPhoto } from "@/components/reports/ReportBits"
 import { Button } from "@/components/ui/button"
 import { cta } from "@/content/nav"
 import { categoryLabels, resultsPage as text } from "@/content/reports"
@@ -12,7 +13,7 @@ import { useDocumentTitle } from "@/lib/useDocumentTitle"
 
 const DAY = 86_400_000
 const shortDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("ru-RU", { timeZone: "Europe/Minsk", day: "numeric", month: "short" })
+  new Date(iso).toLocaleDateString(intlLocale, { timeZone: "Europe/Minsk", day: "numeric", month: "short" })
 const daysBetween = (from: string, to: string) =>
   Math.max(0, Math.round((Date.parse(to) - Date.parse(from)) / DAY))
 const median = (xs: number[]) => {
@@ -159,7 +160,7 @@ function Story({ report: r }: { report: ShowcaseReport & { resolvedAt: string } 
       )}
       <div className="flex flex-1 flex-col p-4">
         <p className="text-[13px] text-muted-foreground">
-          {[categoryLabels[r.category], districtLabel(r.expand?.district?.name)].filter(Boolean).join(" · ")}
+          {[categoryLabels[r.category], reportDistrictLabel(r.expand?.district)].filter(Boolean).join(" · ")}
         </p>
         <p className="mt-2 text-sm tabular-nums">
           {text.reported} {shortDate(r.created)} → {text.fixed} {shortDate(r.resolvedAt)}{" "}

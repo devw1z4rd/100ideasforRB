@@ -1,5 +1,7 @@
+import { isBelarusian, t } from "@/lib/locale"
 import { useState } from "react"
-import { compare as text, districtLabel, metrics, type MetricInfo } from "@/content/compare"
+import { compare as text, metrics, type MetricInfo } from "@/content/compare"
+import { districtLabel } from "@/content/placeNames"
 import type { Ranked, RankMetric } from "@/lib/compare"
 import { formatNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -51,7 +53,11 @@ export function MetricChips({ value, onChange }: { value: RankMetric; onChange: 
 
 function groupNames(group: readonly Ranked[], names: ReadonlyMap<string, string>) {
   const shown = group.slice(0, 2).map((r) => districtLabel(names.get(r.id) ?? ""))
-  return group.length > 2 ? `${shown.join(", ")} и ещё ${group.length - 2}` : shown.join(" и ")
+  return group.length > 2
+    ? isBelarusian
+      ? `${shown.join(", ")} і яшчэ ${group.length - 2}`
+      : `${shown.join(", ")} и ещё ${group.length - 2}`
+    : shown.join(t(" и ", " і "))
 }
 
 export function DistrictRanking({

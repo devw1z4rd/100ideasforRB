@@ -1,3 +1,4 @@
+import { t } from "@/lib/locale"
 import { ArrowRight, Droplets } from "lucide-react"
 import { useState, type KeyboardEvent, type PointerEvent } from "react"
 import { Link } from "react-router"
@@ -174,7 +175,8 @@ export function TownCard({
           style={{ color: category.color }}
         >
           <span aria-hidden="true" className="size-2 rounded-full" style={{ background: category.color }} />
-          <span className="first-letter:uppercase">{category.label}</span> воздух
+          <span className="first-letter:uppercase">{category.label}</span>
+          {t(" воздух", " паветра")}
         </p>
       ) : (
         <p className="text-[13px] text-muted-foreground">{text.card.noData}</p>

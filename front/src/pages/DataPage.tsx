@@ -1,3 +1,4 @@
+import { isBelarusian, t } from "@/lib/locale"
 import type { ReactNode } from "react"
 import { Container } from "@/components/layout/Container"
 import { air } from "@/content/air"
@@ -14,7 +15,8 @@ import { useDocumentTitle } from "@/lib/useDocumentTitle"
 const h2 = "font-heading text-[clamp(24px,2.6vw,32px)] leading-[1.15] font-semibold tracking-[-0.02em]"
 const sourceLink = "font-medium text-link transition-colors hover:text-link-hover"
 
-const aqiRange = ({ min, max }: AqiCategory) => (Number.isFinite(max) ? `${min}–${max}` : `${min} и выше`)
+const aqiRange = ({ min, max }: AqiCategory) =>
+  Number.isFinite(max) ? `${min}–${max}` : isBelarusian ? `${min} і вышэй` : `${min} и выше`
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -78,10 +80,10 @@ export function DataPage() {
           <thead>
             <tr className="text-left text-xs text-muted-foreground">
               <th scope="col" className="py-2 pr-6 font-medium">
-                Индекс
+                {t("Индекс", "Індэкс")}
               </th>
               <th scope="col" className="py-2 font-medium">
-                Категория
+                {t("Категория", "Катэгорыя")}
               </th>
             </tr>
           </thead>

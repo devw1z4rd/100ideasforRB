@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import type { ReportsCategoryOptions } from "@/api/pocketbase-types"
 import { useDistricts } from "@/api/reference"
+import { districtName } from "@/content/placeNames"
 import { categoryLabels, reportFilters as text } from "@/content/reports"
 
 const categories = Object.keys(categoryLabels) as ReportsCategoryOptions[]
@@ -20,7 +21,9 @@ export function ReportFilters({ district, category, onDistrict, onCategory }: {
     <>
       <ReportFilterSelect label={text.district} value={district} onChange={onDistrict}>
         <option value="">{text.allDistricts}</option>
-        {districts?.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
+        {districts?.map((district) => (
+          <option key={district.id} value={district.id}>{districtName(district)}</option>
+        ))}
       </ReportFilterSelect>
       <ReportFilterSelect label={text.category} value={category} onChange={(value) => onCategory(parseReportCategory(value))}>
         <option value="">{text.allCategories}</option>

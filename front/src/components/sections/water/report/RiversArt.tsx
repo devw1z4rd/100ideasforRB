@@ -1,3 +1,4 @@
+import { isBelarusian } from "@/lib/locale"
 import { useId } from "react"
 import { useOblast, useRivers, type GeoCollection, type LineFeature } from "@/api/geo"
 import { PageTip } from "./static"
@@ -122,7 +123,9 @@ export function RiversArt({
             side="top"
             content={
               s.worst > 1
-                ? `${s.name} — до ${formatNumber(s.worst, 1)}× хуже норматива`
+                ? isBelarusian
+                  ? `${s.name} — да ${formatNumber(s.worst, 1)}× горш за нарматыў`
+                  : `${s.name} — до ${formatNumber(s.worst, 1)}× хуже норматива`
                 : `${s.name} — ${text.report.summary.mapLegend.none}`
             }
           >

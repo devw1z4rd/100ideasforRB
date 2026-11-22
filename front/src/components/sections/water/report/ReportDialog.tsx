@@ -1,3 +1,4 @@
+import { t } from "@/lib/locale"
 import { ArrowLeft, ArrowRight, X } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import {
@@ -650,7 +651,7 @@ function RiverChips({
   onChange: (river: string | null) => void
 }) {
   return (
-    <div role="radiogroup" aria-label="Река" className="flex flex-wrap gap-1.5">
+    <div role="radiogroup" aria-label={t("Река", "Рака")} className="flex flex-wrap gap-1.5">
       {[null, ...rivers].map((rv) => (
         <button
           key={rv ?? "all"}

@@ -11,6 +11,15 @@
     />
     <meta name="theme-color" content="#ffffff" />
     <script>
+      // Keep the shell and the locale read by src/lib/locale.ts in sync.
+      var pageLocale = new URLSearchParams(location.search).get("lang")
+      if (pageLocale !== "be" && pageLocale !== "ru") {
+        try {
+          pageLocale = localStorage.getItem("eco-locale")
+        } catch (e) {}
+      }
+      if (pageLocale === "be") document.documentElement.lang = "be"
+
       // Apply the theme before React loads (same logic as lib/theme.ts) to avoid a light flash in dark mode
       try {
         var theme = localStorage.getItem("theme")
@@ -54,6 +63,13 @@
       }
       html.dark .shell {
         color: #f4f4f5;
+      }
+      .shell-name[lang="be"],
+      html[lang="be"] .shell-name[lang="ru"] {
+        display: none;
+      }
+      html[lang="be"] .shell-name[lang="be"] {
+        display: inline;
       }
       .shell-bar {
         border-bottom: 1px solid #ececea;
@@ -135,12 +151,19 @@
     <meta property="og:image:alt" content="Карта Гомельской области с районами и реками" />
     <meta name="twitter:card" content="summary_large_image" />
     <title>Экологический профиль Гомельщины</title>
+    <script>
+      if (document.documentElement.lang === "be") document.title = "Экалагічны профіль Гомельшчыны"
+    </script>
   </head>
   <body>
     <div id="root">
       <div class="shell" aria-hidden="true">
         <div class="shell-bar">
-          <div class="shell-in"><span class="shell-logo"></span>Экология Гомельской области</div>
+          <div class="shell-in">
+            <span class="shell-logo"></span>
+            <span class="shell-name" lang="ru">Экология Гомельской области</span>
+            <span class="shell-name" lang="be">Экалогія Гомельскай вобласці</span>
+          </div>
         </div>
         <div class="shell-map"><div></div></div>
       </div>

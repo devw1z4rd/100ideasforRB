@@ -1,8 +1,10 @@
+import { intlLocale, t } from "@/lib/locale"
 import { useState } from "react"
 import { Link } from "react-router"
 import { deviceKey, reportPhotoUrl, useReportPhotoAccess, type ReportWithDistrict } from "@/api/reports"
 import type { ReportsStatusOptions } from "@/api/pocketbase-types"
 import { ReportIcon } from "@/components/map/ReportIcon"
+import { districtLabel, districtName } from "@/content/placeNames"
 import { categoryLabels, duplicateReports, statusLabels } from "@/content/reports"
 import { cn } from "@/lib/utils"
 
@@ -75,8 +77,8 @@ export function StatusBadge({ status, className }: { status: ReportsStatusOption
   )
 }
 
-export const districtLabel = (name: string | undefined) =>
-  !name ? undefined : /^г\.|^Гомель$/.test(name) ? name : `${name} район`
+export const reportDistrictLabel = (district: NonNullable<ReportWithDistrict["expand"]>["district"]) =>
+  district ? districtLabel(districtName(district)) : undefined
 
 export function ScoreBadge({ score, className }: { score: number; className?: string }) {
   const tone = score >= 70 ? "bg-success" : score >= 40 ? "bg-aqi-moderate" : "bg-destructive"
@@ -88,13 +90,14 @@ export function ScoreBadge({ score, className }: { score: number; className?: st
       )}
     >
       <span aria-hidden="true" className={cn("size-2 rounded-full", tone)} />
-      Похоже на правду: {score}%
+      {t("Похоже на правду: ", "Падобна да праўды: ")}
+      {score}%
     </span>
   )
 }
 
 export const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString("ru-RU", {
+  new Date(iso).toLocaleString(intlLocale, {
     timeZone: "Europe/Minsk",
     day: "numeric",
     month: "short",
@@ -120,7 +123,7 @@ export function ReportList({ reports, empty }: { reports: readonly ReportWithDis
                 {r.auto_check && <ScoreBadge score={r.auto_check.score} />}
               </div>
               <p className="mt-1 text-[13px] text-muted-foreground tabular-nums">
-                {[districtLabel(r.expand?.district?.name), formatDateTime(r.created)]
+                {[reportDistrictLabel(r.expand?.district), formatDateTime(r.created)]
                   .filter(Boolean)
                   .join(" · ")}
               </p>

@@ -1,3 +1,4 @@
+import { t } from "@/lib/locale"
 import * as React from "react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import { XIcon } from "lucide-react"
@@ -18,7 +19,7 @@ function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive
 function DialogContent({
   className,
   children,
-  closeLabel = "Закрыть",
+  closeLabel = t("Закрыть", "Закрыць"),
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & { closeLabel?: string }) {
   return (

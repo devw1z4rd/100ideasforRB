@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/locale"
 import { useInView, useReducedMotion } from "motion/react"
 import * as m from "motion/react-m"
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import type { HomeSection } from "@/content/home"
 import { map as text } from "@/content/map"
 import { cta } from "@/content/nav"
+import { districtName, townName } from "@/content/placeNames"
 import { publicStatuses } from "@/content/reports"
 import { daysBetween, minskToday, periodRange, pointDays } from "@/lib/airStats"
 import { districtPoints } from "@/lib/compare"
@@ -33,7 +35,7 @@ const MapView = lazy(loadMapView)
 
 type Props = Pick<HomeSection, "id" | "eyebrow" | "title" | "titleHidden" | "variant">
 
-const dateFormat = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" })
+const dateFormat = new Intl.DateTimeFormat(intlLocale, { day: "numeric", month: "long" })
 const formatCreated = (value: string) => {
   const date = parsePbDate(value)
   return date ? dateFormat.format(date) : ""
@@ -103,25 +105,28 @@ export function MapSection(section: Props) {
   const towns = useMemo<MapTown[]>(
     () =>
       [...(points.data ?? [])]
-        .sort((a, b) => a.name.localeCompare(b.name, "ru"))
         .map((p) => ({
           id: p.id,
-          name: p.name,
+          name: townName(p.name),
           lat: p.lat,
           lon: p.lon,
           district: p.district ?? "",
           aqi: latest.data?.get(p.id)?.us_aqi ?? null,
-        })),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, intlLocale)),
     [points.data, latest.data],
   )
 
-  const districtTown = useMemo(() => districtPoints(districts.data ?? [], towns), [towns, districts.data])
+  const districtTown = useMemo(
+    () => districtPoints(districts.data ?? [], points.data ?? []),
+    [points.data, districts.data],
+  )
 
-  const districtNames = useMemo(() => new Map(districts.data?.map((d) => [d.id, d.name])), [districts.data])
+  const districtNames = useMemo(() => new Map(districts.data?.map((d) => [d.id, districtName(d)])), [districts.data])
   const townDistrict = (town: MapTown) =>
     (districts.data ?? [])
       .filter((d) => districtTown.get(d.id) === town.id)
-      .map((d) => d.name)
+      .map(districtName)
       .find((name) => !name.startsWith("г.")) ?? districtNames.get(town.district)
 
   const mapReports = useMemo<MapReport[]>(

@@ -1,3 +1,4 @@
+import { t } from "@/lib/locale"
 import { useInView } from "motion/react"
 import { lazy, Suspense, useMemo, useRef, useState } from "react"
 import { useAirDaily, useAirToday } from "@/api/air"
@@ -7,6 +8,7 @@ import { HomeSectionShell } from "@/components/sections/HomeSectionShell"
 import { Skeleton } from "@/components/ui/skeleton"
 import { air, periods, pollutants } from "@/content/air"
 import type { HomeSection } from "@/content/home"
+import { townName } from "@/content/placeNames"
 import {
   buildSeries,
   daysBetween,
@@ -49,7 +51,7 @@ export function AirSection(section: Props) {
   const { current, previous } = periodRange(period, minskToday())
   const daily = useAirDaily(previous?.from ?? current.from, current.to)
 
-  const names = useMemo(() => new Map(points.data?.map((p) => [p.id, p.name])), [points.data])
+  const names = useMemo(() => new Map(points.data?.map((p) => [p.id, townName(p.name)])), [points.data])
   const [selected, setPointId] = useSelectedTown(points.data)
   const info = pollutants.find((p) => p.key === pollutant)!
   const rows = daily.data
@@ -205,7 +207,9 @@ export function AirSection(section: Props) {
 
       {(view === "town" || view === "table") && (
         <p className="mt-6 text-xs leading-[1.5] text-muted-foreground">
-          {air.note} Период: {periodLabel}.
+          {air.note}
+          {t(" Период: ", " Перыяд: ")}
+          {periodLabel}.
         </p>
       )}
     </HomeSectionShell>

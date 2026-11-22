@@ -14,6 +14,7 @@ import { formatDayLong } from "@/components/sections/air/format"
 import { Skeleton } from "@/components/ui/skeleton"
 import { periods, pollutants } from "@/content/air"
 import { compare as text, comparePeriods, metrics } from "@/content/compare"
+import { districtName } from "@/content/placeNames"
 import { publicStatuses } from "@/content/reports"
 import { minskToday, periodRange, summarizeByPoint, type PointSummary, type Pollutant } from "@/lib/airStats"
 import {
@@ -26,6 +27,7 @@ import {
   type CompareState,
 } from "@/lib/compare"
 import { districtAt, fitProjection, geometryPath } from "@/lib/geo"
+import { intlLocale } from "@/lib/locale"
 import { summarizePosts, type PostSummary } from "@/lib/rivers"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 import { cn } from "@/lib/utils"
@@ -49,7 +51,7 @@ export function ComparePage() {
   useReportsRealtime()
 
   const list = useMemo(() => districts.data ?? [], [districts.data])
-  const names = useMemo(() => new Map(list.map((d) => [d.id, d.name])), [list])
+  const names = useMemo(() => new Map(list.map((d) => [d.id, districtName(d)])), [list])
   const state = readCompareParams(
     params,
     list.map((d) => d.name),
@@ -71,11 +73,11 @@ export function ComparePage() {
     )
   // Write both districts together, otherwise the default second one could equal the new first.
   const selectA = (id: string) => {
-    const name = names.get(id)
+    const name = list.find((d) => d.id === id)?.name
     if (name) set({ a: name, b: name === state.b ? state.a : state.b })
   }
   const selectB = (id: string) => {
-    const name = names.get(id)
+    const name = list.find((d) => d.id === id)?.name
     if (name && name !== state.a) set({ a: state.a, b: name })
   }
 
@@ -106,7 +108,7 @@ export function ComparePage() {
   const ranked = useMemo(() => rankDesc(values, names), [values, names])
   const missing = list
     .filter((d) => !values.has(d.id))
-    .sort((x, y) => x.name.localeCompare(y.name, "ru"))
+    .sort((x, y) => districtName(x).localeCompare(districtName(y), intlLocale))
     .map((d) => d.id)
   const daysTotal = useMemo(
     () =>
@@ -262,7 +264,7 @@ export function ComparePage() {
               <DistrictPair
                 a={side(aId)}
                 b={side(bId)}
-                districts={list}
+                districts={list.map((d) => ({ id: d.id, name: districtName(d) }))}
                 onA={selectA}
                 onB={selectB}
                 onSwap={() => set({ a: state.b, b: state.a })}

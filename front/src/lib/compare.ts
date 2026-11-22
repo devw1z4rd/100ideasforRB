@@ -1,6 +1,7 @@
 import { minskDay } from "@/api/dates"
 import type { Period, Pollutant, Range } from "./airStats"
 import { districtAt, type PolygonGeometry } from "./geo"
+import { intlLocale } from "./locale"
 
 export type RankMetric = Pollutant | "reports"
 
@@ -38,7 +39,7 @@ export type Ranked = { id: string; value: number; rank: number }
 
 export function rankDesc(values: ReadonlyMap<string, number>, names: ReadonlyMap<string, string>): Ranked[] {
   const sorted = [...values]
-    .sort(([a, x], [b, y]) => y - x || (names.get(a) ?? "").localeCompare(names.get(b) ?? "", "ru"))
+    .sort(([a, x], [b, y]) => y - x || (names.get(a) ?? "").localeCompare(names.get(b) ?? "", intlLocale))
     .map(([id, value]) => ({ id, value, rank: 0 }))
   sorted.forEach((r, i) => {
     r.rank = i > 0 && sorted[i - 1].value === r.value ? sorted[i - 1].rank : i + 1

@@ -1,15 +1,18 @@
-export const shortDateFmt = new Intl.DateTimeFormat("ru-RU", {
+import { intlLocale } from "@/lib/locale";
+
+
+export const shortDateFmt = new Intl.DateTimeFormat(intlLocale, {
   month: "short",
   day: "numeric",
 });
 
-export const weekdayDateFmt = new Intl.DateTimeFormat("ru-RU", {
+export const weekdayDateFmt = new Intl.DateTimeFormat(intlLocale, {
   weekday: "short",
   month: "short",
   day: "numeric",
 });
 
-export const hmsTimeFmt = new Intl.DateTimeFormat("ru-RU", {
+export const hmsTimeFmt = new Intl.DateTimeFormat(intlLocale, {
   hour: "2-digit",
   minute: "2-digit",
   second: "2-digit",
@@ -17,8 +20,8 @@ export const hmsTimeFmt = new Intl.DateTimeFormat("ru-RU", {
 });
 
 // `Intl.NumberFormat.prototype.format` is a bound getter — safe to extract.
-export const intFmt = new Intl.NumberFormat("ru-RU").format;
-export const valueLabelFmt = new Intl.NumberFormat("ru-RU", {
+export const intFmt = new Intl.NumberFormat(intlLocale).format;
+export const valueLabelFmt = new Intl.NumberFormat(intlLocale, {
   maximumFractionDigits: 0,
 }).format;
 

@@ -4,12 +4,14 @@ import { Link } from "react-router"
 import { riverColor } from "@/components/map/riverColor"
 import { formatDay } from "@/components/sections/air/format"
 import { air, pollutants } from "@/content/air"
-import { compare, districtLabel } from "@/content/compare"
+import { compare } from "@/content/compare"
+import { districtLabel } from "@/content/placeNames"
 import { indicators, water as waterText } from "@/content/water"
 import { aqiCategory } from "@/lib/aqi"
 import type { Pollutant, PointSummary } from "@/lib/airStats"
 import type { ReportCounts } from "@/lib/compare"
 import { formatNumber } from "@/lib/format"
+import { intlLocale } from "@/lib/locale"
 import type { PostSummary } from "@/lib/rivers"
 import { cn } from "@/lib/utils"
 import type { Section } from "@/lib/water"
@@ -56,7 +58,7 @@ export function DistrictPair({
   waterQuarter,
 }: Props) {
   const sorted = [...districts].sort((x, y) =>
-    districtLabel(x.name).localeCompare(districtLabel(y.name), "ru"),
+    districtLabel(x.name).localeCompare(districtLabel(y.name), intlLocale),
   )
   const reportsNone = a.reports.total === 0 && b.reports.total === 0
 

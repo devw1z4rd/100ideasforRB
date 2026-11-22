@@ -21,6 +21,7 @@ import type { Section as WaterSection } from "@/lib/water"
 import { water as waterText } from "@/content/water"
 import { aqiCategory } from "@/lib/aqi"
 import { mergeEnclaves } from "@/lib/geo"
+import { locale } from "@/lib/locale"
 import { scaleBar, snapToLines } from "@/lib/mapGeo"
 import { cn } from "@/lib/utils"
 import { ReportIcon } from "./ReportIcon"
@@ -366,7 +367,7 @@ function MapView({
     return text.riverLabels.flatMap((hint) => {
       const river = rivers.features.find((f) => f.properties.name === hint.name)
       const at = river && snapToLines(river.geometry.coordinates, hint.lon, hint.lat)
-      return at ? [{ name: hint.name, side: hint.side, ...at }] : []
+      return at ? [{ name: hint.label, side: hint.side, ...at }] : []
     })
   }, [rivers])
 
@@ -968,7 +969,7 @@ function MapView({
             ["all", [">=", ["zoom"], 12], ["in", ["get", "class"], ["literal", ["hamlet", "neighbourhood"]]]],
           ]}
           layout={{
-            "text-field": ["coalesce", ["get", "name:ru"], ["get", "name"]],
+            "text-field": ["coalesce", ["get", `name:${locale}`], ["get", "name"]],
             "text-font": ["Noto Sans Regular"],
             "text-size": ["interpolate", ["linear"], ["zoom"], 9, 10, 14, 13],
             "text-padding": 4,
