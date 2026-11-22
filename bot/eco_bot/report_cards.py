@@ -54,6 +54,7 @@ def report_date(created: str) -> str:
 def report_card(report, site_url):
     report_id = report["id"]
     status = report["status"]
+    duplicate_of = report.get("duplicate_of")
     category = CATEGORY_LABELS.get(report["category"], report["category"])
     district = report.get("expand", {}).get("district", {}).get("name") or "Не определён"
     description = (report.get("description") or "Без описания")[:1000]
@@ -65,6 +66,8 @@ def report_card(report, site_url):
         f"Описание: {escape(description)}",
     ]
     location = report.get("location") or {}
+    if duplicate_of:
+        lines.append(f"Повторное обращение. Основное: #{escape(duplicate_of)}")
     if isinstance(location.get("lat"), (int, float)) and isinstance(location.get("lon"), (int, float)):
         lat, lon = location["lat"], location["lon"]
         point = f"{lon},{lat}"
@@ -88,7 +91,7 @@ def report_card(report, site_url):
             text=ACTION_LABELS[target],
             callback_data=ModerationAction(report_id=report_id, current=status, target=target).pack(),
         )
-        for target in TRANSITIONS.get(status, ())
+        for target in (() if duplicate_of else TRANSITIONS.get(status, ()))
     ]
     return {
         "text": "\n".join(lines),

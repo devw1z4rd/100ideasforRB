@@ -60,30 +60,43 @@ class PocketBase:
     async def report_photo(self, report, filename):
         segments = (report["collectionId"], report["id"], filename)
         path = "/".join(quote(value, safe="") for value in segments)
-        return await self.request("GET", f"/api/files/{path}", as_bytes=True)
+        file_token = await self.request("POST", "/api/files/token")
+        return await self._request("GET", f"/api/files/{path}", as_bytes=True, params={"token": file_token["token"]})
 
-    async def change_status(self, report_id, status):
+    async def change_status(self, report_id, status, *, comment=None):
+        values = {"status": status}
+        if comment is not None:
+            values["moderator_comment"] = comment
         return await self.request(
-            "PATCH", f"/api/collections/reports/records/{report_id}", json={"status": status}
+            "PATCH", f"/api/collections/reports/records/{report_id}", json=values
         )
 
     async def report_creations(self, started_at, cursor):
-        filter_parts = [f'from_status = "" && (report.status = "new" || created >= "{started_at}")']
+        return await self._report_events(
+            f'from_status = "" && (report.status = "new" || created >= "{started_at}")',
+            cursor,
+            fields="id,created,report,expand.report.id,expand.report.collectionId,expand.report.created,"
+                   "expand.report.category,expand.report.status,expand.report.description,"
+                   "expand.report.location,expand.report.photos,expand.report.expand.district.name",
+            expand="report.district",
+        )
+
+    async def report_status_changes(self, cursor):
+        return await self._report_events('from_status != ""', cursor, fields="id,created,report")
+
+    async def _report_events(self, event_filter, cursor, **options):
         if cursor:
             created, event_id = cursor
-            filter_parts.append(f'(created > "{created}" || (created = "{created}" && id > "{event_id}"))')
+            event_filter += f' && (created > "{created}" || (created = "{created}" && id > "{event_id}"))'
         result = await self.request(
             "GET",
             "/api/collections/report_events/records",
             params={
-                "filter": " && ".join(filter_parts),
+                "filter": event_filter,
                 "sort": "created,id",
                 "perPage": 50,
                 "skipTotal": "true",
-                "expand": "report.district",
-                "fields": "id,created,report,expand.report.id,expand.report.collectionId,expand.report.created,"
-                          "expand.report.category,expand.report.status,expand.report.description,"
-                          "expand.report.location,expand.report.photos,expand.report.expand.district.name",
+                **options,
             },
         )
         return result["items"]

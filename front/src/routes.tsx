@@ -47,7 +47,7 @@ const accountPages: RouteObject[] = [
   },
   {
     path: "moderation",
-    ...page("Модерация", () => import("@/pages/ReportsPages").then((m) => ({ Component: m.ModerationPage }))),
+    ...page("Модерация", () => import("@/pages/ModerationPage").then((m) => ({ Component: m.ModerationPage }))),
   },
 ]
 

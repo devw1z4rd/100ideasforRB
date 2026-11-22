@@ -45,7 +45,7 @@ export function ComparePage() {
   const posts = useRiverPosts()
   const levels = useRiverLevels()
   const water = useWaterReadings()
-  const reports = useReports({ status: publicStatuses })
+  const reports = useReports({ status: publicStatuses, duplicates: "exclude" })
   useReportsRealtime()
 
   const list = useMemo(() => districts.data ?? [], [districts.data])

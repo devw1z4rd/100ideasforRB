@@ -3,6 +3,8 @@ import { useState } from "react"
 import { Link } from "react-router"
 import { useChangeReportStatus, type ReportWithDistrict } from "@/api/reports"
 import { ReportIcon } from "@/components/map/ReportIcon"
+import { DuplicateReportDialog } from "@/components/reports/DuplicateReportDialog"
+import { RejectionReasonDialog } from "@/components/reports/RejectionReasonDialog"
 import {
   districtLabel,
   formatDateTime,
@@ -11,7 +13,7 @@ import {
   StatusBadge,
 } from "@/components/reports/ReportBits"
 import { Button } from "@/components/ui/button"
-import { categoryLabels, moderationPage as text, statusActions, statusTransitions } from "@/content/reports"
+import { categoryLabels, duplicateReports, moderationPage as text, statusActions, statusTransitions } from "@/content/reports"
 import { cn } from "@/lib/utils"
 
 export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
@@ -57,6 +59,7 @@ export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-medium">{categoryLabels[r.category]}</h3>
           <StatusBadge status={r.status} />
+          {r.duplicate_of && <span className="text-xs text-muted-foreground">{duplicateReports.badge}</span>}
           {r.auto_check && <ScoreBadge score={r.auto_check.score} />}
         </div>
         <p className="mt-1 text-[13px] text-muted-foreground tabular-nums">
@@ -78,17 +81,21 @@ export function QueueItem({ report: r }: { report: ReportWithDistrict }) {
         )}
 
         <div className="mt-4 flex flex-wrap items-center gap-2 sm:mt-auto sm:pt-4">
-          {statusTransitions[r.status].map((to) => (
-            <Button
-              key={to}
-              size="sm"
-              variant={to === "rejected" ? "outline" : "default"}
-              disabled={change.isPending}
-              onClick={() => change.mutate({ id: r.id, status: to })}
-            >
-              {statusActions[to]}
-            </Button>
-          ))}
+          {!r.duplicate_of && statusTransitions[r.status].map((to) =>
+            to === "rejected" ? (
+              <RejectionReasonDialog key={to} id={r.id} size="sm" disabled={change.isPending} />
+            ) : (
+              <Button
+                key={to}
+                size="sm"
+                disabled={change.isPending}
+                onClick={() => change.mutate({ id: r.id, status: to })}
+              >
+                {statusActions[to]}
+              </Button>
+            ),
+          )}
+          <DuplicateReportDialog report={r} size="sm" />
           <Button asChild size="sm" variant="ghost" className="ml-auto">
             <Link to={`/reports/${r.id}`}>
               {text.open}

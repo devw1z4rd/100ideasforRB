@@ -201,7 +201,7 @@ function ModerationLink() {
 }
 function ModerationCount() {
   useReportsRealtime()
-  const queue = useReports({ status: ["new"] })
+  const queue = useReports({ status: ["new"], duplicates: "exclude" })
   const n = queue.data?.length ?? 0
   return (
     <Button asChild size="lg" variant="outline" className="gap-2">

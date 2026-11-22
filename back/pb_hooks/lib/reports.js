@@ -46,6 +46,54 @@ function writeEvent(app, report, fromStatus, actorRole, auth, comment) {
   app.save(event)
 }
 
+function hasDuplicates(app, id) {
+  return app.countRecords("reports", $dbx.hashExp({ duplicate_of: id })) > 0
+}
+
+function duplicateError(code, message) {
+  return new BadRequestError(message, { duplicate_of: new ValidationError(code, message) })
+}
+
+function applyDuplicate(app, report) {
+  const parentId = report.getString("duplicate_of")
+  if (!parentId) {
+    report.set("status", "new")
+    report.set("moderator_comment", "")
+    return "Связь с основным обращением снята. Обращение возвращено на проверку."
+  }
+  if (parentId === report.id) {
+    throw duplicateError("duplicate_self", "Выберите другое обращение.")
+  }
+  if (hasDuplicates(app, report.id)) {
+    throw duplicateError("duplicate_has_children", "Сначала отвяжите дубликаты этого обращения.")
+  }
+  let parent
+  try {
+    parent = app.findRecordById("reports", parentId)
+  } catch (_) {
+    throw duplicateError("duplicate_not_found", "Основное обращение не найдено.")
+  }
+  if (parent.getString("duplicate_of") || parent.getString("status") === "rejected") {
+    throw duplicateError("duplicate_invalid_parent", "Выберите основное обращение без связи с другим и без статуса «Отклонено».")
+  }
+  report.set("status", parent.getString("status"))
+  report.set("moderator_comment", parent.getString("moderator_comment"))
+  return "Обращение связано с основным. Его статус будет обновляться вместе с основным."
+}
+
+function syncDuplicates(app, root, actorRole, auth, comment) {
+  const children = app.findRecordsByFilter("reports", "duplicate_of = {:id}", "", 0, 0, { id: root.id })
+  const status = root.getString("status")
+  for (const child of children) {
+    const previous = child.getString("status")
+    if (previous === status) continue
+    child.set("status", status)
+    child.set("moderator_comment", comment)
+    app.save(child)
+    writeEvent(app, child, previous, actorRole, auth, comment)
+  }
+}
+
 module.exports = {
   TRANSITIONS,
   AUTHOR_FIELDS,
@@ -55,4 +103,8 @@ module.exports = {
   assertOnlyFields,
   assignDistrict,
   writeEvent,
+  hasDuplicates,
+  duplicateError,
+  applyDuplicate,
+  syncDuplicates,
 }

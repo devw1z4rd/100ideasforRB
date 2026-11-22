@@ -1,77 +1,43 @@
 import asyncio
-import json
 import logging
-from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
 
 from aiohttp import ClientError
 from aiogram.exceptions import TelegramAPIError, TelegramMigrateToChat, TelegramRetryAfter
 
-from .config import BOT_DIR
+from .delivery_state import PendingPhotos, ReportCard
 from .photos import send_report_photos
 from .pocketbase import PocketBaseError
 from .report_cards import report_card
 
 log = logging.getLogger(__name__)
 POLL_INTERVAL = 2.5
-STATE_PATH = BOT_DIR / ".state.json"
-
-
-@dataclass
-class PendingPhotos:
-    event_id: str
-    chat_id: int
-    message_id: int
-    next_photo: int = 0
-
-
-@dataclass
-class DeliveryState:
-    started_at: str
-    cursor: tuple[str, str] | None
-    legacy_ids: set[str]
-    pending_photos: PendingPhotos | None = None
-
-    @classmethod
-    def load(cls):
-        try:
-            data = json.loads(STATE_PATH.read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            data = {}
-        now = datetime.now(UTC).isoformat(sep=" ", timespec="milliseconds").replace("+00:00", "Z")
-        cursor = tuple(data["cursor"]) if data.get("cursor") else None
-        pending = data.get("pending_photos")
-        return cls(
-            data.get("started_at", now), cursor, set(data.get("notifiedReports", [])),
-            PendingPhotos(**pending) if pending else None,
-        )
-
-    def save(self):
-        data = {
-            "started_at": self.started_at,
-            "cursor": self.cursor,
-            "notifiedReports": sorted(self.legacy_ids),
-            "pending_photos": asdict(self.pending_photos) if self.pending_photos else None,
-        }
-        temporary = STATE_PATH.with_suffix(".json.tmp")
-        temporary.write_text(json.dumps(data), encoding="utf-8")
-        temporary.replace(STATE_PATH)
 
 
 async def forward_report(bot, pocketbase, site_url, chat_id, state, event_id, report):
+    report_id = report["id"]
     photos = report.get("photos") or []
     pending = state.pending_photos
     if pending is None or pending.event_id != event_id or pending.chat_id != chat_id:
-        message = await bot.send_message(
-            chat_id, protect_content=True, **report_card(report, site_url)
-        )
-        if not photos:
-            return
-        pending = PendingPhotos(event_id, chat_id, message.message_id)
-        state.pending_photos = pending
+        async with state.card_lock:
+            existing = state.cards.get(report_id)
+            if not photos and existing and existing.chat_id == chat_id:
+                return
+            try:
+                report = await pocketbase.report(report_id)
+            except PocketBaseError as error:
+                if error.status == 404:
+                    return
+                raise
+            message = await bot.send_message(chat_id, protect_content=True, **report_card(report, site_url))
+            state.cards[report_id] = ReportCard(chat_id, message.message_id, report["status"], report.get("duplicate_of") or "")
+            pending = PendingPhotos(event_id, chat_id, message.message_id) if photos else None
+            state.pending_photos = pending
+            state.save()
+    elif report_id not in state.cards:
+        state.cards[report_id] = ReportCard(chat_id, pending.message_id)
         state.save()
 
-    if pending.next_photo < len(photos):
+    if pending and pending.next_photo < len(photos):
         await send_report_photos(
             bot, pocketbase, pending.chat_id, pending.message_id, report, photos[pending.next_photo:]
         )

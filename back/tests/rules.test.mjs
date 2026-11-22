@@ -126,9 +126,148 @@ describe("reports", () => {
     assert.match(stored.access_key, /^[A-Za-z0-9]{32}$/);
   });
 
+  test("причина отклонения обязательна и видна гостю в истории", async () => {
+    const key = `reject${RUN}abcdefghijklmnopqrstuvwxyz`;
+    const response = await fetch(PB + reportsUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json", "X-Report-Key": key },
+      body: JSON.stringify({ location: GOMEL, category: "dump", description: "Обращение для проверки отклонения" }),
+    });
+    const report = await response.json();
+    assert.equal(response.status, 200, JSON.stringify(report));
+    created.push(["reports", report.id]);
+    const path = `${reportsUrl}/${report.id}`;
+
+    await must(tok.moder, "PATCH", path, { status: "accepted", moderator_comment: "Проверим на месте" });
+    assert.equal((await call(tok.moder, "PATCH", path, { status: "rejected" })).status, 400);
+    assert.equal((await call(tok.admin, "PATCH", path, { status: "rejected", moderator_comment: "   " })).status, 400);
+
+    const reason = "Мусор уже вывезен";
+    const rejected = await must(tok.moder, "PATCH", path, { status: "rejected", moderator_comment: `  ${reason}  ` });
+    assert.equal(rejected.status, "rejected");
+    assert.equal((await call(null, "GET", path)).status, 404);
+    const guest = await must(null, "GET", `/api/eco/reports/${report.id}?key=${key}`);
+    assert.equal(guest.report.status, "rejected");
+    assert.equal(guest.events.at(-1).comment, reason);
+    assert.equal(guest.events.at(-1).to_status, "rejected");
+  });
+
+  test("доступ к фото следует статусу обращения и правам автора и модератора", async () => {
+    const key = `photos${RUN}abcdefghijklmnopqrstuvwxyz`;
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p1sAAAAASUVORK5CYII=", "base64");
+    async function submitPhoto(auth, guestKey) {
+      const form = new FormData();
+      form.set("location", JSON.stringify(GOMEL));
+      form.set("category", "dump");
+      form.set("description", "Обращение с фотографией");
+      form.set("photos", new Blob([png], { type: "image/png" }), "report.png");
+      const headers = auth ? { Authorization: auth } : { "X-Report-Key": guestKey };
+      const response = await fetch(PB + reportsUrl, { method: "POST", headers, body: form });
+      const report = await response.json();
+      assert.equal(response.status, 200, JSON.stringify(report));
+      created.push(["reports", report.id]);
+      return report;
+    }
+    const photoUrl = (r) => `${PB}/api/files/reports/${r.id}/${encodeURIComponent(r.photos[0])}`;
+    const getToken = async (auth) => (await must(auth, "POST", "/api/files/token")).token;
+    const ownerPhotoToken = await getToken(tok.author);
+    const moderatorPhotoToken = await getToken(tok.moder);
+    const unrelatedPhotoToken = await getToken(tok.other);
+    const signedIn = await submitPhoto(tok.author);
+    const anonymous = await submitPhoto(null, key);
+    const url = photoUrl(anonymous);
+
+    assert.equal((await fetch(url)).status, 404);
+    assert.equal((await fetch(`${url}?key=wrong${key}`)).status, 404);
+    assert.equal((await fetch(`${url}?token=${unrelatedPhotoToken}`)).status, 404);
+    assert.equal((await call(null, "GET", `${reportsUrl}/${anonymous.id}?key=${key}`)).status, 404);
+    for (const [viewer, visible] of [
+      ["guest author", `${url}?key=${key}`],
+      ["moderator", `${url}?token=${moderatorPhotoToken}`],
+      ["signed-in author", `${photoUrl(signedIn)}?token=${ownerPhotoToken}`],
+    ]) {
+      const response = await fetch(visible);
+      assert.equal(response.status, 200, `${viewer}: ${response.ok ? "" : await response.text()}`);
+      assert.match(response.headers.get("cache-control"), /no-store/);
+      assert.deepEqual(Buffer.from(await response.arrayBuffer()), png);
+    }
+
+    const path = `${reportsUrl}/${anonymous.id}`;
+    await must(tok.moder, "PATCH", path, { status: "accepted" });
+    assert.equal((await fetch(url)).status, 200);
+    const mainPath = `${reportsUrl}/${signedIn.id}`;
+    await must(tok.moder, "PATCH", mainPath, { status: "accepted" });
+    await must(tok.moder, "PATCH", path, { duplicate_of: signedIn.id });
+    assert.equal((await fetch(url)).status, 404);
+    assert.equal((await fetch(`${url}?key=${key}`)).status, 200);
+    assert.equal((await fetch(`${url}?token=${moderatorPhotoToken}`)).status, 200);
+    await must(tok.moder, "PATCH", path, { duplicate_of: "" });
+    await must(tok.moder, "PATCH", path, { status: "rejected", moderator_comment: "Снимок уже проверен" });
+    assert.equal((await fetch(url)).status, 404);
+    assert.equal((await fetch(`${url}?key=${key}`)).status, 200);
+  });
+
   test("точка вне области отклоняется", async () => {
     const res = await call(tok.author, "POST", reportsUrl, { location: { lat: 53.9, lon: 27.56 }, category: "dump", description: "Минск" });
     assert.equal(res.status, 400);
+  });
+
+  test("дубликат скрыт из публичных данных и следует статусу основного обращения", async () => {
+    async function submit(token, description) {
+      const record = await must(token, "POST", reportsUrl, { location: GOMEL, category: "dump", description });
+      created.push(["reports", record.id]);
+      return record;
+    }
+    const main = await submit(tok.author, "Основное обращение о свалке");
+    const other = await submit(tok.author, "Ещё одно обращение для проверки связи");
+    const key = `duplicate${RUN}abcdefghijklmnopqrstuvwxyz`;
+    const response = await fetch(PB + reportsUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json", "X-Report-Key": key },
+      body: JSON.stringify({ location: GOMEL, category: "dump", description: "Гость сообщил о той же свалке" }),
+    });
+    const duplicate = await response.json();
+    assert.equal(response.status, 200, JSON.stringify(duplicate));
+    created.push(["reports", duplicate.id]);
+    const mainPath = `${reportsUrl}/${main.id}`;
+    const duplicatePath = `${reportsUrl}/${duplicate.id}`;
+    const guestPath = `/api/eco/reports/${duplicate.id}?key=${key}`;
+    const otherPath = `${reportsUrl}/${other.id}`;
+
+    assert.equal((await call(tok.author, "PATCH", otherPath, { duplicate_of: main.id })).status, 403);
+    assert.equal((await call(tok.moder, "PATCH", duplicatePath, { duplicate_of: duplicate.id })).status, 400);
+    await must(tok.moder, "PATCH", mainPath, { status: "accepted" });
+    await must(tok.moder, "PATCH", duplicatePath, { status: "accepted" });
+    await must(null, "GET", duplicatePath);
+
+    const linked = await must(tok.moder, "PATCH", duplicatePath, { duplicate_of: main.id });
+    assert.equal(linked.duplicate_of, main.id);
+    assert.equal(linked.status, "accepted");
+    assert.equal((await call(null, "GET", duplicatePath)).status, 404);
+    const publicPair = await must(null, "GET", `${reportsUrl}?filter=${encodeURIComponent(`id = "${main.id}" || id = "${duplicate.id}"`)}`);
+    assert.deepEqual(publicPair.items.map((report) => report.id), [main.id]);
+    assert.equal((await must(null, "GET", eventsOf(duplicate.id))).items.length, 0);
+    const guest = await must(null, "GET", guestPath);
+    assert.equal(guest.report.duplicate_of, main.id);
+    assert.match(guest.events.at(-1).comment, /связано/);
+    assert.equal((await call(tok.moder, "PATCH", duplicatePath, { status: "forwarded" })).status, 400);
+    assert.equal((await call(tok.moder, "PATCH", otherPath, { duplicate_of: duplicate.id })).status, 400);
+    assert.equal((await call(tok.moder, "PATCH", mainPath, { duplicate_of: other.id })).status, 400);
+    assert.equal((await call(tok.admin, "DELETE", mainPath)).ok, false);
+
+    await must(tok.moder, "PATCH", mainPath, { status: "forwarded" });
+    assert.equal((await must(null, "GET", guestPath)).report.status, "forwarded");
+    const reason = "Мусор уже вывезен";
+    await must(tok.moder, "PATCH", mainPath, { status: "rejected", moderator_comment: reason });
+    const final = await must(null, "GET", guestPath);
+    assert.equal(final.report.status, "rejected");
+    assert.equal(final.events.at(-1).comment, reason);
+    assert.equal((await call(tok.moder, "PATCH", otherPath, { duplicate_of: main.id })).status, 400);
+
+    const unlinked = await must(tok.moder, "PATCH", duplicatePath, { duplicate_of: "" });
+    assert.equal(unlinked.duplicate_of, "");
+    assert.equal(unlinked.status, "new");
+    assert.equal(unlinked.moderator_comment, "");
   });
 
   test("район — по полигону: город отдельно от Гомельского района", async () => {

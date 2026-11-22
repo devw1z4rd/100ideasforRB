@@ -53,7 +53,7 @@ export function MapSection(section: Props) {
   const rivers = useRivers()
   const borders = useBorders()
   const places = usePlaces()
-  const reports = useReports({ status: publicStatuses })
+  const reports = useReports({ status: publicStatuses, duplicates: "exclude" })
   useReportsRealtime()
 
   const { current } = periodRange("30d", minskToday())

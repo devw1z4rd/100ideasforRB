@@ -1,6 +1,7 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { pb } from "./pb"
+import { useAuth } from "./auth"
 import { ClientResponseError } from "pocketbase"
 import type {
   DistrictsResponse,
@@ -20,14 +21,23 @@ export type ReportWithDistrict = ReportsResponse<
 export type ReportsFilter = {
   status?: readonly ReportsStatusOptions[]
   district?: string
+  category?: ReportsCategoryOptions
   author?: string
+  order?: "oldest" | "newest"
+  duplicates?: "exclude" | "only"
 }
 
-export function reportsFilter({ status, district, author }: ReportsFilter): string {
+// PocketBase can suppress the realtime event when an update makes the report private.
+const PUBLIC_REPORT_REFRESH_MS = 30_000
+
+export function reportsFilter({ status, district, category, author, duplicates }: ReportsFilter): string {
   const parts: string[] = []
   if (status?.length) parts.push(`(${status.map((s) => pb.filter("status = {:s}", { s })).join(" || ")})`)
   if (district) parts.push(pb.filter("district = {:district}", { district }))
+  if (category) parts.push(pb.filter("category = {:category}", { category }))
   if (author) parts.push(pb.filter("author = {:author}", { author }))
+  if (duplicates === "exclude") parts.push('duplicate_of = ""')
+  if (duplicates === "only") parts.push('duplicate_of != ""')
   return parts.join(" && ")
 }
 
@@ -37,11 +47,12 @@ export const reportsQuery = (filter: ReportsFilter = {}) =>
     queryFn: () =>
       pb.collection("reports").getFullList<ReportWithDistrict>({
         filter: reportsFilter(filter),
-        sort: "-created",
+        sort: filter.order === "oldest" ? "created,id" : "-created,-id",
         expand: "district",
         fields: "*,expand.district.id,expand.district.name",
       }),
     staleTime: 30_000,
+    refetchInterval: filter.duplicates === "exclude" ? PUBLIC_REPORT_REFRESH_MS : undefined,
   })
 
 export const reportQuery = (id: string) =>
@@ -65,7 +76,7 @@ export const reportEventsQuery = (id: string) =>
     staleTime: 30_000,
   })
 
-export const useReports = (filter?: ReportsFilter) => useQuery(reportsQuery(filter))
+export const useReports = (filter?: ReportsFilter, enabled = true) => useQuery({ ...reportsQuery(filter), enabled })
 export const useReport = (id: string) => useQuery(reportQuery(id))
 export const useReportEvents = (id: string) => useQuery(reportEventsQuery(id))
 
@@ -131,7 +142,7 @@ async function fetchKeyed(id: string, key: string) {
     report: ReportsResponse<AutoCheck>
     district: string
     events: ReportEventsResponse[]
-  }>(`/api/eco/reports/${encodeURIComponent(id)}`, { query: { key } })
+  }>(`/api/eco/reports/${encodeURIComponent(id)}`, { query: { key }, cache: "no-store" })
   const report: ReportWithDistrict = {
     ...res.report,
     expand: res.report.district ? { district: { id: res.report.district, name: res.district } } : {},
@@ -139,11 +150,25 @@ async function fetchKeyed(id: string, key: string) {
   return { report, events: res.events }
 }
 
+const GUEST_REPORT_REFRESH_MS = 5_000
+
+function reportIsInaccessible(error: unknown): boolean {
+  return error instanceof ClientResponseError && (error.status === 403 || error.status === 404)
+}
+
 export const keyedReportQuery = (id: string, key: string) =>
   queryOptions({
     queryKey: ["reports", id, "key", key],
     queryFn: () => fetchKeyed(id, key),
-    refetchInterval: 60_000,
+    staleTime: GUEST_REPORT_REFRESH_MS,
+    refetchInterval: ({ state }) => {
+      const status = state.data?.report.status
+      if (reportIsInaccessible(state.error) || status === "resolved" || status === "rejected") return false
+      return GUEST_REPORT_REFRESH_MS
+    },
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    retry: (failureCount, error) => failureCount < 1 && !reportIsInaccessible(error),
   })
 export const useKeyedReport = (id: string, key: string | null) =>
   useQuery({ ...keyedReportQuery(id, key ?? ""), enabled: Boolean(key) })
@@ -184,9 +209,43 @@ export function useChangeReportStatus() {
   })
 }
 
+export function useChangeReportDuplicate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, parentId }: { id: string; parentId: string }) =>
+      pb.collection("reports").update(id, { duplicate_of: parentId }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["reports"] }),
+  })
+}
+
+type PhotoAccess = { key?: string; token?: string }
+
+export function useReportPhotoAccess(
+  { status, duplicate_of }: Pick<ReportsResponse, "status" | "duplicate_of">,
+  accessKey?: string | null,
+): PhotoAccess | null {
+  const { user } = useAuth()
+  const isPrivate = Boolean(duplicate_of) || status === "new" || status === "rejected"
+  const fileToken = useQuery({
+    queryKey: ["report-photo-token", user?.id],
+    queryFn: ({ signal }) => pb.files.getToken({ signal }),
+    enabled: isPrivate && !accessKey && Boolean(user),
+    // Keep lazy images and the link to the original usable before the two-minute token expires.
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  })
+  if (!isPrivate) return {}
+  if (accessKey) return { key: accessKey }
+  return user && fileToken.data ? { token: fileToken.data } : null
+}
+
 // Only sizes listed in the photos field's `thumbs` are generated; any other size gets the original.
-export const reportPhotoUrl = (report: ReportsResponse, file: string, thumb?: "160x160" | "640x0") =>
-  pb.files.getURL(report, file, thumb ? { thumb } : undefined)
+export const reportPhotoUrl = (
+  report: ReportsResponse,
+  file: string,
+  thumb?: "160x160" | "640x0",
+  access?: PhotoAccess,
+) => pb.files.getURL(report, file, { ...(thumb ? { thumb } : {}), ...access })
 
 export function fieldError(error: unknown, field: string): string | null {
   if (!(error instanceof ClientResponseError)) return null
@@ -204,16 +263,20 @@ export const showcaseQuery = () =>
     queryFn: async (): Promise<ShowcaseReport[]> => {
       const [reports, resolved] = await Promise.all([
         pb.collection("reports").getFullList<ReportWithDistrict>({
-          filter: reportsFilter({ status: ["accepted", "forwarded", "resolved"] }),
+          filter: reportsFilter({ status: ["accepted", "forwarded", "resolved"], duplicates: "exclude" }),
           sort: "-created",
           expand: "district",
           fields: "*,expand.district.id,expand.district.name",
         }),
-        pb.collection("report_events").getFullList({ filter: 'to_status = "resolved"', sort: "created" }),
+        pb.collection("report_events").getFullList({
+          filter: 'to_status = "resolved" && from_status != "resolved" && report.duplicate_of = ""',
+          sort: "created",
+        }),
       ])
       const resolvedAt = new Map(resolved.map((e) => [e.report, e.created]))
       return reports.map((r) => ({ ...r, resolvedAt: resolvedAt.get(r.id) ?? null }))
     },
     staleTime: 60_000,
+    refetchInterval: PUBLIC_REPORT_REFRESH_MS,
   })
 export const useShowcase = () => useQuery(showcaseQuery())

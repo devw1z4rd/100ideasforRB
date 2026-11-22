@@ -12,10 +12,12 @@ from aiogram.exceptions import (
 )
 from aiogram.utils.token import TokenValidationError
 
+from .card_updates import CardUpdates
 from .config import Settings
+from .delivery_state import DeliveryState
 from .handlers import router
 from .moderation_chat import ModerationChat
-from .notifications import DeliveryState, forward_reports
+from .notifications import forward_reports
 from .pocketbase import PocketBase, PocketBaseError
 from .report_cards import LOOPBACK_HOSTS
 
@@ -23,7 +25,7 @@ from .report_cards import LOOPBACK_HOSTS
 async def main(*, setup: bool):
     settings = Settings.load(setup=setup)
     moderation_chat = ModerationChat(settings.chat_id)
-    dispatcher = Dispatcher(disable_fsm=True)
+    dispatcher = Dispatcher()
     dispatcher.include_router(router)
 
     async with Bot(settings.token) as bot, ClientSession(timeout=ClientTimeout(total=10)) as session:
@@ -45,13 +47,16 @@ async def main(*, setup: bool):
             state = None
             logging.info("Setup mode. Use /id or /chatid to look up Telegram IDs.")
 
+        card_updates = CardUpdates(bot, pocketbase, settings.site_url, moderation_chat, state) if state else None
         async with asyncio.TaskGroup() as tasks:
             delivery = tasks.create_task(forward_reports(bot, pocketbase, settings, moderation_chat, state)) if state else None
+            sync = tasks.create_task(card_updates.poll()) if card_updates else None
             try:
                 await dispatcher.start_polling(
                     bot,
                     settings=settings,
                     moderation_chat=moderation_chat,
+                    card_updates=card_updates,
                     pocketbase=pocketbase,
                     handle_as_tasks=False,
                     close_bot_session=False,
@@ -59,6 +64,8 @@ async def main(*, setup: bool):
             finally:
                 if delivery:
                     delivery.cancel()
+                if sync:
+                    sync.cancel()
 
 
 if __name__ == "__main__":

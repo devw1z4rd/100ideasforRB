@@ -5,7 +5,6 @@ import { useAuth } from "@/api/auth"
 import type { ReportsStatusOptions } from "@/api/pocketbase-types"
 import {
   type AutoCheck,
-  reportPhotoUrl,
   useChangeReportStatus,
   useKeyedReport,
   useReport,
@@ -13,7 +12,9 @@ import {
   useReportsRealtime,
 } from "@/api/reports"
 import { Container } from "@/components/layout/Container"
+import { DuplicateReportDialog } from "@/components/reports/DuplicateReportDialog"
 import { PointPicker } from "@/components/reports/PointPicker"
+import { RejectionReasonDialog } from "@/components/reports/RejectionReasonDialog"
 import {
   districtLabel,
   formatDateTime,
@@ -24,6 +25,8 @@ import {
 import { Button } from "@/components/ui/button"
 import {
   categoryLabels,
+  duplicateReports,
+  publicStatuses,
   reportCard as text,
   statusActions,
   statusHints,
@@ -81,6 +84,17 @@ export function ReportPage() {
           </p>
           <p className="mt-2 text-sm text-fg-secondary">{statusHints[r.status]}</p>
 
+          {r.duplicate_of && (
+            <div className="mt-4 rounded-lg bg-muted px-3 py-2 text-sm">
+              <p>{duplicateReports.hint}</p>
+              {(isModerator || publicStatuses.includes(r.status)) && (
+                <Link className="mt-1 inline-block text-link hover:text-link-hover" to={`/reports/${r.duplicate_of}`}>
+                  {duplicateReports.openMain}
+                </Link>
+              )}
+            </div>
+          )}
+
           <p className="mt-6 whitespace-pre-line">{r.description}</p>
 
           {r.moderator_comment && (
@@ -102,25 +116,26 @@ export function ReportPage() {
             <ul className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-4">
               {r.photos.map((f) => (
                 <li key={f}>
-                  <a href={reportPhotoUrl(r, f)} target="_blank" rel="noreferrer" className="block">
-                    <ReportPhoto
-                      report={r}
-                      file={f}
-                      thumb="640x0"
-                      className={cn(
-                        "aspect-square w-full rounded-lg object-cover",
-                        isModerator && r.status === "new" && !revealed && "blur-xl",
-                      )}
-                    />
-                  </a>
+                  <ReportPhoto
+                    report={r}
+                    file={f}
+                    thumb="640x0"
+                    accessKey={keyed.data ? key : null}
+                    openOriginal={!isModerator || r.status !== "new" || revealed}
+                    className={cn(
+                      "aspect-square w-full rounded-lg object-cover",
+                      isModerator && r.status === "new" && !revealed && "blur-xl",
+                    )}
+                  />
                 </li>
               ))}
             </ul>
           )}
 
-          {isModerator && statusTransitions[r.status].length > 0 && (
+          {isModerator && !r.duplicate_of && statusTransitions[r.status].length > 0 && (
             <ModerationPanel id={r.id} status={r.status} check={r.auto_check} />
           )}
+          {isModerator && <div className="mt-4"><DuplicateReportDialog report={r} /></div>}
 
           <h2 className="mt-10 text-sm font-medium">{text.history}</h2>
           <ol className="mt-3 border-l border-border">
@@ -131,12 +146,12 @@ export function ReportPage() {
                   className="absolute top-1.5 -left-[4.5px] size-2 rounded-full bg-foreground"
                 />
                 <p className="text-sm">
-                  {e.from_status
+                  {e.from_status === e.to_status ? duplicateReports.historyUpdated : e.from_status
                     ? `${statusLabels[e.from_status as ReportsStatusOptions]} → ${statusLabels[e.to_status as ReportsStatusOptions]}`
                     : text.historyCreated}
                 </p>
                 <p className="text-[13px] text-muted-foreground tabular-nums">{formatDateTime(e.created)}</p>
-                {e.comment && <p className="mt-1 text-sm text-fg-secondary">{e.comment}</p>}
+                {e.comment && <p className="mt-1 text-sm whitespace-pre-line text-fg-secondary">{e.comment}</p>}
               </li>
             ))}
           </ol>
@@ -218,25 +233,35 @@ function ModerationPanel({
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         placeholder={text.commentPlaceholder}
+        maxLength={1000}
         rows={3}
         className="mt-3 w-full resize-y rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
       />
       <div className="mt-3 flex flex-wrap gap-2">
-        {statusTransitions[status].map((to) => (
-          <Button
-            key={to}
-            variant={to === "rejected" ? "outline" : "default"}
-            disabled={change.isPending}
-            onClick={() =>
-              change.mutate(
-                { id, status: to, comment: comment.trim() || undefined },
-                { onSuccess: () => setComment("") },
-              )
-            }
-          >
-            {statusActions[to]}
-          </Button>
-        ))}
+        {statusTransitions[status].map((to) =>
+          to === "rejected" ? (
+            <RejectionReasonDialog
+              key={to}
+              id={id}
+              initialReason={comment}
+              disabled={change.isPending}
+              onRejected={() => setComment("")}
+            />
+          ) : (
+            <Button
+              key={to}
+              disabled={change.isPending}
+              onClick={() =>
+                change.mutate(
+                  { id, status: to, comment: comment.trim() || undefined },
+                  { onSuccess: () => setComment("") },
+                )
+              }
+            >
+              {statusActions[to]}
+            </Button>
+          ),
+        )}
       </div>
       {change.error && (
         <p role="alert" className="mt-2 text-[13px] text-destructive">

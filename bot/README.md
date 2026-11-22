@@ -11,6 +11,7 @@ The bot runs on Python 3.11+ using aiogram and aiohttp. In `eco_bot/`, `config.p
 - If Telegram upgrades that group to a supergroup, the bot verifies the replacement chat is private, switches to its ID, and retries pending delivery. The log shows the new ID to save in `.env`.
 - The bot signs in to PocketBase with a dedicated `users` account whose role is `moderator`. Do not use a PocketBase superuser account.
 - PocketBase enforces the status transitions and records changes under the bot’s moderator account. The bot logs the acting Telegram user ID on the server. The reporter follows the status on the website.
+- To reject a report, press **Отклонить** and reply to the bot’s prompt with a reason. The author sees it in the report history. A prompt expires after 15 minutes or a bot restart. Use `/cancel` to clear it.
 
 ## Configure locally
 
@@ -34,3 +35,5 @@ If Telegram reports `chat not found`, check that the bot from your token is a me
 ## Production
 
 Run one supervised bot process alongside PocketBase. Set `PB_URL` to the private PocketBase address and `SITE_URL` to the website address reachable by moderators. Telegram long polling needs outbound HTTPS. Keep the ignored `.env` and `.state.json` on persistent storage. The state file stores the delivery cursor. A crash after Telegram accepts a message and before the cursor is saved can result in a duplicate notification.
+
+The bot also stores Telegram message IDs and checks PocketBase for moderation events. Changing a report's status on the website refreshes the original card and its action buttons. Linking a duplicate on the website marks its Telegram card and removes its status buttons. To connect a card posted before this feature, an allowlisted moderator can reply to that card with `/sync@your_bot_username` once.

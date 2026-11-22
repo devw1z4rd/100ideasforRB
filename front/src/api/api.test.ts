@@ -56,8 +56,8 @@ describe("reportsFilter", () => {
   })
 
   it("joins statuses with OR and other conditions with AND, quoting values", () => {
-    expect(reportsFilter({ status: ["accepted", "resolved"], district: "abc", author: 'u"1' })).toBe(
-      `(status = "accepted" || status = "resolved") && district = "abc" && author = "u\\"1"`,
+    expect(reportsFilter({ status: ["accepted", "resolved"], district: "abc", category: "dump", author: 'u"1' })).toBe(
+      `(status = "accepted" || status = "resolved") && district = "abc" && category = "dump" && author = "u\\"1"`,
     )
   })
 })

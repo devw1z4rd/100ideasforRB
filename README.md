@@ -80,6 +80,8 @@ The objectives are:
 
 **Citizen reports**
 
+- The public list at `/reports` can be filtered by district and category. The URL preserves the selected filters.
+
 - Reports are submitted at `/reports/new`. Each report has a point on the map, a category, an optional description and up to 5 photos. A form draft survives page reloads.
 - An account is optional. An anonymous author receives a personal link containing a browser-generated key. Guests are rate-limited to 10 reports per 10 minutes per IP.
 - The status lifecycle is: `new → accepted → forwarded → resolved`, with `rejected` possible at any step. Each transition is written to an audit trail.

@@ -1,13 +1,13 @@
 import { useState } from "react"
-import { Link, Navigate } from "react-router"
+import { Link, Navigate, useSearchParams } from "react-router"
 import { logout, useAuth } from "@/api/auth"
 import { deviceReports, useDeviceReports, useReports, useReportsRealtime } from "@/api/reports"
 import { Container } from "@/components/layout/Container"
-import { QueueItem } from "@/components/reports/QueueItem"
+import { parseReportCategory, ReportFilters } from "@/components/reports/ReportFilters"
 import { ReportList } from "@/components/reports/ReportBits"
 import { Button } from "@/components/ui/button"
 import { cta } from "@/content/nav"
-import { mePage, moderationPage, publicStatuses, reportsPage } from "@/content/reports"
+import { mePage, publicStatuses, reportsPage } from "@/content/reports"
 import { useDocumentTitle } from "@/lib/useDocumentTitle"
 import { cn } from "@/lib/utils"
 
@@ -18,11 +18,30 @@ export function ReportsPage() {
   useReportsRealtime()
   const { user } = useAuth()
   const [tab, setTab] = useState<"all" | "mine">("all")
-  const all = useReports({ status: publicStatuses })
+  const [params, setParams] = useSearchParams()
+  const rawDistrict = params.get("district") ?? ""
+  const district = /^[a-z0-9]{15}$/.test(rawDistrict) ? rawDistrict : ""
+  const category = parseReportCategory(params.get("category"))
+  const filtered = Boolean(district || category)
+  const all = useReports({
+    status: publicStatuses,
+    district: district || undefined,
+    category: category || undefined,
+    duplicates: "exclude",
+  })
   const mine = useReports({ author: user?.id ?? "-" })
   const hasDevice = deviceReports().length > 0
   const device = useDeviceReports(!user && hasDevice)
   const list = tab === "mine" ? (user ? mine : device) : all
+
+  function updateFilters(values: Partial<Record<"district" | "category", string>>) {
+    const next = new URLSearchParams(params)
+    for (const [name, value] of Object.entries(values)) {
+      if (value) next.set(name, value)
+      else next.delete(name)
+    }
+    setParams(next, { replace: true })
+  }
 
   return (
     <Container className="py-10 md:py-16">
@@ -53,59 +72,37 @@ export function ReportsPage() {
           ))}
         </div>
       )}
+      {tab === "all" && (
+        <div className="mt-6 flex flex-wrap items-end gap-3">
+          <div className="grid w-full max-w-sm grid-cols-2 gap-3">
+            <ReportFilters
+              district={district}
+              category={category}
+              onDistrict={(value) => updateFilters({ district: value })}
+              onCategory={(value) => updateFilters({ category: value })}
+            />
+          </div>
+          {filtered && (
+            <Button variant="ghost" onClick={() => updateFilters({ district: "", category: "" })}>
+              {reportsPage.resetFilters}
+            </Button>
+          )}
+        </div>
+      )}
       <div className="mt-6">
-        <ReportList
-          reports={list.data ?? []}
-          empty={list.isPending ? "Загружаем…" : tab === "mine" ? reportsPage.mineEmpty : reportsPage.empty}
-        />
+        {list.isError ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <p role="alert" className="text-sm text-destructive">{reportsPage.loadFailed}</p>
+            <Button variant="outline" size="sm" onClick={() => void list.refetch()}>{reportsPage.retry}</Button>
+          </div>
+        ) : (
+          <ReportList
+            reports={list.data ?? []}
+            empty={list.isPending ? reportsPage.loading : tab === "mine" ? reportsPage.mineEmpty : filtered ? reportsPage.filteredEmpty : reportsPage.empty}
+          />
+        )}
       </div>
     </Container>
-  )
-}
-
-export function ModerationPage() {
-  useDocumentTitle(moderationPage.title)
-  useReportsRealtime()
-  const { isModerator } = useAuth()
-  const queue = useReports({ status: ["new"] })
-  const inWork = useReports({ status: ["accepted", "forwarded"] })
-
-  if (!isModerator) {
-    return (
-      <Container className="py-24">
-        <h1 className={h1}>{moderationPage.title}</h1>
-        <p className="mt-4 text-muted-foreground">{moderationPage.forbidden}</p>
-      </Container>
-    )
-  }
-  return (
-    <Container className="py-10 md:py-16">
-      <h1 className={h1}>{moderationPage.title}</h1>
-      <p className="mt-4 max-w-[70ch] text-fg-secondary">{moderationPage.lead}</p>
-      <h2 className="mt-10 text-sm font-medium">
-        {moderationPage.queue}{" "}
-        <span className="text-muted-foreground tabular-nums">{queue.data?.length ?? ""}</span>
-      </h2>
-      <Queue reports={[...(queue.data ?? [])].reverse()} />
-      <h2 className="mt-10 text-sm font-medium">
-        {moderationPage.inWork}{" "}
-        <span className="text-muted-foreground tabular-nums">{inWork.data?.length ?? ""}</span>
-      </h2>
-      <Queue reports={inWork.data ?? []} />
-    </Container>
-  )
-}
-
-function Queue({ reports }: { reports: Parameters<typeof QueueItem>[0]["report"][] }) {
-  if (!reports.length) return <p className="mt-3 py-6 text-muted-foreground">{moderationPage.empty}</p>
-  return (
-    <ul className="mt-3 flex flex-col gap-3">
-      {reports.map((r) => (
-        <li key={r.id}>
-          <QueueItem report={r} />
-        </li>
-      ))}
-    </ul>
   )
 }
 

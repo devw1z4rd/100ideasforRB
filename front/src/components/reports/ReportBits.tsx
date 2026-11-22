@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { Link } from "react-router"
-import { deviceKey, reportPhotoUrl, type ReportWithDistrict } from "@/api/reports"
+import { deviceKey, reportPhotoUrl, useReportPhotoAccess, type ReportWithDistrict } from "@/api/reports"
 import type { ReportsStatusOptions } from "@/api/pocketbase-types"
 import { ReportIcon } from "@/components/map/ReportIcon"
-import { categoryLabels, statusLabels } from "@/content/reports"
+import { categoryLabels, duplicateReports, statusLabels } from "@/content/reports"
 import { cn } from "@/lib/utils"
 
 type PhotoUrlArgs = Parameters<typeof reportPhotoUrl>
@@ -16,31 +16,41 @@ export function ReportPhoto({
   report,
   file,
   thumb,
+  accessKey,
+  openOriginal = false,
   className,
   iconClassName = "size-8",
 }: {
   report: PhotoUrlArgs[0]
   file: string
   thumb?: PhotoUrlArgs[2]
+  accessKey?: string | null
+  openOriginal?: boolean
   className?: string
   iconClassName?: string
 }) {
-  const [broken, setBroken] = useState(false)
-  if (broken)
-    return (
-      <div className={cn("grid place-items-center bg-muted text-muted-foreground", className)}>
-        <ReportIcon category={report.category} className={iconClassName} />
-      </div>
-    )
-  return (
+  const access = useReportPhotoAccess(report, accessKey)
+  const [brokenSrc, setBrokenSrc] = useState<string | null>(null)
+  const src = access && reportPhotoUrl(report, file, thumb, access)
+  const photo = src && brokenSrc !== src ? (
     <img
-      src={reportPhotoUrl(report, file, thumb)}
+      src={src}
       alt=""
       loading="lazy"
-      onError={() => setBroken(true)}
+      referrerPolicy="no-referrer"
+      onError={() => setBrokenSrc(src)}
       className={className}
     />
+  ) : (
+    <div className={cn("grid place-items-center bg-muted text-muted-foreground", className)}>
+      <ReportIcon category={report.category} className={iconClassName} />
+    </div>
   )
+  return openOriginal && src && access ? (
+    <a href={reportPhotoUrl(report, file, undefined, access)} target="_blank" rel="noreferrer" className="block">
+      {photo}
+    </a>
+  ) : photo
 }
 
 const statusDot: Record<ReportsStatusOptions, string> = {
@@ -106,6 +116,7 @@ export function ReportList({ reports, empty }: { reports: readonly ReportWithDis
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="font-medium">{categoryLabels[r.category]}</span>
                 <StatusBadge status={r.status} />
+                {r.duplicate_of && <span className="text-xs text-muted-foreground">{duplicateReports.badge}</span>}
                 {r.auto_check && <ScoreBadge score={r.auto_check.score} />}
               </div>
               <p className="mt-1 text-[13px] text-muted-foreground tabular-nums">
@@ -121,6 +132,7 @@ export function ReportList({ reports, empty }: { reports: readonly ReportWithDis
               <ReportPhoto
                 report={r}
                 file={r.photos[0]}
+                accessKey={deviceKey(r.id)}
                 thumb="160x160"
                 iconClassName="size-6"
                 className={cn(

@@ -19,10 +19,11 @@ onRecordCreateRequest((e) => {
       r.set("access_key", /^[A-Za-z0-9_-]{16,64}$/.test(sent) ? sent : $security.randomString(32))
     }
     r.set("status", "new")
-    for (const f of ["moderator_comment", "ai_category", "ai_confidence", "duplicate_of"]) r.set(f, null)
+    for (const f of ["moderator_comment", "ai_category", "ai_confidence"]) r.set(f, null)
   } else if (!r.getString("status")) {
     r.set("status", "new")
   }
+  r.set("duplicate_of", "")
   lib.assignDistrict(e.app, r)
 
   const check = require(`${__hooks}/lib/autocheck.js`)
@@ -68,6 +69,9 @@ onRecordUpdateRequest((e) => {
   const r = e.record
   const fromStatus = r.original().getString("status")
   const toStatus = r.getString("status")
+  const fromDuplicate = r.original().getString("duplicate_of")
+  const duplicateChanged = fromDuplicate !== r.getString("duplicate_of")
+  const fields = lib.bodyFields(e)
 
   if (role === "moderator") {
     lib.assertOnlyFields(e, lib.MODERATOR_FIELDS)
@@ -78,25 +82,49 @@ onRecordUpdateRequest((e) => {
     // The API rule already limits the author to their own report in status new.
     lib.assertOnlyFields(e, lib.AUTHOR_FIELDS)
   }
-  if (r.getString("duplicate_of") === r.id) {
-    throw new BadRequestError("Обращение не может быть дублем самого себя.")
+  if ((fromDuplicate || duplicateChanged) && (fields.includes("status") || fields.includes("moderator_comment"))) {
+    throw lib.duplicateError("duplicate_follows_parent", "Статус и комментарий меняются в основном обращении. Сначала сохраните или снимите связь.")
   }
-  if (lib.bodyFields(e).includes("location")) {
+  const comment = fields.includes("moderator_comment") ? r.getString("moderator_comment").trim() : ""
+  if (toStatus !== fromStatus && toStatus === "rejected" && !comment) {
+    throw new BadRequestError("Укажите причину отклонения.", {
+      moderator_comment: new ValidationError("rejection_reason_required", "Укажите причину отклонения."),
+    })
+  }
+  if (fields.includes("moderator_comment")) r.set("moderator_comment", comment)
+
+  if (fields.includes("location")) {
     lib.assignDistrict(e.app, r)
   }
 
   e.app.runInTransaction((txApp) => {
     e.app = txApp
+    const current = txApp.findRecordById("reports", r.id)
+    if (current.getString("status") !== fromStatus || current.getString("duplicate_of") !== fromDuplicate) {
+      throw new BadRequestError("Обращение уже изменилось. Обновите страницу.")
+    }
+    const linkEvent = duplicateChanged ? lib.applyDuplicate(txApp, r) : ""
     e.next()
-    if (toStatus !== fromStatus) {
-      const comment = lib.bodyFields(e).includes("moderator_comment") ? r.getString("moderator_comment") : ""
-      lib.writeEvent(txApp, r, fromStatus, role, e.auth, comment)
+    if (duplicateChanged || toStatus !== fromStatus) {
+      lib.writeEvent(txApp, r, fromStatus, role, e.auth, linkEvent || comment)
+    }
+    if (!duplicateChanged && !fromDuplicate && toStatus !== fromStatus) {
+      lib.syncDuplicates(txApp, r, role, e.auth, comment)
     }
   })
 }, "reports")
 
+onRecordDelete((e) => {
+  const lib = require(`${__hooks}/lib/reports.js`)
+  if (lib.hasDuplicates(e.app, e.record.id)) {
+    throw new BadRequestError("Сначала отвяжите дубликаты этого обращения.")
+  }
+  e.next()
+}, "reports")
+
 // Anonymous personal link /api/eco/reports/{id}?key=…; a wrong key returns 404, as if there were no report.
 routerAdd("GET", "/api/eco/reports/{id}", (e) => {
+  e.response.header().set("Cache-Control", "private, no-store")
   const id = e.request.pathValue("id")
   const key = e.request.url.query().get("key")
   let report
