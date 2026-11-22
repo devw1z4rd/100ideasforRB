@@ -273,18 +273,24 @@ Other scripts:
 
 The service worker is installed only in production builds. `npm run preview` installs it on the preview port; to remove it, use DevTools → Application → Service workers → Unregister.
 
-### 8.4 Environment variables
+### 8.4 Telegram moderation bot
+
+The notification bot in `bot/` runs on Python 3.11+ with aiogram. It checks PocketBase for report creation events every 2.5 seconds and posts the details and status actions to a private Telegram chat. Allowlisted Telegram users can change statuses through the dedicated PocketBase `moderator` account. See the [bot setup guide](bot/README.md).
+
+### 8.5 Environment variables
 
 | Variable | Where | Purpose |
 |---|---|---|
 | `VITE_PB_URL` | frontend build | PocketBase URL when the frontend is not served from the API origin (default `/`) |
 | `VITE_SITE_URL` | frontend build | Site address, e.g. `https://eco.example.by`, for the absolute `og:image` URL in link previews. Without it the URL stays relative and the build warns |
+| `VITE_YANDEX_MAPS_API_KEY` | frontend build | Optional Yandex Maps JavaScript API 3.0 browser key for the report form. Set it in `front/.env.local` and restrict the key to the site and development hosts in Yandex's dashboard. The form uses MapLibre when no key is configured or the API fails to load. |
 | `AIR_API_URL` | PocketBase | Overrides the Open-Meteo host (tests, proxy) |
 | `RIVER_API_URL` | PocketBase | Overrides the pogoda.by host |
 | `BELGIDROMET_URL` | PocketBase | Overrides the belgidromet.by host |
 | `SITE_ADDRESS`, `PB_UPSTREAM`, `SITE_ROOT` | Caddy | Domain, PocketBase address, frontend build directory |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `TELEGRAM_MODERATOR_IDS`, `PB_MODERATOR_EMAIL`, `PB_MODERATOR_PASSWORD`, `PB_URL`, `SITE_URL` | Telegram bot | Bot API access, private moderation chat and authorized IDs, dedicated PocketBase moderator account and site links |
 
-### 8.5 Rebuilding seed data and map layers
+### 8.6 Rebuilding seed data and map layers
 
 The scripts in `back/seed/tools/` rebuild the committed data files. They are needed only when sources change.
 

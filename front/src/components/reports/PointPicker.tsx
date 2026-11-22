@@ -21,12 +21,14 @@ export function PointPicker({
   readOnly = false,
   focus,
   className,
+  appearance = "auto",
 }: {
   value: GeoPoint | null
   onChange?: (point: GeoPoint) => void
   readOnly?: boolean
   focus?: GeoPoint | null
   className?: string
+  appearance?: "auto" | "light"
 }) {
   const mapRef = useRef<MapRef>(null)
   useEffect(() => {
@@ -34,7 +36,7 @@ export function PointPicker({
   }, [focus])
   const oblast = useOblast()
   const colors = useMemo(() => ({ outline: cssVar("--ring"), marker: cssVar("--destructive") }), [])
-  const dark = document.documentElement.classList.contains("dark")
+  const dark = appearance === "auto" && document.documentElement.classList.contains("dark")
 
   return (
     // isolate: keeps MapLibre controls below the sticky Submit button and the header.

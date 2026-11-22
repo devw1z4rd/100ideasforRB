@@ -145,6 +145,7 @@ export function ReportPage() {
         <PointPicker
           value={r.location}
           readOnly
+          appearance="light"
           className="h-[320px] overflow-hidden rounded-xl border border-border lg:sticky lg:top-[calc(var(--header-h)+24px)] lg:h-[520px]"
         />
       </div>

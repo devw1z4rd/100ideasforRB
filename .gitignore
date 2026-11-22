@@ -14,6 +14,10 @@ node_modules/
 .env
 .env.local
 .env.*.local
+# Telegram bot runtime
+/bot/.venv/
+/bot/.state.json*
+__pycache__/
 
 # OS
 .DS_Store

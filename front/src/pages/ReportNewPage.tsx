@@ -6,7 +6,7 @@ import type { GeoPoint, ReportsCategoryOptions } from "@/api/pocketbase-types"
 import { errorStatus, fieldError, useCreateReport } from "@/api/reports"
 import { Container } from "@/components/layout/Container"
 import { ReportIcon } from "@/components/map/ReportIcon"
-import { PointPicker } from "@/components/reports/PointPicker"
+import { ReportLocationPicker } from "@/components/reports/ReportLocationPicker"
 import { Button } from "@/components/ui/button"
 import { categoryLabels, reportForm as text } from "@/content/reports"
 import { compressPhoto } from "@/lib/photo"
@@ -185,7 +185,7 @@ export function ReportNewPage() {
               {point ? text.pointSet : locating === "failed" ? text.locateFailed : text.pointHint}
             </span>
           </div>
-          <PointPicker
+          <ReportLocationPicker
             value={point}
             onChange={(p) => {
               setPoint(p)
