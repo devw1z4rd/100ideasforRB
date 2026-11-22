@@ -40,8 +40,5 @@ temp-*/
 temp-old/
 temp-urls-of-water-data.md
 
-# Local docs and AI assistant files
+# Local docs
 docs/
-CLAUDE.md
-.claude/
-.superpowers/
